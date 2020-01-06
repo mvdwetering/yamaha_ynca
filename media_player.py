@@ -122,7 +122,7 @@ class YamahaYncaZone(MediaPlayerDevice):
     @property
     def unique_id(self):
         """Return the uniqueid of the entity."""
-        return f"{self._receiver_unique_id}_{self._zone}"
+        return f"{self._receiver_unique_id}_{self._zone._subunit}"
 
     @property
     def state(self):
