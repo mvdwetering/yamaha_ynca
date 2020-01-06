@@ -1,5 +1,6 @@
 """Config flow for Yamaha YNCA integration."""
 import logging
+import asyncio
 
 import voluptuous as vol
 
@@ -7,11 +8,15 @@ from homeassistant import core, config_entries, exceptions
 
 from .const import DOMAIN  # pylint:disable=unused-import
 
+import ynca
+
 _LOGGER = logging.getLogger(__name__)
 
 # TODO adjust the data schema to the data that you need
-DATA_SCHEMA = vol.Schema({"host": str, "username": str, "password": str})
+DATA_SCHEMA = vol.Schema({"serial_port": str})
 
+def setup_receiver(port):
+    return ynca.YncaReceiver(port)  # Initialization takes a while
 
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect.
@@ -23,17 +28,26 @@ async def validate_input(hass: core.HomeAssistant, data):
     # throw CannotConnect
     # If the authentication is wrong:
     # InvalidAuth
+    _LOGGER.warn("validate_input")
+    _LOGGER.warn(data)
 
-    # Return some info we want to store in the config entry.
-    return {"title": "Name of the device"}
-
+    try:
+        loop = asyncio.get_running_loop()
+        receiver = await loop.run_in_executor(None, setup_receiver, data["serial_port"])
+        # Close connection manually, going out of scope does not seem to clean it up...
+        receiver._connection.disconnect()
+        # Return some info we want to store in the config entry.
+        return {"title": receiver.model_name}
+    except Exception as e:
+        _LOGGER.error(e)
+        raise CannotConnect
 
 class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha YNCA."""
 
     VERSION = 1
     # TODO pick one of the available connection classes in homeassistant/config_entries.py
-    CONNECTION_CLASS = config_entries.CONN_CLASS_UNKNOWN
+    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -41,7 +55,6 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 info = await validate_input(self.hass, user_input)
-
                 return self.async_create_entry(title=info["title"], data=user_input)
             except CannotConnect:
                 errors["base"] = "cannot_connect"

@@ -7,6 +7,7 @@ https://home-assistant.io/components/media_player.yamaha_ynca/
 This custom component handles communication with certain Yamaha receivers supporting the YNCA protocol.
 I guess it is mostly for older receivers since it also supports the serial port.
 """
+import asyncio
 import logging
 
 import voluptuous as vol
@@ -20,59 +21,76 @@ from homeassistant.const import (CONF_NAME, CONF_PORT,  STATE_OFF, STATE_ON,
                                  STATE_PLAYING, STATE_IDLE)
 import homeassistant.helpers.config_validation as cv
 
-REQUIREMENTS = ['ynca==1.0.0']
+import ynca
 
-
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN, MANUFACTURER_NAME, LOGGER
 
 SUPPORT_YAMAHA_YNCA = SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_STEP | \
     SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE
 
-CONF_SOURCE_NAMES = 'source_names'
-CONF_SOURCE_IGNORE = 'source_ignore'
-CONF_ZONE_IGNORE = 'zone_ignore'
-
 DEFAULT_NAME = 'Yamaha Receiver (YNCA)'
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Optional(CONF_NAME, default=None): cv.string,
-    vol.Optional(CONF_PORT): cv.string,
-    vol.Optional(CONF_SOURCE_IGNORE, default=[]):
-        vol.All(cv.ensure_list, [cv.string]),
-    vol.Optional(CONF_ZONE_IGNORE, default=[]):
-        vol.All(cv.ensure_list, [cv.string]),
-    vol.Optional(CONF_SOURCE_NAMES, default={}): {cv.string: cv.string},
+    vol.Required(CONF_PORT): cv.string,
 })
 
+# OLD
+# def setup_platform(hass, config, add_devices, discovery_info=None):
+#     """Setup the Yamaha YNCA platform."""
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Setup the Yamaha YNCA platform."""
-    import ynca
+#     port = config.get(CONF_PORT)
+#     receiver = ynca.YncaReceiver(port)  # Initialization takes a while
 
-    name = config.get(CONF_NAME)
-    port = config.get(CONF_PORT)
-    source_ignore = config.get(CONF_SOURCE_IGNORE)
-    source_names = config.get(CONF_SOURCE_NAMES)
-    zone_ignore = config.get(CONF_ZONE_IGNORE)
+#     devices = []
+#     for zone in receiver.zones:
+#         if zone not in zone_ignore:
+#             devices.append(YamahaYncaDevice(name, receiver, receiver.zones[zone], source_ignore, source_names))
 
-    receiver = ynca.YncaReceiver(port)  # Initialization takes a while
+#     add_devices(devices)
 
-    devices = []
+def setup_receiver(port):
+    return ynca.YncaReceiver(port)  # Initialization takes a while
+
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    LOGGER.warn("async_setup_entry")
+    LOGGER.warn(config_entry)
+
+    loop = asyncio.get_running_loop()
+    receiver = await loop.run_in_executor(None, setup_receiver, config_entry.data["serial_port"])
+
+    hass.data[DOMAIN][config_entry.entry_id]["receiver"] = receiver
+
+    entities = []
     for zone in receiver.zones:
-        if zone not in zone_ignore:
-            devices.append(YamahaYncaDevice(name, receiver, receiver.zones[zone], source_ignore, source_names))
+        # Since there is no discovery and the device exposes no unique identifiers on the API
+        # lets invent one ourselves. Since the only way to add is through ConfigFlow there will
+        # be a configentry with an ID which must already be unique.
+        entities.append(YamahaYncaZone(config_entry.entry_id, receiver, receiver.zones[zone]))
 
-    add_devices(devices)
+    async_add_entities(entities)
 
 
-class YamahaYncaDevice(MediaPlayerDevice):
-    """Representation of a Yamaha Ynca device."""
+class YamahaYncaZone(MediaPlayerDevice):
+    """Representation of a zone of a Yamaha Ynca device."""
 
-    def __init__(self, name, receiver, zone, source_ignore, source_names):
-        self._name = name
+    def __init__(self, receiver_unique_id, receiver, zone):
         self._receiver = receiver
         self._zone = zone
         self._zone.on_update_callback = self.update
+        self._receiver_unique_id = receiver_unique_id
+
+    @property
+    def device_info(self):
+        """Return the device info."""
+        return {
+            'identifiers': {
+                (DOMAIN, self._receiver_unique_id)
+            },
+            'name': f"{MANUFACTURER_NAME} {self._receiver.model_name}",
+            'manufacturer': MANUFACTURER_NAME,
+            'model': self._receiver.model_name,
+            'sw_version': self._receiver.firmware_version,
+        }
 
     def update(self):
         self.schedule_update_ha_state()
@@ -99,7 +117,12 @@ class YamahaYncaDevice(MediaPlayerDevice):
     @property
     def name(self):
         """Return the name of the device."""
-        return "{} {}".format(self._name or self._receiver.model_name, self._zone.name)
+        return "{} {}".format(self._receiver.model_name, self._zone.name)
+
+    @property
+    def unique_id(self):
+        """Return the uniqueid of the entity."""
+        return f"{self._receiver_unique_id}_{self._zone}"
 
     @property
     def state(self):
@@ -114,7 +137,6 @@ class YamahaYncaDevice(MediaPlayerDevice):
     @property
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
-        import ynca
         return self._zone.mute == ynca.Mute.on
 
     @property
@@ -125,7 +147,6 @@ class YamahaYncaDevice(MediaPlayerDevice):
     @property
     def source_list(self):
         """List of available input sources."""
-        # TODO combine with ignore/whitelist
         return sorted(self._receiver.inputs.keys())
 
     @property
@@ -152,7 +173,6 @@ class YamahaYncaDevice(MediaPlayerDevice):
 
     def mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
-        import ynca
         if mute:
             self._zone.mute = ynca.Mute.on
         else:
