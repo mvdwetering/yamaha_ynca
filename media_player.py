@@ -9,11 +9,12 @@ I guess it is mostly for older receivers since it also supports the serial port.
 """
 import asyncio
 import logging
+import ynca
 
 import voluptuous as vol
 
 from homeassistant.components.media_player import (
-    MediaPlayerDevice, PLATFORM_SCHEMA)
+    MediaPlayerDevice)
 from homeassistant.components.media_player.const import (
     SUPPORT_TURN_OFF, SUPPORT_TURN_ON, SUPPORT_VOLUME_MUTE,
     SUPPORT_VOLUME_SET, SUPPORT_VOLUME_STEP, SUPPORT_SELECT_SOURCE)
@@ -21,18 +22,14 @@ from homeassistant.const import (CONF_NAME, CONF_PORT,  STATE_OFF, STATE_ON,
                                  STATE_PLAYING, STATE_IDLE)
 import homeassistant.helpers.config_validation as cv
 
-import ynca
 
 from .const import DOMAIN, MANUFACTURER_NAME
+
+_LOGGER = logging.getLogger(__name__)
 
 SUPPORT_YAMAHA_YNCA = SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_STEP | \
     SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE
 
-DEFAULT_NAME = 'Yamaha Receiver (YNCA)'
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_PORT): cv.string,
-})
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
@@ -88,6 +85,11 @@ class YamahaYncaZone(MediaPlayerDevice):
 
         return output_min + (value_scaled * output_spread)
 
+    def get_input_from_source(self, source):
+        for input, name in self._receiver.inputs.items():
+            if name == source:
+                return input
+
     @property
     def should_poll(self):
         """No polling needed."""
@@ -121,12 +123,13 @@ class YamahaYncaZone(MediaPlayerDevice):
     @property
     def source(self):
         """Return the current input source."""
-        return self._zone.input
+        return self._zone.inputs[self._zone.input]
 
     @property
     def source_list(self):
         """List of available input sources."""
-        return sorted(self._receiver.inputs.keys())
+        # Return the user given names instead HDMI1 etc...
+        return sorted(list(self._receiver.inputs.values()))
 
     @property
     def supported_features(self):
@@ -163,4 +166,4 @@ class YamahaYncaZone(MediaPlayerDevice):
 
     def select_source(self, source):
         """Select input source."""
-        self._zone.input = source
+        self._zone.input = self.get_input_from_source(source)
