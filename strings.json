@@ -1,11 +1,11 @@
 {
   "config": {
-    "title": "Yamaha (YNCA Protocol)",
+    "title": "Yamaha (YNCA)",
     "step": {
       "user": {
-        "title": "Connect to the device",
+        "title": "Provide serial port",
         "data": {
-          "serial_port": "Serial port (e.g. /dev/ttyUSB0)"
+          "serial_port": "e.g. /dev/ttyUSB0"
         }
       }
     },

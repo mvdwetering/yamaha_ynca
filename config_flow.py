@@ -12,7 +12,6 @@ import ynca
 
 _LOGGER = logging.getLogger(__name__)
 
-# TODO adjust the data schema to the data that you need
 DATA_SCHEMA = vol.Schema({"serial_port": str})
 
 def setup_receiver(port):
@@ -23,20 +22,11 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
-    # TODO validate the data can be used to set up a connection.
-    # If you cannot connect:
-    # throw CannotConnect
-    # If the authentication is wrong:
-    # InvalidAuth
-    _LOGGER.warn("validate_input")
-    _LOGGER.warn(data)
-
     try:
         loop = asyncio.get_running_loop()
         receiver = await loop.run_in_executor(None, setup_receiver, data["serial_port"])
-        # Close connection manually, going out of scope does not seem to clean it up...
+        # Close connection manually, going out of scope does not seem to clean it up...(in time?)
         receiver._connection.disconnect()
-        # Return some info we want to store in the config entry.
         return {"title": receiver.model_name}
     except Exception as e:
         _LOGGER.error(e)
@@ -46,7 +36,6 @@ class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha YNCA."""
 
     VERSION = 1
-    # TODO pick one of the available connection classes in homeassistant/config_entries.py
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
     async def async_step_user(self, user_input=None):

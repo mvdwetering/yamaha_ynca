@@ -23,7 +23,7 @@ import homeassistant.helpers.config_validation as cv
 
 import ynca
 
-from .const import DOMAIN, MANUFACTURER_NAME, LOGGER
+from .const import DOMAIN, MANUFACTURER_NAME
 
 SUPPORT_YAMAHA_YNCA = SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_STEP | \
     SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE
@@ -34,38 +34,17 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_PORT): cv.string,
 })
 
-# OLD
-# def setup_platform(hass, config, add_devices, discovery_info=None):
-#     """Setup the Yamaha YNCA platform."""
-
-#     port = config.get(CONF_PORT)
-#     receiver = ynca.YncaReceiver(port)  # Initialization takes a while
-
-#     devices = []
-#     for zone in receiver.zones:
-#         if zone not in zone_ignore:
-#             devices.append(YamahaYncaDevice(name, receiver, receiver.zones[zone], source_ignore, source_names))
-
-#     add_devices(devices)
-
-def setup_receiver(port):
-    return ynca.YncaReceiver(port)  # Initialization takes a while
-
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    LOGGER.warn("async_setup_entry")
-    LOGGER.warn(config_entry)
 
-    loop = asyncio.get_running_loop()
-    receiver = await loop.run_in_executor(None, setup_receiver, config_entry.data["serial_port"])
-
-    hass.data[DOMAIN][config_entry.entry_id]["receiver"] = receiver
+    receiver = hass.data[DOMAIN][config_entry.entry_id]
+    # Since there is no discovery and the device exposes no unique identifiers on the API
+    # we need to invent one ourselves. Since the only way to add is through ConfigFlow we can
+    # use its ID as device_id.
+    receiver_unique_id = config_entry.entry_id
 
     entities = []
     for zone in receiver.zones:
-        # Since there is no discovery and the device exposes no unique identifiers on the API
-        # lets invent one ourselves. Since the only way to add is through ConfigFlow there will
-        # be a configentry with an ID which must already be unique.
-        entities.append(YamahaYncaZone(config_entry.entry_id, receiver, receiver.zones[zone]))
+        entities.append(YamahaYncaZone(receiver_unique_id, receiver, receiver.zones[zone]))
 
     async_add_entities(entities)
 
@@ -116,8 +95,8 @@ class YamahaYncaZone(MediaPlayerDevice):
 
     @property
     def name(self):
-        """Return the name of the device."""
-        return "{} {}".format(self._receiver.model_name, self._zone.name)
+        """Return the name of the entity."""
+        return f"{self._receiver.model_name} {self._zone.name}"
 
     @property
     def unique_id(self):
