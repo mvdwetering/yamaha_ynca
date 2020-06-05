@@ -103,7 +103,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def name(self):
         """Return the name of the entity."""
-        return {self._zone.name}
+        return self._zone.name
 
     @property
     def unique_id(self):
