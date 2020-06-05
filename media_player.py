@@ -52,7 +52,6 @@ class YamahaYncaZone(MediaPlayerEntity):
     def __init__(self, receiver_unique_id, receiver, zone):
         self._receiver = receiver
         self._zone = zone
-        self._zone.on_update_callback = self.update
         self._receiver_unique_id = receiver_unique_id
 
     @property
@@ -70,6 +69,12 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def update(self):
         self.schedule_update_ha_state()
+
+    async def async_added_to_hass(self):
+        self._zone.on_update_callback = self.update
+
+    async def async_will_remove_from_hass(self):
+        self._zone.on_update_callback = None
 
     @staticmethod
     def scale(input_value, input_range, output_range):
