@@ -1,0 +1,8 @@
+{
+    "name": "Yamaha YNCA",
+    "content_in_root": true,
+    "render_readme": true,
+    "domains": ["media_player"],
+    "homeassistant": "0.110.0",
+    "iot_class": "Local Push"
+}
