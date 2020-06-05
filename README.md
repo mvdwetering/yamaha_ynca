@@ -11,7 +11,7 @@ According to the protocol documentation the following AV receivers should be sup
 ### HACS
 
 * Add this repository `https://github.com/mvdwetering/yamaha_ynca` to HACS as a "custom repository" with category "integration"
-* Install with HACS
+* Add integration within HACS (use the + button and search for Yamaha YNCA)
 * Restart Home Assistant
 * Go to the Home Assistant integrations menu and press the Add button and search for "Yamaha YNCA"
 
