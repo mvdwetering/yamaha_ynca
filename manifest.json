@@ -1,16 +1,14 @@
 {
   "domain": "yamaha_ynca",
   "name": "Yamaha YNCA",
-  "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/yamaha_ynca",
-  "requirements": [
-    "ynca==1.0.0"
-  ],
-  "ssdp": [],
-  "zeroconf": [],
-  "homekit": {},
+  "documentation": "https://github.com/mvdwetering/yamaha_ynca",
+  "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "dependencies": [],
+  "config_flow": true,
   "codeowners": [
     "@mvdwetering"
+  ],
+  "requirements": [
+    "ynca==1.0.0"
   ]
 }
