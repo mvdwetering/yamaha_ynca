@@ -17,8 +17,8 @@ from homeassistant.components.media_player import (
     MediaPlayerEntity)
 from homeassistant.components.media_player.const import (
     SUPPORT_TURN_OFF, SUPPORT_TURN_ON, SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_SET, SUPPORT_VOLUME_STEP, SUPPORT_SELECT_SOURCE)
-from homeassistant.const import (CONF_NAME, CONF_PORT,  STATE_OFF, STATE_ON,
+    SUPPORT_VOLUME_SET, SUPPORT_VOLUME_STEP, SUPPORT_SELECT_SOURCE, SUPPORT_SELECT_SOUND_MODE)
+from homeassistant.const import (CONF_NAME, CONF_PORT, STATE_OFF, STATE_ON,
                                  STATE_PLAYING, STATE_IDLE)
 import homeassistant.helpers.config_validation as cv
 
@@ -27,7 +27,7 @@ from .const import DOMAIN, MANUFACTURER_NAME
 
 _LOGGER = logging.getLogger(__name__)
 
-SUPPORT_YAMAHA_YNCA = SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_STEP | \
+SUPPORT_YAMAHA_YNCA_BASE = SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_STEP | \
     SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE
 
 
@@ -137,9 +137,23 @@ class YamahaYncaZone(MediaPlayerEntity):
         return sorted(list(self._receiver.inputs.values()))
 
     @property
+    def sound_mode(self):
+        """Return the current input source."""
+        return self._zone.dsp_sound_program
+
+    @property
+    def sound_mode_list(self):
+        """List of available sound modes."""
+        if not self._zone.dsp_sound_program:
+            return ""
+        return ynca.DSP_SOUND_PROGRAMS
+
+    @property
     def supported_features(self):
         """Flag of media commands that are supported."""
-        supported_commands = SUPPORT_YAMAHA_YNCA
+        supported_commands = SUPPORT_YAMAHA_YNCA_BASE
+        if self._zone.dsp_sound_program:
+            supported_commands |= SUPPORT_SELECT_SOUND_MODE
         return supported_commands
 
     def turn_off(self):
@@ -172,3 +186,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def select_source(self, source):
         """Select input source."""
         self._zone.input = self.get_input_from_source(source)
+
+    def select_sound_mode(self, sound_mode):
+        """Switch the sound mode of the entity."""
+        self._zone.dsp_sound_program = sound_mode
