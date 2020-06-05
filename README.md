@@ -10,6 +10,16 @@ RX-A3000, RX-A3010, RX-V671, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V2600, RX-
 
 ## Installation
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/mvdwetering/yamaha_ynca)
+
+### HACS
+
+* Add this repository as custom repository
+* Install with HACS
+* Go to the integrations menu and press the Add button to add the integration
+
+### Manual
+
 * Install the custom component by copying it as usual
 * Restart Home Assistant
 * Go to the integrations menu and press the Add button to add the integration (no `configuration.yaml` changes needed)
