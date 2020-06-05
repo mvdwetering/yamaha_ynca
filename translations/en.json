@@ -1,6 +1,5 @@
 {
   "config": {
-    "title": "Yamaha (YNCA)",
     "step": {
       "user": {
         "title": "Provide serial port",

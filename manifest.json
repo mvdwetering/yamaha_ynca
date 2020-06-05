@@ -1,6 +1,6 @@
 {
   "domain": "yamaha_ynca",
-  "name": "Yamaha YNCA",
+  "name": "Yamaha (YNCA)",
   "documentation": "https://github.com/mvdwetering/yamaha_ynca",
   "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "dependencies": [],
