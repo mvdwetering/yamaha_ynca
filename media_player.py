@@ -14,7 +14,7 @@ import ynca
 import voluptuous as vol
 
 from homeassistant.components.media_player import (
-    MediaPlayerDevice)
+    MediaPlayerEntity)
 from homeassistant.components.media_player.const import (
     SUPPORT_TURN_OFF, SUPPORT_TURN_ON, SUPPORT_VOLUME_MUTE,
     SUPPORT_VOLUME_SET, SUPPORT_VOLUME_STEP, SUPPORT_SELECT_SOURCE)
@@ -46,7 +46,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(entities)
 
 
-class YamahaYncaZone(MediaPlayerDevice):
+class YamahaYncaZone(MediaPlayerEntity):
     """Representation of a zone of a Yamaha Ynca device."""
 
     def __init__(self, receiver_unique_id, receiver, zone):
