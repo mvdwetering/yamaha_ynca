@@ -1,6 +1,5 @@
 {
-    "name": "Yamaha YNCA",
-    "content_in_root": true,
+    "name": "Yamaha (YNCA)",
     "render_readme": true,
     "domains": ["media_player"],
     "homeassistant": "0.110.0",
