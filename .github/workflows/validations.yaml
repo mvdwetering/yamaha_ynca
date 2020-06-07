@@ -1,4 +1,4 @@
-name: Validate with hassfest
+name: Validations
 
 on:
   push:
@@ -11,4 +11,11 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v2"
-      - uses: home-assistant/actions/hassfest@master
+
+      - name: Hassfest validation
+        uses: "home-assistant/actions/hassfest@master"
+      - name: HACS validation
+        uses: "hacs/integration/action@master"
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CATEGORY: "integration"
