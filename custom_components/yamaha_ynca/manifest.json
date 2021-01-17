@@ -9,6 +9,6 @@
     "@mvdwetering"
   ],
   "requirements": [
-    "ynca==1.0.0"
+    "ynca==2.0.0"
   ]
 }

@@ -30,6 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 SUPPORT_YAMAHA_YNCA_BASE = SUPPORT_VOLUME_SET | SUPPORT_VOLUME_MUTE | SUPPORT_VOLUME_STEP | \
     SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE
 
+STRAIGHT = "Straight"
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
@@ -139,14 +140,17 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def sound_mode(self):
         """Return the current input source."""
-        return self._zone.dsp_sound_program
+        return STRAIGHT if self._zone.straight else self._zone.dsp_sound_program
 
     @property
     def sound_mode_list(self):
         """List of available sound modes."""
-        if not self._zone.dsp_sound_program:
-            return ""
-        return ynca.DSP_SOUND_PROGRAMS
+        sound_modes = []
+        if self._zone.straight is not None:
+            sound_modes.append(STRAIGHT)
+        if self._zone.dsp_sound_program:
+            sound_modes.extend(ynca.DSP_SOUND_PROGRAMS)
+        return sound_modes if len(sound_modes) > 0 else None
 
     @property
     def supported_features(self):
@@ -189,4 +193,8 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def select_sound_mode(self, sound_mode):
         """Switch the sound mode of the entity."""
-        self._zone.dsp_sound_program = sound_mode
+        if sound_mode == STRAIGHT:
+            self._zone.straight = True
+        else:
+            self._zone.straight = False
+            self._zone.dsp_sound_program = sound_mode
