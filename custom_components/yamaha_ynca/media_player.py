@@ -135,7 +135,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def source_list(self):
         """List of available input sources."""
         # Return the user given names instead HDMI1 etc...
-        return sorted(list(self._receiver.inputs.values()))
+        return sorted(list(self._receiver.inputs.values()), key=str.lower) # Using `str.lower` does not work for all languages, but good enough as a start
 
     @property
     def sound_mode(self):
@@ -150,6 +150,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             sound_modes.append(STRAIGHT)
         if self._zone.dsp_sound_program:
             sound_modes.extend(ynca.DSP_SOUND_PROGRAMS)
+        sound_modes.sort(key=str.lower) # Using `str.lower` does not work for all languages, but good enough as a start
         return sound_modes if len(sound_modes) > 0 else None
 
     @property
