@@ -16,4 +16,5 @@ jobs:
       - name: HACS validation
         uses: "hacs/action@main"
         with:
+          ignore: brands wheels
           category: "integration"
