@@ -79,5 +79,5 @@ git tag "v$version"
 
 
 echo -e "${INFO}Done making release $version"
-echo -e "Make sure to verify and push when happy with command below${NC}"
-echo -e "git push --follow-tags"
+echo -e "Verify and push when happy (don't forget the tags)"
+echo -e "After than switch back to 'dev'${NC}"
