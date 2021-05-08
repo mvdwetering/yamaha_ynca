@@ -12,5 +12,5 @@
     "ynca==2.0.0"
   ],
   "iot_class": "local_push",
-  "version": "0.0.0"
+  "version": "2.2.2"
 }
