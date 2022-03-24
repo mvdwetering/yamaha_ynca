@@ -2,20 +2,20 @@
   "config": {
     "step": {
       "user": {
-        "title": "Provide serial port",
-        "description": "You can provide the device path or a [URL handler as supported by pyserial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `socket://ipaddress:50000` to access over network.",
         "data": {
-          "serial_port": "e.g. /dev/ttyUSB0"
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect, please try again",
-      "invalid_auth": "Invalid authentication",
-      "unknown": "Unexpected error"
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "Device is already configured"
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
   }
 }
