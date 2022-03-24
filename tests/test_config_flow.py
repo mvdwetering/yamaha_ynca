@@ -2,8 +2,8 @@
 from unittest.mock import patch
 
 from homeassistant import config_entries
-from homeassistant.components.yamaha_ynca.config_flow import CannotConnect, InvalidAuth
-from homeassistant.components.yamaha_ynca.const import DOMAIN
+from custom_components.yamaha_ynca.config_flow import CannotConnect, InvalidAuth
+from custom_components.yamaha_ynca.const import DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
 
@@ -17,10 +17,10 @@ async def test_form(hass: HomeAssistant) -> None:
     assert result["errors"] is None
 
     with patch(
-        "homeassistant.components.yamaha_ynca.config_flow.PlaceholderHub.authenticate",
+        "custom_components.yamaha_ynca.config_flow.PlaceholderHub.authenticate",
         return_value=True,
-    ), patch(
-        "homeassistant.components.yamaha_ynca.async_setup_entry",
+    ) as mock_setup, patch(
+        "custom_components.yamaha_ynca.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
         result2 = await hass.config_entries.flow.async_configure(
@@ -40,6 +40,7 @@ async def test_form(hass: HomeAssistant) -> None:
         "username": "test-username",
         "password": "test-password",
     }
+    assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
 
 
@@ -50,7 +51,7 @@ async def test_form_invalid_auth(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "homeassistant.components.yamaha_ynca.config_flow.PlaceholderHub.authenticate",
+        "custom_components.yamaha_ynca.config_flow.PlaceholderHub.authenticate",
         side_effect=InvalidAuth,
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -73,7 +74,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "homeassistant.components.yamaha_ynca.config_flow.PlaceholderHub.authenticate",
+        "custom_components.yamaha_ynca.config_flow.PlaceholderHub.authenticate",
         side_effect=CannotConnect,
     ):
         result2 = await hass.config_entries.flow.async_configure(
