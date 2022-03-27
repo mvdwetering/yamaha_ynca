@@ -6,11 +6,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN
+from .const import CONF_SERIAL_URL, DOMAIN, LOGGER
 
 import ynca
 
-PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
+# PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
+PLATFORMS: list[Platform] = []
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -21,20 +22,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             # Sync function taking a long time (multiple seconds depending on receiver capabilities)
             receiver.initialize()
             return True
-        except Exception:
+        except ynca.YncaInitializationFailedException:
+            LOGGER.error("Initialization of receiver failed")
             return False
 
     def on_disconnect():
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
-        asyncio.run_coroutine_threadsafe(
-            hass.config_entries.async_reload(entry.entry_id), hass.loop
-        ).result()
+        # asyncio.run_coroutine_threadsafe(
+        #     hass.config_entries.async_reload(entry.entry_id), hass.loop
+        # ).result()
+        LOGGER.error("TODO: Add working reload here")
 
-    receiver = ynca.Receiver(entry.data["serial_url"], on_disconnect)
+    receiver = ynca.Receiver(entry.data[CONF_SERIAL_URL], on_disconnect)
     initialized = await hass.async_add_executor_job(initialize_receiver, receiver)
 
     if initialized:
+        hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN][entry.entry_id] = receiver
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
