@@ -53,7 +53,22 @@ async def test_async_setup_entry(hass):
     # TODO Check for entities/states
 
 
-async def test_async_setup_entry_fails(hass):
+async def test_async_setup_entry_fails_with_connection_error(hass):
+    """Test a successful setup entry."""
+    integration = await setup_integration(hass, skip_setup=True)
+
+    mock_receiver = MockReceiver()
+    mock_receiver.initialize.side_effect = ynca.YncaConnectionError("Connection error")
+
+    with patch("ynca.Receiver", return_value=mock_receiver):
+        await hass.config_entries.async_setup(integration.entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert integration.entry.state is ConfigEntryState.SETUP_RETRY
+    assert not hass.data.get(yamaha_ynca.DOMAIN)
+
+
+async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
@@ -61,6 +76,21 @@ async def test_async_setup_entry_fails(hass):
     mock_receiver.initialize.side_effect = ynca.YncaInitializationFailedException(
         "Initialize failed"
     )
+
+    with patch("ynca.Receiver", return_value=mock_receiver):
+        await hass.config_entries.async_setup(integration.entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert integration.entry.state is ConfigEntryState.SETUP_RETRY
+    assert not hass.data.get(yamaha_ynca.DOMAIN)
+
+
+async def test_async_setup_entry_fails_unknown_reason(hass):
+    """Test a successful setup entry."""
+    integration = await setup_integration(hass, skip_setup=True)
+
+    mock_receiver = MockReceiver()
+    mock_receiver.initialize.side_effect = Exception("Unexpected exception")
 
     with patch("ynca.Receiver", return_value=mock_receiver):
         await hass.config_entries.async_setup(integration.entry.entry_id)

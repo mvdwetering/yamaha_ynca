@@ -5,6 +5,7 @@ import asyncio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import CONF_SERIAL_URL, DOMAIN, LOGGER
 
@@ -22,8 +23,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             # Sync function taking a long time (multiple seconds depending on receiver capabilities)
             receiver.initialize()
             return True
-        except ynca.YncaInitializationFailedException:
+        except ynca.YncaConnectionError as e:
+            LOGGER.error("Connection to receiver failed")
+            raise ConfigEntryNotReady from e
+        except ynca.YncaInitializationFailedException as e:
             LOGGER.error("Initialization of receiver failed")
+            raise ConfigEntryNotReady from e
+        except Exception:
             return False
 
     def on_disconnect():
