@@ -35,10 +35,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def on_disconnect():
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
-        # asyncio.run_coroutine_threadsafe(
-        #     hass.config_entries.async_reload(entry.entry_id), hass.loop
-        # ).result()
-        LOGGER.error("TODO: Add working reload here")
+        asyncio.run_coroutine_threadsafe(
+            hass.config_entries.async_reload(entry.entry_id), hass.loop
+        ).result()
 
     receiver = ynca.Receiver(entry.data[CONF_SERIAL_URL], on_disconnect)
     initialized = await hass.async_add_executor_job(initialize_receiver, receiver)
