@@ -2,10 +2,11 @@
 from unittest.mock import patch
 
 from homeassistant import config_entries
-from custom_components.yamaha_ynca.config_flow import CannotConnect, InvalidAuth
 from custom_components.yamaha_ynca.const import DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
+
+from ynca import YncaConnectionError
 
 
 async def test_form(hass: HomeAssistant) -> None:
@@ -48,7 +49,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
 
     with patch(
         "ynca.Receiver.connection_check",
-        return_value=None,
+        side_effect=YncaConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
