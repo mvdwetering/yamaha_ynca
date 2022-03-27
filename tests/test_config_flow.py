@@ -60,3 +60,24 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
 
     assert result2["type"] == RESULT_TYPE_FORM
     assert result2["errors"] == {"base": "cannot_connect"}
+
+
+async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
+    """Test we handle random exceptions."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "ynca.Receiver.connection_check",
+        side_effect=Exception("Unhandled exception"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_SERIAL_URL: "SerialUrl",
+            },
+        )
+
+    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["errors"] == {"base": "unknown"}
