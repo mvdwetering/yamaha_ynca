@@ -4,7 +4,7 @@
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/yamaha_ynca",
   "requirements": [
-    "git+https://github.com/mvdwetering/ynca.git@restructure"
+    "ynca==3.0.0"
   ],
   "ssdp": [],
   "zeroconf": [],
