@@ -13,31 +13,11 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
 
+import ynca
+
 _LOGGER = logging.getLogger(__name__)
 
-# TODO adjust the data schema to the data that you need
-STEP_USER_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required("host"): str,
-        vol.Required("username"): str,
-        vol.Required("password"): str,
-    }
-)
-
-
-class PlaceholderHub:
-    """Placeholder class to make tests pass.
-
-    TODO Remove this placeholder class and replace with things from your PyPI package.
-    """
-
-    def __init__(self, host: str) -> None:
-        """Initialize."""
-        self.host = host
-
-    async def authenticate(self, username: str, password: str) -> bool:
-        """Test if we can authenticate with the host."""
-        return True
+STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required("serial_url"): str})
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -45,26 +25,22 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    # TODO validate the data can be used to set up a connection.
 
-    # If your PyPI package is not built with async, pass your methods
-    # to the executor:
-    # await hass.async_add_executor_job(
-    #     your_validate_func, data["username"], data["password"]
-    # )
+    def validate_connection(serial_url):
+        try:
+            return ynca.Receiver(serial_url).connection_check()
+        except ynca.YncaConnectionError:
+            return None
 
-    hub = PlaceholderHub(data["host"])
+    modelname = await hass.async_add_executor_job(
+        validate_connection, data["serial_url"]
+    )
 
-    if not await hub.authenticate(data["username"], data["password"]):
-        raise InvalidAuth
-
-    # If you cannot connect:
-    # throw CannotConnect
-    # If the authentication is wrong:
-    # InvalidAuth
+    if not modelname:
+        raise CannotConnect
 
     # Return info that you want to store in the config entry.
-    return {"title": "Name of the device"}
+    return {"title": modelname}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
