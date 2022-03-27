@@ -1,8 +1,8 @@
 """Test the Yamaha (YNCA) config flow."""
 from unittest.mock import patch
 
+from custom_components.yamaha_ynca.const import CONF_SERIAL_URL, DOMAIN
 from homeassistant import config_entries
-from custom_components.yamaha_ynca.const import DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
 
@@ -27,7 +27,7 @@ async def test_form(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                "serial_url": "SerialUrl",
+                CONF_SERIAL_URL: "SerialUrl",
             },
         )
         await hass.async_block_till_done()
@@ -35,7 +35,7 @@ async def test_form(hass: HomeAssistant) -> None:
     assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
-        "serial_url": "SerialUrl",
+        CONF_SERIAL_URL: "SerialUrl",
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
@@ -54,7 +54,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                "serial_url": "SerialUrl",
+                CONF_SERIAL_URL: "SerialUrl",
             },
         )
 
