@@ -1,6 +1,7 @@
 """The Yamaha (YNCA) integration."""
 from __future__ import annotations
 import asyncio
+import re
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -22,6 +23,14 @@ async def update_device_registry(
     # Add device explicitly to registry so other entities just have to report the identifier to link up
     sys_subunit = receiver.subunit(ynca.Subunit.SYS)
 
+    # Configuration URL for devices connected through IP
+    configuration_url = None
+    if matches := re.match(
+        r"socket:\/\/(.+):\d+",  # Extract IP or hostname
+        config_entry.data[CONF_SERIAL_URL],
+    ):
+        configuration_url = f"http://{matches[1]}"
+
     registry = await device_registry.async_get_registry(hass)
     registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
@@ -30,6 +39,7 @@ async def update_device_registry(
         name=f"{MANUFACTURER_NAME} {sys_subunit.model_name}",
         model=sys_subunit.model_name,
         sw_version=sys_subunit.version,
+        configuration_url=configuration_url,
     )
 
 

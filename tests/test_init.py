@@ -27,11 +27,13 @@ class Integration(NamedTuple):
     mock_receiver: MockReceiver
 
 
-async def setup_integration(hass, mock_receiver: MockReceiver = None, skip_setup=False):
+async def setup_integration(
+    hass, mock_receiver: MockReceiver = None, skip_setup=False, serial_url="SerialUrl"
+):
     entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         title="ModelName",
-        data={yamaha_ynca.CONF_SERIAL_URL: "SerialUrl"},
+        data={yamaha_ynca.CONF_SERIAL_URL: serial_url},
     )
     entry.add_to_hass(hass)
     on_disconnect = None
@@ -81,8 +83,19 @@ async def test_async_setup_entry(hass, device_reg):
     assert device.model == "ModelName"
     assert device.sw_version == "Version"
     assert device.name == "Yamaha ModelName"
+    assert device.configuration_url is None
 
     # TODO Check for entities/states
+
+
+async def test_async_setup_entry_socket_has_configuration_url(hass, device_reg):
+    """Test a successful setup entry."""
+    integration = await setup_integration(hass, serial_url="socket://1.2.3.4:4321")
+
+    device = device_reg.async_get_device(
+        identifiers={(yamaha_ynca.DOMAIN, integration.entry.entry_id)}
+    )
+    assert device.configuration_url == "http://1.2.3.4"
 
 
 async def test_async_setup_entry_fails_with_connection_error(hass):
