@@ -6,13 +6,31 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry
 
-from .const import CONF_SERIAL_URL, DOMAIN, LOGGER
+from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
 
 import ynca
 
 # PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
 PLATFORMS: list[Platform] = []
+
+
+async def update_device_registry(
+    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Receiver
+):
+    # Add device explicitly to registry so other entities just have to report the identifier to link up
+    sys_subunit = receiver.subunit(ynca.Subunit.SYS)
+
+    registry = await device_registry.async_get_registry(hass)
+    registry.async_get_or_create(
+        config_entry_id=config_entry.entry_id,
+        identifiers={(DOMAIN, config_entry.entry_id)},
+        manufacturer=MANUFACTURER_NAME,
+        name=f"{MANUFACTURER_NAME} {sys_subunit.model_name}",
+        model=sys_subunit.model_name,
+        sw_version=sys_subunit.version,
+    )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -43,6 +61,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     initialized = await hass.async_add_executor_job(initialize_receiver, receiver)
 
     if initialized:
+        await update_device_registry(hass, entry, receiver)
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN][entry.entry_id] = receiver
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)

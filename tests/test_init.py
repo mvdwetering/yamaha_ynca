@@ -3,8 +3,17 @@ from typing import Callable, NamedTuple, Type
 from unittest.mock import DEFAULT, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.helpers import (
+    device_registry,
+)
+
+import pytest
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    mock_device_registry,
+)
 
 import custom_components.yamaha_ynca as yamaha_ynca
 import ynca
@@ -15,9 +24,10 @@ from .mock_receiver import MockReceiver
 class Integration(NamedTuple):
     entry: Type[ConfigEntry]
     on_disconnect: Callable
+    mock_receiver: MockReceiver
 
 
-async def setup_integration(hass, skip_setup=False):
+async def setup_integration(hass, mock_receiver: MockReceiver = None, skip_setup=False):
     entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         title="ModelName",
@@ -33,14 +43,27 @@ async def setup_integration(hass, skip_setup=False):
             on_disconnect = args[1]
             return DEFAULT
 
-        with patch("ynca.Receiver", new_callable=MockReceiver, side_effect=side_effect):
+        mock_receiver = mock_receiver or MockReceiver()
+        mock_receiver.subunit.return_value.model_name = "ModelName"
+        mock_receiver.subunit.return_value.version = "Version"
+
+        # with patch("ynca.Receiver", new_callable=MockReceiver, side_effect=side_effect):
+        with patch(
+            "ynca.Receiver", return_value=mock_receiver, side_effect=side_effect
+        ):
             await hass.config_entries.async_setup(entry.entry_id)
             await hass.async_block_till_done()
 
-    return Integration(entry, on_disconnect)
+    return Integration(entry, on_disconnect, mock_receiver)
 
 
-async def test_async_setup_entry(hass):
+@pytest.fixture
+def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
+    """Return an empty, loaded, registry."""
+    return mock_device_registry(hass)
+
+
+async def test_async_setup_entry(hass, device_reg):
     """Test a successful setup entry."""
     integration = await setup_integration(hass)
 
@@ -49,6 +72,15 @@ async def test_async_setup_entry(hass):
 
     mock_receiver = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id]
     assert len(mock_receiver.initialize.mock_calls) == 1
+
+    assert len(device_reg.devices.keys()) == 1
+    device = device_reg.async_get_device(
+        identifiers={(yamaha_ynca.DOMAIN, integration.entry.entry_id)}
+    )
+    assert device.manufacturer == "Yamaha"
+    assert device.model == "ModelName"
+    assert device.sw_version == "Version"
+    assert device.name == "Yamaha ModelName"
 
     # TODO Check for entities/states
 
