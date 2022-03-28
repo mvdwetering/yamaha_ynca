@@ -13,7 +13,7 @@ from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
 
 import ynca
 
-PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
+PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
 
 async def update_device_registry(
