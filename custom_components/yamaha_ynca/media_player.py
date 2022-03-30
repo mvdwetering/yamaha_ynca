@@ -36,7 +36,7 @@ from homeassistant.const import (
     STATE_IDLE,
 )
 
-from .const import DOMAIN, ZONES
+from .const import DOMAIN, LOGGER, ZONES
 
 SUPPORT_YAMAHA_YNCA_BASE = (
     SUPPORT_VOLUME_SET
@@ -47,13 +47,7 @@ SUPPORT_YAMAHA_YNCA_BASE = (
     | SUPPORT_SELECT_SOURCE
 )
 
-PLAYBACK_CONTROLS = (
-    SUPPORT_PLAY
-    | SUPPORT_PAUSE
-    | SUPPORT_STOP
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_PREVIOUS_TRACK
-)
+RADIO_SUBUNITS = [ynca.Subunit.NETRADIO, ynca.Subunit.SIRIUS, ynca.Subunit.SIRIUSIR]
 
 STRAIGHT = "Straight"
 
@@ -91,14 +85,19 @@ class YamahaYncaZone(MediaPlayerEntity):
         # Register to catch input renames on SYS
         self._receiver.SYS.register_update_callback(self.schedule_update_ha_state)
         self._zone.register_update_callback(self.schedule_update_ha_state)
-        if subunit := self._receiver.PC:
-            subunit.register_update_callback(self.schedule_update_ha_state)
+
+        # TODO: Optimize registrations as now all zones get triggered by all changes
+        #       even when change happens on subunit that is not input of this zone
+        for subunit_id in ynca.SUBUNIT_INPUT_MAPPINGS.keys():
+            if subunit := getattr(self._receiver, subunit_id.value, None):
+                subunit.register_update_callback(self.schedule_update_ha_state)
 
     async def async_will_remove_from_hass(self):
         self._receiver.SYS.unregister_update_callback(self.schedule_update_ha_state)
         self._zone.unregister_update_callback(self.schedule_update_ha_state)
-        if subunit := self._receiver.PC:
-            subunit.unregister_update_callback(self.schedule_update_ha_state)
+        for subunit_id in ynca.SUBUNIT_INPUT_MAPPINGS.keys():
+            if subunit := getattr(self._receiver, subunit_id.value, None):
+                subunit.unregister_update_callback(self.schedule_update_ha_state)
 
     @staticmethod
     def scale(input_value, input_range, output_range):
@@ -119,6 +118,13 @@ class YamahaYncaZone(MediaPlayerEntity):
             if name == source:
                 return input
 
+    def _input_subunit(self) -> ynca.Subunit | None:
+        """Returns Subunit for current selected input if possible, otherwise None"""
+        for subunit, input_name in ynca.SUBUNIT_INPUT_MAPPINGS.items():
+            if input_name == self._zone.input:
+                return getattr(self._receiver, subunit.value, None)
+        return None
+
     @property
     def name(self):
         """Return the name of the entity."""
@@ -130,14 +136,15 @@ class YamahaYncaZone(MediaPlayerEntity):
         if not self._zone.on:
             return STATE_OFF
 
-        if self._zone.input == "PC":
-            subunit = self._receiver.PC
-            if subunit._attr_playbackinfo == ynca.PlaybackInfo.PLAY:
+        if input_subunit := self._input_subunit():
+            playbackinfo = getattr(input_subunit, "playbackinfo", None)
+            if playbackinfo == ynca.PlaybackInfo.PLAY:
                 return STATE_PLAYING
-            if subunit._attr_playbackinfo == ynca.PlaybackInfo.PAUSE:
+            if playbackinfo == ynca.PlaybackInfo.PAUSE:
                 return STATE_PAUSED
-            if subunit._attr_playbackinfo == ynca.PlaybackInfo.STOP:
+            if playbackinfo == ynca.PlaybackInfo.STOP:
                 return STATE_IDLE
+
         return STATE_ON
 
     @property
@@ -189,10 +196,19 @@ class YamahaYncaZone(MediaPlayerEntity):
         supported_commands = SUPPORT_YAMAHA_YNCA_BASE
         if self._zone.dsp_sound_program:
             supported_commands |= SUPPORT_SELECT_SOUND_MODE
-        if self._zone.input == "PC":
-            supported_commands |= PLAYBACK_CONTROLS
-            supported_commands |= SUPPORT_REPEAT_SET
-            supported_commands |= SUPPORT_SHUFFLE_SET
+
+        if input_subunit := self._input_subunit():
+            if hasattr(input_subunit, "playback"):
+                supported_commands |= SUPPORT_PLAY
+                supported_commands |= SUPPORT_STOP
+                if input_subunit not in RADIO_SUBUNITS:
+                    supported_commands |= SUPPORT_PAUSE
+                    supported_commands |= SUPPORT_NEXT_TRACK
+                    supported_commands |= SUPPORT_PREVIOUS_TRACK
+            if hasattr(input_subunit, "repeat"):
+                supported_commands |= SUPPORT_REPEAT_SET
+            if hasattr(input_subunit, "shuffle"):
+                supported_commands |= SUPPORT_SHUFFLE_SET
         return supported_commands
 
     def turn_on(self):
@@ -233,8 +249,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             self._zone.straight = False
             self._zone.dsp_sound_program = sound_mode
 
-    # Playback controls
-    # TODO: This all needs to be generalized for all subunits with playback control
+    # Playback controls (zone forwards to active subunit automatically it seems)
     def media_play(self):
         self._zone.playback(ynca.Playback.PLAY)
 
@@ -253,65 +268,71 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def shuffle(self) -> bool | None:
         """Boolean if shuffle is enabled."""
-        subunit = self._receiver.PC
-        return subunit.shuffle
+        if subunit := self._input_subunit():
+            return getattr(subunit, "shuffle", None)
+        return None
 
     def set_shuffle(self, shuffle):
         """Enable/disable shuffle mode."""
-        subunit = self._receiver.PC
-        subunit.shuffle = shuffle
+        self._input_subunit().shuffle
 
     @property
     def repeat(self) -> str | None:
         """Return current repeat mode."""
-        subunit = self._receiver.PC
-        if subunit.repeat == ynca.Repeat.SINGLE:
-            return REPEAT_MODE_ONE
-        if subunit.repeat == ynca.Repeat.ALL:
-            return REPEAT_MODE_ALL
-        if subunit.repeat == ynca.Repeat.OFF:
-            return REPEAT_MODE_OFF
+        if subunit := self._input_subunit():
+            repeat = getattr(subunit, "repeat", None)
+            if repeat == ynca.Repeat.SINGLE:
+                return REPEAT_MODE_ONE
+            if repeat == ynca.Repeat.ALL:
+                return REPEAT_MODE_ALL
+            if repeat == ynca.Repeat.OFF:
+                return REPEAT_MODE_OFF
         return None
 
     def set_repeat(self, repeat):
         """Set repeat mode."""
-        subunit = self._receiver.PC
-        if repeat == REPEAT_MODE_ONE:
-            subunit.repeat = ynca.Repeat.SINGLE
-        elif repeat == REPEAT_MODE_ALL:
+        subunit = self._input_subunit()
+        if repeat == REPEAT_MODE_ALL:
             subunit.repeat = ynca.Repeat.ALL
-        else:
+        elif repeat == REPEAT_MODE_OFF:
             subunit.repeat = ynca.Repeat.OFF
+        elif repeat == REPEAT_MODE_ONE:
+            subunit.repeat = ynca.Repeat.SINGLE
 
     # Media info
-    # TODO: This all needs to be generalized for all subunits with playback control
     @property
     def media_content_type(self) -> str | None:
         """Content type of current playing media."""
-        if self._zone.input == "PC":
-            return MEDIA_TYPE_MUSIC
+        if subunit := self._input_subunit():
+            if hasattr(subunit, "song"):
+                return MEDIA_TYPE_MUSIC
+            if hasattr(subunit, "station"):
+                return MEDIA_TYPE_CHANNEL
         return None
 
     @property
     def media_title(self) -> str | None:
         """Title of current playing media."""
-        if self._zone.input == "PC":
-            subunit = self._receiver.PC
-            return subunit.song
+        if subunit := self._input_subunit():
+            return getattr(subunit, "song", None)
         return None
 
     @property
     def media_artist(self) -> str | None:
         """Artist of current playing media, music track only."""
-        if self._zone.input == "PC":
-            subunit = self._receiver.PC
-            return subunit.artist
+        if subunit := self._input_subunit():
+            return getattr(subunit, "artist", None)
         return None
 
     @property
     def media_album_name(self) -> str | None:
         """Album name of current playing media, music track only."""
-        if self._zone.input == "PC":
-            subunit = self._receiver.PC
-            return subunit.album
+        if subunit := self._input_subunit():
+            return getattr(subunit, "album", None)
         return None
+
+    @property
+    def media_channel(self) -> str | None:
+        """Channel currently playing."""
+        if subunit := self._input_subunit():
+            return getattr(subunit, "station", None)
