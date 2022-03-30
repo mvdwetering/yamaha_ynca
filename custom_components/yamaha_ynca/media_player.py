@@ -64,7 +64,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     entities = []
     for zone in ZONES:
-        if zone_subunit := receiver.subunit(zone):
+        if zone_subunit := getattr(receiver, zone):
             entities.append(
                 YamahaYncaZone(config_entry.entry_id, receiver, zone_subunit)
             )
@@ -88,21 +88,17 @@ class YamahaYncaZone(MediaPlayerEntity):
         }
 
     async def async_added_to_hass(self):
+        # Register to catch input renames on SYS
+        self._receiver.SYS.register_update_callback(self.schedule_update_ha_state)
         self._zone.register_update_callback(self.schedule_update_ha_state)
-        # For input renames
-        self._receiver.subunit(ynca.Subunit.SYS).register_update_callback(
-            self.schedule_update_ha_state
-        )
-        subunit = self._receiver.subunit(ynca.Subunit.PC)
-        subunit.register_update_callback(self.schedule_update_ha_state)
+        if subunit := self._receiver.PC:
+            subunit.register_update_callback(self.schedule_update_ha_state)
 
     async def async_will_remove_from_hass(self):
-        self._receiver.subunit(ynca.Subunit.SYS).unregister_update_callback(
-            self.schedule_update_ha_state
-        )
+        self._receiver.SYS.unregister_update_callback(self.schedule_update_ha_state)
         self._zone.unregister_update_callback(self.schedule_update_ha_state)
-        subunit = self._receiver.subunit(ynca.Subunit.PC)
-        subunit.unregister_update_callback(self.schedule_update_ha_state)
+        if subunit := self._receiver.PC:
+            subunit.unregister_update_callback(self.schedule_update_ha_state)
 
     @staticmethod
     def scale(input_value, input_range, output_range):
@@ -135,12 +131,12 @@ class YamahaYncaZone(MediaPlayerEntity):
             return STATE_OFF
 
         if self._zone.input == "PC":
-            subunit = self._receiver.subunit(ynca.Subunit.PC)
-            if subunit._attr_playbackinfo == ynca.Playbackinfo.PLAY:
+            subunit = self._receiver.PC
+            if subunit._attr_playbackinfo == ynca.PlaybackInfo.PLAY:
                 return STATE_PLAYING
-            if subunit._attr_playbackinfo == ynca.Playbackinfo.PAUSE:
+            if subunit._attr_playbackinfo == ynca.PlaybackInfo.PAUSE:
                 return STATE_PAUSED
-            if subunit._attr_playbackinfo == ynca.Playbackinfo.STOP:
+            if subunit._attr_playbackinfo == ynca.PlaybackInfo.STOP:
                 return STATE_IDLE
         return STATE_ON
 
@@ -252,23 +248,23 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._zone.playback(ynca.Playback.SKIP_FWD)
 
     def media_previous_track(self):
-        self._zone.playback(ynca.Playback.SKIP_RWD)
+        self._zone.playback(ynca.Playback.SKIP_REV)
 
     @property
     def shuffle(self) -> bool | None:
         """Boolean if shuffle is enabled."""
-        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit = self._receiver.PC
         return subunit.shuffle
 
     def set_shuffle(self, shuffle):
         """Enable/disable shuffle mode."""
-        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit = self._receiver.PC
         subunit.shuffle = shuffle
 
     @property
     def repeat(self) -> str | None:
         """Return current repeat mode."""
-        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit = self._receiver.PC
         if subunit.repeat == ynca.Repeat.SINGLE:
             return REPEAT_MODE_ONE
         if subunit.repeat == ynca.Repeat.ALL:
@@ -279,7 +275,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_repeat(self, repeat):
         """Set repeat mode."""
-        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit = self._receiver.PC
         if repeat == REPEAT_MODE_ONE:
             subunit.repeat = ynca.Repeat.SINGLE
         elif repeat == REPEAT_MODE_ALL:
@@ -300,7 +296,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_title(self) -> str | None:
         """Title of current playing media."""
         if self._zone.input == "PC":
-            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            subunit = self._receiver.PC
             return subunit.song
         return None
 
@@ -308,7 +304,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_artist(self) -> str | None:
         """Artist of current playing media, music track only."""
         if self._zone.input == "PC":
-            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            subunit = self._receiver.PC
             return subunit.artist
         return None
 
@@ -316,6 +312,6 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_album_name(self) -> str | None:
         """Album name of current playing media, music track only."""
         if self._zone.input == "PC":
-            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            subunit = self._receiver.PC
             return subunit.album
         return None

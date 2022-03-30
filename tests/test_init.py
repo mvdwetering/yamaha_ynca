@@ -1,6 +1,6 @@
 """Test the Yamaha (YNCA) config flow."""
 from typing import Callable, NamedTuple, Type
-from unittest.mock import DEFAULT, patch
+from unittest.mock import DEFAULT, Mock, create_autospec, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
@@ -18,17 +18,15 @@ from pytest_homeassistant_custom_component.common import (
 import custom_components.yamaha_ynca as yamaha_ynca
 import ynca
 
-from .mock_receiver import MockReceiver
-
 
 class Integration(NamedTuple):
     entry: Type[ConfigEntry]
     on_disconnect: Callable
-    mock_receiver: MockReceiver
+    mock_receiver: Type[Mock]
 
 
 async def setup_integration(
-    hass, mock_receiver: MockReceiver = None, skip_setup=False, serial_url="SerialUrl"
+    hass, mock_receiver=None, skip_setup=False, serial_url="SerialUrl"
 ):
     entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
@@ -45,11 +43,11 @@ async def setup_integration(
             on_disconnect = args[1]
             return DEFAULT
 
-        mock_receiver = mock_receiver or MockReceiver()
-        mock_receiver.subunit.return_value.model_name = "ModelName"
-        mock_receiver.subunit.return_value.version = "Version"
+        mock_receiver = mock_receiver or create_autospec(ynca.Receiver)
 
-        # with patch("ynca.Receiver", new_callable=MockReceiver, side_effect=side_effect):
+        mock_receiver.SYS.modelname = "ModelName"
+        mock_receiver.SYS.version = "Version"
+
         with patch(
             "ynca.Receiver", return_value=mock_receiver, side_effect=side_effect
         ):
@@ -102,7 +100,7 @@ async def test_async_setup_entry_fails_with_connection_error(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
-    mock_receiver = MockReceiver()
+    mock_receiver = create_autospec(ynca.Receiver)
     mock_receiver.initialize.side_effect = ynca.YncaConnectionError("Connection error")
 
     with patch("ynca.Receiver", return_value=mock_receiver):
@@ -117,7 +115,7 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
-    mock_receiver = MockReceiver()
+    mock_receiver = create_autospec(ynca.Receiver)
     mock_receiver.initialize.side_effect = ynca.YncaInitializationFailedException(
         "Initialize failed"
     )
@@ -134,7 +132,7 @@ async def test_async_setup_entry_fails_unknown_reason(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
-    mock_receiver = MockReceiver()
+    mock_receiver = create_autospec(ynca.Receiver)
     mock_receiver.initialize.side_effect = Exception("Unexpected exception")
 
     with patch("ynca.Receiver", return_value=mock_receiver):

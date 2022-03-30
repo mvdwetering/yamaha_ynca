@@ -20,7 +20,6 @@ async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Receiver
 ):
     # Add device explicitly to registry so other entities just have to report the identifier to link up
-    sys_subunit = receiver.subunit(ynca.Subunit.SYS)
 
     # Configuration URL for devices connected through IP
     configuration_url = None
@@ -35,9 +34,9 @@ async def update_device_registry(
         config_entry_id=config_entry.entry_id,
         identifiers={(DOMAIN, config_entry.entry_id)},
         manufacturer=MANUFACTURER_NAME,
-        name=f"{MANUFACTURER_NAME} {sys_subunit.model_name}",
-        model=sys_subunit.model_name,
-        sw_version=sys_subunit.version,
+        name=f"{MANUFACTURER_NAME} {receiver.SYS.modelname}",
+        model=receiver.SYS.modelname,
+        sw_version=receiver.SYS.version,
         configuration_url=configuration_url,
     )
 
@@ -71,8 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if initialized:
         await update_device_registry(hass, entry, receiver)
-        hass.data.setdefault(DOMAIN, {})
-        hass.data[DOMAIN][entry.entry_id] = receiver
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = receiver
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     return initialized
