@@ -1,3 +1,6 @@
+from __future__ import annotations
+from dataclasses import dataclass
+
 import ynca
 
 from homeassistant.components.media_player import (
@@ -5,6 +8,11 @@ from homeassistant.components.media_player import (
     MediaPlayerDeviceClass,
 )
 from homeassistant.components.media_player.const import (
+    MEDIA_TYPE_MUSIC,
+    MEDIA_TYPE_CHANNEL,
+    REPEAT_MODE_ALL,
+    REPEAT_MODE_OFF,
+    REPEAT_MODE_ONE,
     SUPPORT_TURN_OFF,
     SUPPORT_TURN_ON,
     SUPPORT_VOLUME_MUTE,
@@ -12,10 +20,20 @@ from homeassistant.components.media_player.const import (
     SUPPORT_VOLUME_STEP,
     SUPPORT_SELECT_SOURCE,
     SUPPORT_SELECT_SOUND_MODE,
+    SUPPORT_PLAY,
+    SUPPORT_PAUSE,
+    SUPPORT_STOP,
+    SUPPORT_NEXT_TRACK,
+    SUPPORT_PREVIOUS_TRACK,
+    SUPPORT_REPEAT_SET,
+    SUPPORT_SHUFFLE_SET,
 )
 from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
+    STATE_PLAYING,
+    STATE_PAUSED,
+    STATE_IDLE,
 )
 
 from .const import DOMAIN, ZONES
@@ -27,6 +45,14 @@ SUPPORT_YAMAHA_YNCA_BASE = (
     | SUPPORT_TURN_ON
     | SUPPORT_TURN_OFF
     | SUPPORT_SELECT_SOURCE
+)
+
+PLAYBACK_CONTROLS = (
+    SUPPORT_PLAY
+    | SUPPORT_PAUSE
+    | SUPPORT_STOP
+    | SUPPORT_NEXT_TRACK
+    | SUPPORT_PREVIOUS_TRACK
 )
 
 STRAIGHT = "Straight"
@@ -67,12 +93,16 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._receiver.subunit(ynca.Subunit.SYS).register_update_callback(
             self.schedule_update_ha_state
         )
+        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit.register_update_callback(self.schedule_update_ha_state)
 
     async def async_will_remove_from_hass(self):
         self._receiver.subunit(ynca.Subunit.SYS).unregister_update_callback(
             self.schedule_update_ha_state
         )
         self._zone.unregister_update_callback(self.schedule_update_ha_state)
+        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit.unregister_update_callback(self.schedule_update_ha_state)
 
     @staticmethod
     def scale(input_value, input_range, output_range):
@@ -100,8 +130,19 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     @property
     def state(self):
-        """Return the state of the device."""
-        return STATE_ON if self._zone.on else STATE_OFF
+        """Return the state of the entity."""
+        if not self._zone.on:
+            return STATE_OFF
+
+        if self._zone.input == "PC":
+            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            if subunit._attr_playbackinfo == ynca.Playbackinfo.PLAY:
+                return STATE_PLAYING
+            if subunit._attr_playbackinfo == ynca.Playbackinfo.PAUSE:
+                return STATE_PAUSED
+            if subunit._attr_playbackinfo == ynca.Playbackinfo.STOP:
+                return STATE_IDLE
+        return STATE_ON
 
     @property
     def volume_level(self):
@@ -152,6 +193,10 @@ class YamahaYncaZone(MediaPlayerEntity):
         supported_commands = SUPPORT_YAMAHA_YNCA_BASE
         if self._zone.dsp_sound_program:
             supported_commands |= SUPPORT_SELECT_SOUND_MODE
+        if self._zone.input == "PC":
+            supported_commands |= PLAYBACK_CONTROLS
+            supported_commands |= SUPPORT_REPEAT_SET
+            supported_commands |= SUPPORT_SHUFFLE_SET
         return supported_commands
 
     def turn_on(self):
@@ -191,3 +236,86 @@ class YamahaYncaZone(MediaPlayerEntity):
         else:
             self._zone.straight = False
             self._zone.dsp_sound_program = sound_mode
+
+    # Playback controls
+    # TODO: This all needs to be generalized for all subunits with playback control
+    def media_play(self):
+        self._zone.playback(ynca.Playback.PLAY)
+
+    def media_pause(self):
+        self._zone.playback(ynca.Playback.PAUSE)
+
+    def media_stop(self):
+        self._zone.playback(ynca.Playback.STOP)
+
+    def media_next_track(self):
+        self._zone.playback(ynca.Playback.SKIP_FWD)
+
+    def media_previous_track(self):
+        self._zone.playback(ynca.Playback.SKIP_RWD)
+
+    @property
+    def shuffle(self) -> bool | None:
+        """Boolean if shuffle is enabled."""
+        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        return subunit.shuffle
+
+    def set_shuffle(self, shuffle):
+        """Enable/disable shuffle mode."""
+        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        subunit.shuffle = shuffle
+
+    @property
+    def repeat(self) -> str | None:
+        """Return current repeat mode."""
+        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        if subunit.repeat == ynca.Repeat.SINGLE:
+            return REPEAT_MODE_ONE
+        if subunit.repeat == ynca.Repeat.ALL:
+            return REPEAT_MODE_ALL
+        if subunit.repeat == ynca.Repeat.OFF:
+            return REPEAT_MODE_OFF
+        return None
+
+    def set_repeat(self, repeat):
+        """Set repeat mode."""
+        subunit = self._receiver.subunit(ynca.Subunit.PC)
+        if repeat == REPEAT_MODE_ONE:
+            subunit.repeat = ynca.Repeat.SINGLE
+        elif repeat == REPEAT_MODE_ALL:
+            subunit.repeat = ynca.Repeat.ALL
+        else:
+            subunit.repeat = ynca.Repeat.OFF
+
+    # Media info
+    # TODO: This all needs to be generalized for all subunits with playback control
+    @property
+    def media_content_type(self) -> str | None:
+        """Content type of current playing media."""
+        if self._zone.input == "PC":
+            return MEDIA_TYPE_MUSIC
+        return None
+
+    @property
+    def media_title(self) -> str | None:
+        """Title of current playing media."""
+        if self._zone.input == "PC":
+            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            return subunit.song
+        return None
+
+    @property
+    def media_artist(self) -> str | None:
+        """Artist of current playing media, music track only."""
+        if self._zone.input == "PC":
+            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            return subunit.artist
+        return None
+
+    @property
+    def media_album_name(self) -> str | None:
+        """Album name of current playing media, music track only."""
+        if self._zone.input == "PC":
+            subunit = self._receiver.subunit(ynca.Subunit.PC)
+            return subunit.album
+        return None
