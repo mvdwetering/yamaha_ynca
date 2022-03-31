@@ -1,8 +1,8 @@
-from homeassistant.components.button import (
-    ButtonEntity,
-)
+import ynca
 
-from .const import DOMAIN, ZONES
+from homeassistant.components.button import ButtonEntity
+
+from .const import DOMAIN
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -10,7 +10,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     receiver = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone in ZONES:
+    for zone in ynca.ZONE_SUBUNIT_IDS:
         if zone_subunit := getattr(receiver, zone):
             for scene_id in zone_subunit.scenes.keys():
                 entities.append(

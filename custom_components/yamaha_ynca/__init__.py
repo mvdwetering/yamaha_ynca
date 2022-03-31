@@ -2,6 +2,7 @@
 from __future__ import annotations
 import asyncio
 import re
+from typing import List
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -13,7 +14,7 @@ from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
 
 import ynca
 
-PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
+PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
 
 async def update_device_registry(

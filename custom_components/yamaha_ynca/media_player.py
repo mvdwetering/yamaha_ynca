@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from typing import Optional, Type
 
 import ynca
 
@@ -36,7 +36,7 @@ from homeassistant.const import (
     STATE_IDLE,
 )
 
-from .const import DOMAIN, LOGGER, ZONES
+from .const import DOMAIN, LOGGER
 
 SUPPORT_YAMAHA_YNCA_BASE = (
     SUPPORT_VOLUME_SET
@@ -57,8 +57,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     receiver = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone in ZONES:
-        if zone_subunit := getattr(receiver, zone):
+    for zone_subunit_id in ynca.ZONE_SUBUNIT_IDS:
+        if zone_subunit := getattr(receiver, zone_subunit_id):
             entities.append(
                 YamahaYncaZone(config_entry.entry_id, receiver, zone_subunit)
             )
@@ -72,7 +72,9 @@ class YamahaYncaZone(MediaPlayerEntity):
     _attr_device_class = MediaPlayerDeviceClass.RECEIVER
     _attr_should_poll = False
 
-    def __init__(self, receiver_unique_id, receiver, zone):
+    def __init__(
+        self, receiver_unique_id: str, receiver: ynca.Receiver, zone: Type[ynca.Zone]
+    ):
         self._receiver = receiver
         self._zone = zone
 
@@ -118,7 +120,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             if name == source:
                 return input
 
-    def _input_subunit(self) -> ynca.Subunit | None:
+    def _input_subunit(self) -> Optional[ynca.Subunit]:
         """Returns Subunit for current selected input if possible, otherwise None"""
         for subunit, input_name in ynca.SUBUNIT_INPUT_MAPPINGS.items():
             if input_name == self._zone.input:
@@ -266,7 +268,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._zone.playback(ynca.Playback.SKIP_REV)
 
     @property
-    def shuffle(self) -> bool | None:
+    def shuffle(self) -> Optional[bool]:
         """Boolean if shuffle is enabled."""
         if subunit := self._input_subunit():
             return getattr(subunit, "shuffle", None)
@@ -277,7 +279,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._input_subunit().shuffle
 
     @property
-    def repeat(self) -> str | None:
+    def repeat(self) -> Optional[str]:
         """Return current repeat mode."""
         if subunit := self._input_subunit():
             repeat = getattr(subunit, "repeat", None)
@@ -301,7 +303,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     # Media info
     @property
-    def media_content_type(self) -> str | None:
+    def media_content_type(self) -> Optional[str]:
         """Content type of current playing media."""
         if subunit := self._input_subunit():
             if hasattr(subunit, "song"):
@@ -311,28 +313,29 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
-    def media_title(self) -> str | None:
+    def media_title(self) -> Optional[str]:
         """Title of current playing media."""
         if subunit := self._input_subunit():
             return getattr(subunit, "song", None)
         return None
 
     @property
-    def media_artist(self) -> str | None:
+    def media_artist(self) -> Optional[str]:
         """Artist of current playing media, music track only."""
         if subunit := self._input_subunit():
             return getattr(subunit, "artist", None)
         return None
 
     @property
-    def media_album_name(self) -> str | None:
+    def media_album_name(self) -> Optional[str]:
         """Album name of current playing media, music track only."""
         if subunit := self._input_subunit():
             return getattr(subunit, "album", None)
         return None
 
     @property
-    def media_channel(self) -> str | None:
+    def media_channel(self) -> Optional[str]:
         """Channel currently playing."""
         if subunit := self._input_subunit():
             return getattr(subunit, "station", None)
+        return None

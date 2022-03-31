@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import voluptuous as vol
 
@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(CONF_SERIAL_URL): str})
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
@@ -49,7 +49,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self, user_input: Dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         if user_input is None:
@@ -64,7 +64,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except CannotConnect:
             errors["base"] = "cannot_connect"
         except Exception:  # pylint: disable=broad-except
-            _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
             return self.async_create_entry(title=info["title"], data=user_input)

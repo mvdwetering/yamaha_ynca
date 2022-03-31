@@ -8,5 +8,3 @@ LOGGER = logging.getLogger(__package__)
 CONF_SERIAL_URL = "serial_url"
 
 MANUFACTURER_NAME = "Yamaha"
-
-ZONES = ["MAIN", "ZONE2", "ZONE3", "ZONE4"]
