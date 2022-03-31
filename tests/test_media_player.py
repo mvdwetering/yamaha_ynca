@@ -21,7 +21,7 @@ from homeassistant.const import STATE_OFF, STATE_ON
 def mock_zone():
     """Create a mocked Zone instance."""
     zone = Mock(
-        spec=ynca.zone.Zone,
+        spec=ynca.ZoneBase,
     )
 
     zone.id = "ZoneId"
@@ -117,13 +117,13 @@ async def test_mediaplayer_entity_sound_mode(mock_zone, mock_receiver):
     entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
 
     entity.select_sound_mode("Sound mode 2")
-    assert mock_zone.dsp_sound_program == "Sound mode 2"
+    assert mock_zone.soundprg == "Sound mode 2"
     assert mock_zone.straight == False
     assert entity.sound_mode == "Sound mode 2"
 
     # Straight is special as it is a separate setting on the Zone
     entity.select_sound_mode("Straight")
-    assert mock_zone.dsp_sound_program == "Sound mode 2"
+    assert mock_zone.soundprg == "Sound mode 2"
     assert mock_zone.straight == True
     assert entity.sound_mode == "Straight"
 
@@ -137,11 +137,11 @@ async def test_mediaplayer_entity_sound_mode_list(mock_zone, mock_receiver):
     mock_zone.straight = None
     assert not "Straight" in entity.sound_mode_list
 
-    mock_zone.dsp_sound_program = None
+    mock_zone.soundprg = None
     assert entity.sound_mode_list is None
 
-    mock_zone.dsp_sound_program = "DspSoundProgram"
-    assert entity.sound_mode_list == sorted(ynca.DSP_SOUND_PROGRAMS)
+    mock_zone.soundprg = "DspSoundProgram"
+    assert entity.sound_mode_list == sorted(ynca.SoundPrg)
 
 
 async def test_mediaplayer_entity_supported_features(mock_zone, mock_receiver):
@@ -156,9 +156,9 @@ async def test_mediaplayer_entity_supported_features(mock_zone, mock_receiver):
         | SUPPORT_SELECT_SOURCE
     )
 
-    mock_zone.dsp_sound_program = None
+    mock_zone.soundprg = None
     assert entity.supported_features == expected_supported_features
 
-    mock_zone.dsp_sound_program = "DspSoundProgram"
+    mock_zone.soundprg = "DspSoundProgram"
     expected_supported_features |= SUPPORT_SELECT_SOUND_MODE
     assert entity.supported_features == expected_supported_features

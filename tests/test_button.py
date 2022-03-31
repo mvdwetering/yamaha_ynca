@@ -11,7 +11,7 @@ from custom_components.yamaha_ynca.button import YamahaYncaSceneButton
 def mock_zone():
     """Create a mocked Zone instance."""
     zone = Mock(
-        spec=ynca.zone.Zone,
+        spec=ynca.ZoneBase,
     )
 
     zone.id = "ZoneId"

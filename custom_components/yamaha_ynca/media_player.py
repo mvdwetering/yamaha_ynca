@@ -164,7 +164,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def sound_mode(self):
         """Return the current input source."""
-        return STRAIGHT if self._zone.straight else self._zone.dsp_sound_program
+        return STRAIGHT if self._zone.straight else self._zone.soundprg
 
     @property
     def sound_mode_list(self):
@@ -172,8 +172,8 @@ class YamahaYncaZone(MediaPlayerEntity):
         sound_modes = []
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
-        if self._zone.dsp_sound_program:
-            sound_modes.extend(ynca.DSP_SOUND_PROGRAMS)
+        if self._zone.soundprg:
+            sound_modes.extend(ynca.SoundPrg)
         sound_modes.sort(
             key=str.lower
         )  # Using `str.lower` does not work for all languages, but better than nothing
@@ -183,7 +183,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def supported_features(self):
         """Flag of media commands that are supported."""
         supported_commands = SUPPORT_YAMAHA_YNCA_BASE
-        if self._zone.dsp_sound_program:
+        if self._zone.soundprg:
             supported_commands |= SUPPORT_SELECT_SOUND_MODE
 
         if input_subunit := self._input_subunit():
@@ -236,7 +236,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             self._zone.straight = True
         else:
             self._zone.straight = False
-            self._zone.dsp_sound_program = sound_mode
+            self._zone.soundprg = sound_mode
 
     # Playback controls (zone forwards to active subunit automatically it seems)
     def media_play(self):
