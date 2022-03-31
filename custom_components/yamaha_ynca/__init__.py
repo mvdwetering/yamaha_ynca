@@ -1,18 +1,20 @@
 """The Yamaha (YNCA) integration."""
 from __future__ import annotations
+
 import asyncio
 import re
 from typing import List
 
+import ynca
+
+from homeassistant.components.homeassistant import SERVICE_RELOAD_CONFIG_ENTRY
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
 
 from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
-
-import ynca
 
 PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
@@ -62,9 +64,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def on_disconnect():
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
+
+        # The unittest hangs on this it seems.
+        # Same for the alternative approach below.
         asyncio.run_coroutine_threadsafe(
             hass.config_entries.async_reload(entry.entry_id), hass.loop
         ).result()
+
+        # hass.services.call(
+        #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
+        # )
 
     receiver = ynca.Receiver(entry.data[CONF_SERIAL_URL], on_disconnect)
     initialized = await hass.async_add_executor_job(initialize_receiver, receiver)

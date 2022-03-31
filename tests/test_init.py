@@ -160,6 +160,9 @@ async def test_reload_on_disconnect(hass):
 
     mock_receiver = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id]
 
+    # This should work (it works in real environment) but it locks up the test completely :(
+    # Don't know what is going on.
+
     # integration.on_disconnect()
 
     # assert len(mock_receiver.close.mock_calls) == 1
