@@ -61,19 +61,19 @@ async def test_mediaplayer_entity(mock_zone, mock_receiver):
     )
 
 
-async def test_mediaplayer_entity_on(mock_zone, mock_receiver):
+async def test_mediaplayer_entity_turn_on_off(mock_zone, mock_receiver):
     entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
 
     entity.turn_on()
-    assert mock_zone.on == True
+    assert mock_zone.pwr == True
     assert entity.state == STATE_ON
 
     entity.turn_off()
-    assert mock_zone.on == False
+    assert mock_zone.pwr == False
     assert entity.state == STATE_OFF
 
 
-async def test_mediaplayer_entity_mute(mock_zone, mock_receiver):
+async def test_mediaplayer_entity_mute_volume(mock_zone, mock_receiver):
     entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
 
     entity.mute_volume(True)
@@ -85,7 +85,7 @@ async def test_mediaplayer_entity_mute(mock_zone, mock_receiver):
     assert entity.is_volume_muted == False
 
 
-async def test_mediaplayer_entity_volume(mock_zone, mock_receiver):
+async def test_mediaplayer_entity_volume_set_up_down(mock_zone, mock_receiver):
     entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
 
     entity.set_volume_level(1)

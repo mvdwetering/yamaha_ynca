@@ -122,7 +122,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def state(self):
         """Return the state of the entity."""
-        if not self._zone.on:
+        if not self._zone.pwr:
             return STATE_OFF
 
         if input_subunit := self._input_subunit():
@@ -202,11 +202,11 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def turn_on(self):
         """Turn the media player on."""
-        self._zone.on = True
+        self._zone.pwr = True
 
     def turn_off(self):
         """Turn off media player."""
-        self._zone.on = False
+        self._zone.pwr = False
 
     def set_volume_level(self, volume):
         """Set volume level, convert range from 0..1."""
