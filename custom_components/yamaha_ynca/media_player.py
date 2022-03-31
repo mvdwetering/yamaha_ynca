@@ -107,7 +107,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             if name == source:
                 return input
 
-    def _input_subunit(self) -> Optional[ynca.Subunit]:
+    def _input_subunit(self) -> Optional[Type[ynca.SubunitBase]]:
         """Returns Subunit for current selected input if possible, otherwise None"""
         for subunit, input_name in ynca.SUBUNIT_INPUT_MAPPINGS.items():
             if input_name == self._zone.input:
@@ -190,7 +190,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             if hasattr(input_subunit, "playback"):
                 supported_commands |= SUPPORT_PLAY
                 supported_commands |= SUPPORT_STOP
-                if input_subunit not in RADIO_SUBUNITS:
+                if input_subunit.id not in RADIO_SUBUNITS:
                     supported_commands |= SUPPORT_PAUSE
                     supported_commands |= SUPPORT_NEXT_TRACK
                     supported_commands |= SUPPORT_PREVIOUS_TRACK
@@ -258,24 +258,25 @@ class YamahaYncaZone(MediaPlayerEntity):
     def shuffle(self) -> Optional[bool]:
         """Boolean if shuffle is enabled."""
         if subunit := self._input_subunit():
-            return getattr(subunit, "shuffle", None)
+            if hasattr(subunit, "shuffle"):
+                return subunit.shuffle
         return None
 
     def set_shuffle(self, shuffle):
         """Enable/disable shuffle mode."""
-        self._input_subunit().shuffle
+        self._input_subunit().shuffle = shuffle
 
     @property
     def repeat(self) -> Optional[str]:
         """Return current repeat mode."""
         if subunit := self._input_subunit():
-            repeat = getattr(subunit, "repeat", None)
-            if repeat == ynca.Repeat.SINGLE:
-                return REPEAT_MODE_ONE
-            if repeat == ynca.Repeat.ALL:
-                return REPEAT_MODE_ALL
-            if repeat == ynca.Repeat.OFF:
-                return REPEAT_MODE_OFF
+            if hasattr(subunit, "repeat"):
+                if subunit.repeat == ynca.Repeat.SINGLE:
+                    return REPEAT_MODE_ONE
+                if subunit.repeat == ynca.Repeat.ALL:
+                    return REPEAT_MODE_ALL
+                if subunit.repeat == ynca.Repeat.OFF:
+                    return REPEAT_MODE_OFF
         return None
 
     def set_repeat(self, repeat):

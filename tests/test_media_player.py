@@ -1,5 +1,5 @@
 """Test the Yamaha (YNCA) config flow."""
-from unittest.mock import Mock
+from unittest.mock import Mock, PropertyMock, create_autospec, patch
 
 import custom_components.yamaha_ynca as yamaha_ynca
 import pytest
@@ -10,11 +10,26 @@ from homeassistant.components.media_player.const import (
     SUPPORT_SELECT_SOURCE,
     SUPPORT_TURN_OFF,
     SUPPORT_TURN_ON,
+    SUPPORT_PLAY,
+    SUPPORT_PAUSE,
+    SUPPORT_STOP,
+    SUPPORT_NEXT_TRACK,
+    SUPPORT_PREVIOUS_TRACK,
+    SUPPORT_SHUFFLE_SET,
+    SUPPORT_REPEAT_SET,
     SUPPORT_VOLUME_MUTE,
     SUPPORT_VOLUME_SET,
     SUPPORT_VOLUME_STEP,
+    MEDIA_TYPE_MUSIC,
+    MEDIA_TYPE_CHANNEL,
 )
-from homeassistant.const import STATE_OFF, STATE_ON
+from homeassistant.const import (
+    STATE_OFF,
+    STATE_ON,
+    STATE_PLAYING,
+    STATE_PAUSED,
+    STATE_IDLE,
+)
 
 
 @pytest.fixture
@@ -162,3 +177,123 @@ async def test_mediaplayer_entity_supported_features(mock_zone, mock_receiver):
     mock_zone.soundprg = "DspSoundProgram"
     expected_supported_features |= SUPPORT_SELECT_SOUND_MODE
     assert entity.supported_features == expected_supported_features
+
+    # Sources with `playback` support playback controls
+
+    # Radio sources only support play and stop
+    mock_receiver.NETRADIO = create_autospec(
+        ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
+    )
+    mock_zone.input = "NET RADIO"
+    expected_supported_features |= SUPPORT_PLAY
+    expected_supported_features |= SUPPORT_STOP
+    assert entity.supported_features == expected_supported_features
+
+    # Other sources also support pausem previous, next
+    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+    mock_zone.input = "USB"
+    expected_supported_features |= SUPPORT_PAUSE
+    expected_supported_features |= SUPPORT_PREVIOUS_TRACK
+    expected_supported_features |= SUPPORT_NEXT_TRACK
+    # USB also supports repeat and shuffle
+    expected_supported_features |= SUPPORT_REPEAT_SET
+    expected_supported_features |= SUPPORT_SHUFFLE_SET
+
+    assert entity.supported_features == expected_supported_features
+
+
+async def test_mediaplayer_entity_state(mock_zone, mock_receiver):
+    entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
+
+    mock_zone.pwr = False
+    assert entity.state == STATE_OFF
+
+    mock_zone.pwr = True
+    assert entity.state == STATE_ON
+
+    mock_zone.input = "USB"
+    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+
+    mock_receiver.USB.playbackinfo = ynca.PlaybackInfo.PLAY
+    assert entity.state == STATE_PLAYING
+
+    mock_receiver.USB.playbackinfo = ynca.PlaybackInfo.PAUSE
+    assert entity.state == STATE_PAUSED
+
+    mock_receiver.USB.playbackinfo = ynca.PlaybackInfo.STOP
+    assert entity.state == STATE_IDLE
+
+
+async def test_mediaplayer_playback_controls(mock_zone, mock_receiver):
+    entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
+
+    entity.media_play()
+    mock_zone.playback.assert_called_with(ynca.Playback.PLAY)
+    entity.media_pause()
+    mock_zone.playback.assert_called_with(ynca.Playback.PAUSE)
+    entity.media_stop()
+    mock_zone.playback.assert_called_with(ynca.Playback.STOP)
+    entity.media_next_track()
+    mock_zone.playback.assert_called_with(ynca.Playback.SKIP_FWD)
+    entity.media_previous_track()
+    mock_zone.playback.assert_called_with(ynca.Playback.SKIP_REV)
+
+
+async def test_mediaplayer_mediainfo(mock_zone, mock_receiver):
+    entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
+
+    assert entity.media_album_name is None
+    assert entity.media_artist is None
+    assert entity.media_title is None
+    assert entity.media_channel is None
+    assert entity.media_content_type is None
+
+    mock_zone.input = "USB"
+    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+
+    mock_receiver.USB.album = "AlbumName"
+    mock_receiver.USB.artist = "ArtistName"
+    mock_receiver.USB.song = "Title"
+    assert entity.media_album_name == "AlbumName"
+    assert entity.media_artist == "ArtistName"
+    assert entity.media_title == "Title"
+    assert entity.media_content_type is MEDIA_TYPE_MUSIC
+
+    mock_zone.input = "NET RADIO"
+    mock_receiver.NETRADIO = create_autospec(
+        ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
+    )
+    mock_receiver.NETRADIO.station = "StationName"
+    assert entity.media_channel == "StationName"
+    assert entity.media_content_type is MEDIA_TYPE_CHANNEL
+
+
+async def test_mediaplayer_entity_shuffle(mock_zone, mock_receiver):
+    entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
+
+    # Unknown subunit selected
+    assert entity.shuffle == None
+
+    # Subunit supporting shuffle
+    mock_zone.input = "USB"
+    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+
+    # Not sure how to mock/patch this properly. Lets leave it for now as it works with a real device...
+    # # with patch("ynca.usb.Usb.shuffle", new_callable=PropertyMock) as mock_shuffle:
+    # mock_shuffle = PropertyMock()
+    # mock_receiver.USB.shuffle = mock_shuffle
+
+    # entity.set_shuffle(True)
+    # mock_shuffle.assert_called_with(True)
+
+    mock_receiver.USB.shuffle = True
+    assert entity.shuffle == True
+    mock_receiver.USB.shuffle = False
+    assert entity.shuffle == False
+
+    # Subunit not supporting shuffle
+    mock_zone.input = "NET RADIO"
+    mock_receiver.NETRADIO = create_autospec(
+        ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
+    )
+    assert entity.shuffle == None
