@@ -37,6 +37,7 @@ from homeassistant.const import (
 )
 
 from .const import DOMAIN, LOGGER
+from .helpers import scale
 
 SUPPORT_YAMAHA_YNCA_BASE = (
     SUPPORT_VOLUME_SET
@@ -101,20 +102,6 @@ class YamahaYncaZone(MediaPlayerEntity):
             if subunit := getattr(self._receiver, subunit_id.value, None):
                 subunit.unregister_update_callback(self.schedule_update_ha_state)
 
-    @staticmethod
-    def scale(input_value, input_range, output_range):
-        input_min = input_range[0]
-        input_max = input_range[1]
-        input_spread = input_max - input_min
-
-        output_min = output_range[0]
-        output_max = output_range[1]
-        output_spread = output_max - output_min
-
-        value_scaled = float(input_value - input_min) / float(input_spread)
-
-        return output_min + (value_scaled * output_spread)
-
     def get_input_from_source(self, source):
         for input, name in self._receiver.inputs.items():
             if name == source:
@@ -152,7 +139,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        return self.scale(
+        return scale(
             self._zone.volume, [self._zone.min_volume, self._zone.max_volume], [0, 1]
         )
 
@@ -223,7 +210,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_volume_level(self, volume):
         """Set volume level, convert range from 0..1."""
-        self._zone.volume = self.scale(
+        self._zone.volume = scale(
             volume, [0, 1], [self._zone.min_volume, self._zone.max_volume]
         )
 
