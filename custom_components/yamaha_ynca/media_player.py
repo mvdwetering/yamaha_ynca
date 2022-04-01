@@ -36,7 +36,9 @@ from homeassistant.const import (
     STATE_IDLE,
 )
 
+
 from .const import DOMAIN, LOGGER
+from .debounce import debounce
 from .helpers import scale
 
 SUPPORT_YAMAHA_YNCA_BASE = (
@@ -48,7 +50,11 @@ SUPPORT_YAMAHA_YNCA_BASE = (
     | SUPPORT_SELECT_SOURCE
 )
 
-RADIO_SUBUNITS = [ynca.Subunit.NETRADIO, ynca.Subunit.SIRIUS, ynca.Subunit.SIRIUSIR]
+LIMITED_PLAYBACK_CONTROL_SUBUNITS = [
+    ynca.Subunit.NETRADIO,
+    ynca.Subunit.SIRIUS,
+    ynca.Subunit.SIRIUSIR,
+]
 
 STRAIGHT = "Straight"
 
@@ -84,28 +90,36 @@ class YamahaYncaZone(MediaPlayerEntity):
             "identifiers": {(DOMAIN, receiver_unique_id)},
         }
 
+    @debounce(0.200)
+    def debounced_update(self):
+        # Debounced update because lots of updates come in when switching sources
+        # and I don't want to spam HA with all those updates
+        # as it causes unneeded load and glitches in the UI.
+        self.schedule_update_ha_state()
+
     async def async_added_to_hass(self):
         # Register to catch input renames on SYS
-        self._receiver.SYS.register_update_callback(self.schedule_update_ha_state)
-        self._zone.register_update_callback(self.schedule_update_ha_state)
+        self._receiver.SYS.register_update_callback(self.debounced_update)
+        self._zone.register_update_callback(self.debounced_update)
 
         # TODO: Optimize registrations as now all zones get triggered by all changes
         #       even when change happens on subunit that is not input of this zone
         for subunit_id in ynca.SUBUNIT_INPUT_MAPPINGS.keys():
             if subunit := getattr(self._receiver, subunit_id.value, None):
-                subunit.register_update_callback(self.schedule_update_ha_state)
+                subunit.register_update_callback(self.debounced_update)
 
     async def async_will_remove_from_hass(self):
-        self._receiver.SYS.unregister_update_callback(self.schedule_update_ha_state)
-        self._zone.unregister_update_callback(self.schedule_update_ha_state)
+        self._receiver.SYS.unregister_update_callback(self.debounced_update)
+        self._zone.unregister_update_callback(self.debounced_update)
         for subunit_id in ynca.SUBUNIT_INPUT_MAPPINGS.keys():
             if subunit := getattr(self._receiver, subunit_id.value, None):
-                subunit.unregister_update_callback(self.schedule_update_ha_state)
+                subunit.unregister_update_callback(self.debounced_update)
 
     def get_input_from_source(self, source):
         for input, name in self._receiver.inputs.items():
             if name == source:
                 return input
+        return None
 
     def _input_subunit(self) -> Optional[Type[ynca.SubunitBase]]:
         """Returns Subunit for current selected input if possible, otherwise None"""
@@ -190,7 +204,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             if hasattr(input_subunit, "playback"):
                 supported_commands |= SUPPORT_PLAY
                 supported_commands |= SUPPORT_STOP
-                if input_subunit.id not in RADIO_SUBUNITS:
+                if input_subunit.id not in LIMITED_PLAYBACK_CONTROL_SUBUNITS:
                     supported_commands |= SUPPORT_PAUSE
                     supported_commands |= SUPPORT_NEXT_TRACK
                     supported_commands |= SUPPORT_PREVIOUS_TRACK
