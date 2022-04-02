@@ -1,66 +1,77 @@
-"""Config flow for Yamaha YNCA integration."""
+"""Config flow for Yamaha (YNCA) integration."""
+from __future__ import annotations
+
 import logging
-import asyncio
+from typing import Any, Dict
 
 import voluptuous as vol
 
-from homeassistant import core, config_entries, exceptions
+from homeassistant import config_entries
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResult
+from homeassistant.exceptions import HomeAssistantError
 
-from .const import DOMAIN  # pylint:disable=unused-import
+from .const import CONF_SERIAL_URL, DOMAIN
 
 import ynca
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema({"serial_port": str})
+STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(CONF_SERIAL_URL): str})
 
-def setup_receiver(port):
-    return ynca.YncaReceiver(port)  # Initialization takes a while
 
-async def validate_input(hass: core.HomeAssistant, data):
+async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
     """Validate the user input allows us to connect.
 
-    Data has the keys from DATA_SCHEMA with values provided by the user.
+    Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    try:
-        loop = asyncio.get_running_loop()
-        receiver = await loop.run_in_executor(None, setup_receiver, data["serial_port"])
-        # Close connection manually, going out of scope does not seem to clean it up...(in time?)
-        receiver._connection.disconnect()
-        return {"title": receiver.model_name}
-    except Exception as e:
-        _LOGGER.error(e)
+
+    def validate_connection(serial_url):
+        try:
+            return ynca.Receiver(serial_url).connection_check()
+        except ynca.YncaConnectionError:
+            return None
+
+    modelname = await hass.async_add_executor_job(
+        validate_connection, data[CONF_SERIAL_URL]
+    )
+
+    if not modelname:
         raise CannotConnect
 
-class DomainConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Yamaha YNCA."""
+    # Return info that you want to store in the config entry.
+    return {"title": modelname}
+
+
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Yamaha (YNCA)."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle the initial step."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+            )
+
         errors = {}
-        if user_input is not None:
-            try:
-                info = await validate_input(self.hass, user_input)
-                return self.async_create_entry(title=info["title"], data=user_input)
-            except CannotConnect:
-                errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
+
+        try:
+            info = await validate_input(self.hass, user_input)
+        except CannotConnect:
+            errors["base"] = "cannot_connect"
+        except Exception:  # pylint: disable=broad-except
+            errors["base"] = "unknown"
+        else:
+            return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
+            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
 
-class CannotConnect(exceptions.HomeAssistantError):
+class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
-
-
-class InvalidAuth(exceptions.HomeAssistantError):
-    """Error to indicate there is invalid auth."""
