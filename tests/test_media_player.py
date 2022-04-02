@@ -22,6 +22,9 @@ from homeassistant.components.media_player.const import (
     SUPPORT_VOLUME_STEP,
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_CHANNEL,
+    REPEAT_MODE_ALL,
+    REPEAT_MODE_OFF,
+    REPEAT_MODE_ONE,
 )
 from homeassistant.const import (
     STATE_OFF,
@@ -36,7 +39,7 @@ from homeassistant.const import (
 def mock_zone():
     """Create a mocked Zone instance."""
     zone = Mock(
-        spec=ynca.ZoneBase,
+        spec=ynca.zone.ZoneBase,
     )
 
     zone.id = "ZoneId"
@@ -66,9 +69,7 @@ async def test_mediaplayer_entity(mock_zone, mock_receiver):
     assert entity.name == "ZoneName"
 
     await entity.async_added_to_hass()
-    mock_zone.register_update_callback.assert_called_once_with(
-        entity.schedule_update_ha_state
-    )
+    mock_zone.register_update_callback.assert_called_once()
 
     await entity.async_will_remove_from_hass()
     mock_zone.unregister_update_callback.assert_called_once_with(
@@ -178,7 +179,7 @@ async def test_mediaplayer_entity_supported_features(mock_zone, mock_receiver):
     expected_supported_features |= SUPPORT_SELECT_SOUND_MODE
     assert entity.supported_features == expected_supported_features
 
-    # Sources with `playback` support playback controls
+    # Sources with `playback` attribute support playback controls
 
     # Radio sources only support play and stop
     mock_receiver.NETRADIO = create_autospec(
@@ -190,7 +191,9 @@ async def test_mediaplayer_entity_supported_features(mock_zone, mock_receiver):
     assert entity.supported_features == expected_supported_features
 
     # Other sources also support pausem previous, next
-    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+    mock_receiver.USB = create_autospec(
+        ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
+    )
     mock_zone.input = "USB"
     expected_supported_features |= SUPPORT_PAUSE
     expected_supported_features |= SUPPORT_PREVIOUS_TRACK
@@ -212,7 +215,9 @@ async def test_mediaplayer_entity_state(mock_zone, mock_receiver):
     assert entity.state == STATE_ON
 
     mock_zone.input = "USB"
-    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+    mock_receiver.USB = create_autospec(
+        ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
+    )
 
     mock_receiver.USB.playbackinfo = ynca.PlaybackInfo.PLAY
     assert entity.state == STATE_PLAYING
@@ -248,8 +253,11 @@ async def test_mediaplayer_mediainfo(mock_zone, mock_receiver):
     assert entity.media_channel is None
     assert entity.media_content_type is None
 
+    # Some subunits support Music with Artist, Album, Song
     mock_zone.input = "USB"
-    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+    mock_receiver.USB = create_autospec(
+        ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
+    )
 
     mock_receiver.USB.album = "AlbumName"
     mock_receiver.USB.artist = "ArtistName"
@@ -259,6 +267,7 @@ async def test_mediaplayer_mediainfo(mock_zone, mock_receiver):
     assert entity.media_title == "Title"
     assert entity.media_content_type is MEDIA_TYPE_MUSIC
 
+    # Netradio is a "channel" which name is exposed by the "station" attribute
     mock_zone.input = "NET RADIO"
     mock_receiver.NETRADIO = create_autospec(
         ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
@@ -267,28 +276,48 @@ async def test_mediaplayer_mediainfo(mock_zone, mock_receiver):
     assert entity.media_channel == "StationName"
     assert entity.media_content_type is MEDIA_TYPE_CHANNEL
 
+    # Tuner (analog radio) is a "channel"
+    # There is no station name, so build name from band and frequency
+    mock_zone.input = "TUNER"
+    mock_receiver.TUN = create_autospec(ynca.tun.Tun, id=ynca.Subunit.TUN)
+    mock_receiver.TUN.band = ynca.Band.FM
+    mock_receiver.TUN.fmfreq = 123.45
+    assert entity.media_channel == "FM 123.45 MHz"
+    assert entity.media_content_type is MEDIA_TYPE_CHANNEL
+
+    mock_receiver.TUN.band = ynca.Band.AM
+    mock_receiver.TUN.amfreq = 1234
+    assert entity.media_channel == "AM 1234 kHz"
+    assert entity.media_content_type is MEDIA_TYPE_CHANNEL
+
+    # Sirius subunits expose name by the "chname" attribute
+    mock_zone.input = "SIRIUS InternetRadio"
+    mock_receiver.SIRIUSIR = create_autospec(
+        ynca.sirius.SiriusIr, id=ynca.Subunit.SIRIUSIR
+    )
+    mock_receiver.SIRIUSIR.chname = "ChannelName"
+    assert entity.media_channel == "ChannelName"
+    assert entity.media_content_type is MEDIA_TYPE_CHANNEL
+
 
 async def test_mediaplayer_entity_shuffle(mock_zone, mock_receiver):
     entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
 
-    # Unknown subunit selected
+    # Unsupported subunit selected
     assert entity.shuffle == None
 
     # Subunit supporting shuffle
     mock_zone.input = "USB"
-    mock_receiver.USB = create_autospec(ynca.usb.Usb, id=ynca.Subunit.USB)
+    mock_receiver.USB = create_autospec(
+        ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
+    )
 
-    # Not sure how to mock/patch this properly. Lets leave it for now as it works with a real device...
-    # # with patch("ynca.usb.Usb.shuffle", new_callable=PropertyMock) as mock_shuffle:
-    # mock_shuffle = PropertyMock()
-    # mock_receiver.USB.shuffle = mock_shuffle
-
-    # entity.set_shuffle(True)
-    # mock_shuffle.assert_called_with(True)
-
-    mock_receiver.USB.shuffle = True
+    entity.set_shuffle(True)
+    assert mock_receiver.USB.shuffle == True
     assert entity.shuffle == True
-    mock_receiver.USB.shuffle = False
+
+    entity.set_shuffle(False)
+    assert mock_receiver.USB.shuffle == False
     assert entity.shuffle == False
 
     # Subunit not supporting shuffle
@@ -297,3 +326,35 @@ async def test_mediaplayer_entity_shuffle(mock_zone, mock_receiver):
         ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
     )
     assert entity.shuffle == None
+
+
+async def test_mediaplayer_entity_repeat(mock_zone, mock_receiver):
+    entity = YamahaYncaZone("ReceiverUniqueId", mock_receiver, mock_zone)
+
+    # Unsupported subunit selected
+    assert entity.repeat == None
+
+    # Subunit supporting repeat
+    mock_zone.input = "USB"
+    mock_receiver.USB = create_autospec(
+        ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
+    )
+
+    entity.set_repeat(REPEAT_MODE_OFF)
+    assert mock_receiver.USB.repeat == ynca.Repeat.OFF
+    assert entity.repeat == REPEAT_MODE_OFF
+
+    entity.set_repeat(REPEAT_MODE_ONE)
+    assert mock_receiver.USB.repeat == ynca.Repeat.SINGLE
+    assert entity.repeat == REPEAT_MODE_ONE
+
+    entity.set_repeat(REPEAT_MODE_ALL)
+    assert mock_receiver.USB.repeat == ynca.Repeat.ALL
+    assert entity.repeat == REPEAT_MODE_ALL
+
+    # Subunit not supporting shuffle
+    mock_zone.input = "NET RADIO"
+    mock_receiver.NETRADIO = create_autospec(
+        ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
+    )
+    assert entity.repeat == None

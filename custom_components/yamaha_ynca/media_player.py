@@ -37,7 +37,7 @@ from homeassistant.const import (
 )
 
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, ZONE_SUBUNIT_IDS
 from .debounce import debounce
 from .helpers import scale
 
@@ -54,6 +54,15 @@ LIMITED_PLAYBACK_CONTROL_SUBUNITS = [
     ynca.Subunit.NETRADIO,
     ynca.Subunit.SIRIUS,
     ynca.Subunit.SIRIUSIR,
+    ynca.Subunit.SIRIUSXM,
+]
+
+RADIO_SOURCES = [
+    ynca.Subunit.NETRADIO,
+    ynca.Subunit.TUN,
+    ynca.Subunit.SIRIUS,
+    ynca.Subunit.SIRIUSIR,
+    ynca.Subunit.SIRIUSXM,
 ]
 
 STRAIGHT = "Straight"
@@ -64,7 +73,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     receiver = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone_subunit_id in ynca.ZONE_SUBUNIT_IDS:
+    for zone_subunit_id in ZONE_SUBUNIT_IDS:
         if zone_subunit := getattr(receiver, zone_subunit_id):
             entities.append(
                 YamahaYncaZone(config_entry.entry_id, receiver, zone_subunit)
@@ -90,7 +99,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             "identifiers": {(DOMAIN, receiver_unique_id)},
         }
 
-    @debounce(0.200)
+    # @debounce(0.200)
     def debounced_update(self):
         # Debounced update because lots of updates come in when switching sources
         # and I don't want to spam HA with all those updates
@@ -308,10 +317,10 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_content_type(self) -> Optional[str]:
         """Content type of current playing media."""
         if subunit := self._input_subunit():
+            if subunit.id in RADIO_SOURCES:
+                return MEDIA_TYPE_CHANNEL
             if hasattr(subunit, "song"):
                 return MEDIA_TYPE_MUSIC
-            if hasattr(subunit, "station"):
-                return MEDIA_TYPE_CHANNEL
         return None
 
     @property
@@ -339,5 +348,14 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_channel(self) -> Optional[str]:
         """Channel currently playing."""
         if subunit := self._input_subunit():
-            return getattr(subunit, "station", None)
+            if subunit.id == ynca.Subunit.TUN:
+                return (
+                    f"FM {subunit.fmfreq:.2f} MHz"
+                    if subunit.band == ynca.Band.FM
+                    else f"AM {subunit.amfreq} kHz"
+                )
+            if subunit.id == ynca.Subunit.NETRADIO:
+                return subunit.station
+            channelname = getattr(subunit, "chname", None)  # Sirius*
+            return channelname
         return None
