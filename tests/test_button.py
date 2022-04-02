@@ -11,7 +11,7 @@ from custom_components.yamaha_ynca.button import YamahaYncaSceneButton
 def mock_zone():
     """Create a mocked Zone instance."""
     zone = Mock(
-        spec=ynca.ZoneBase,
+        spec=ynca.zone.ZoneBase,
     )
 
     zone.id = "ZoneId"
@@ -35,9 +35,7 @@ async def test_button_entity(mock_zone):
     mock_zone.activate_scene.assert_called_once_with("1234")
 
     await entity.async_added_to_hass()
-    mock_zone.register_update_callback.assert_called_once_with(
-        entity.schedule_update_ha_state
-    )
+    mock_zone.register_update_callback.assert_called_once()
 
     await entity.async_will_remove_from_hass()
     mock_zone.unregister_update_callback.assert_called_once_with(

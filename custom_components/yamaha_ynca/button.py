@@ -2,7 +2,7 @@ import ynca
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, ZONE_SUBUNIT_IDS
 from .debounce import debounce
 
 
@@ -11,7 +11,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     receiver = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone in ynca.ZONE_SUBUNIT_IDS:
+    for zone in ZONE_SUBUNIT_IDS:
         if zone_subunit := getattr(receiver, zone):
             for scene_id in zone_subunit.scenes.keys():
                 entities.append(
@@ -36,7 +36,7 @@ class YamahaYncaSceneButton(ButtonEntity):
             "identifiers": {(DOMAIN, receiver_unique_id)},
         }
 
-    @debounce(0.200)
+    # @debounce(0.200)
     def debounced_update(self):
         # Debounced update because lots of updates come in when switching sources
         # and I don't want to spam HA with all those updates
