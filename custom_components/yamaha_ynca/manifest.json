@@ -2,7 +2,8 @@
   "domain": "yamaha_ynca",
   "name": "Yamaha (YNCA)",
   "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/yamaha_ynca",
+  "documentation": "https://github.com/mvdwetering/yamaha_ynca",
+  "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "requirements": [
     "ynca==3.0.1"
   ],
