@@ -146,10 +146,12 @@ async def test_async_setup_entry_fails_unknown_reason(hass):
 async def test_async_unload_entry(hass):
     """Test successful unload of entry."""
     integration = await setup_integration(hass)
+    mock_receiver = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id]
 
     assert await hass.config_entries.async_unload(integration.entry.entry_id)
     await hass.async_block_till_done()
 
+    mock_receiver.close.assert_called_once()
     assert integration.entry.state is ConfigEntryState.NOT_LOADED
     assert not hass.data.get(yamaha_ynca.DOMAIN)
 
