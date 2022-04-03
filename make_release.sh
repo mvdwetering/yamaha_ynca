@@ -71,7 +71,7 @@ git commit -m "Update version to $version"
 echo -e "${INFO}Merge to master${NC}"
 git checkout master
 git pull
-git merge --no-ff $releasebranch -m "Release v$version"
+git merge --no-ff $releasebranch --strategy-option theirs -m "Release v$version"
 git branch -D $releasebranch
 
 echo -e "${INFO}Create tag${NC}"
