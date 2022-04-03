@@ -3,9 +3,9 @@
       "step": {
         "user": {
           "title": "Provide serial port",
-          "description": "You can provide the device path or any [URL handler as supported by pyserial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `socket://&lt;ipaddress&gt;:50000` to access over network.",
+          "description": "You can provide the device path, ip address (optionally with port) or any [URL handler as supported by pyserial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `socket://hostname_or_ip:50000` to access over network.",
           "data": {
-            "serial_url": "e.g. /dev/ttyUSB0"
+            "serial_port": "e.g. /dev/ttyUSB0 or 192.168.1.123"
           }
         }
       },

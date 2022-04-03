@@ -15,6 +15,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
 
 from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
+from .helpers import serial_url_from_user_input
 
 PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
@@ -28,7 +29,7 @@ async def update_device_registry(
     configuration_url = None
     if matches := re.match(
         r"socket:\/\/(.+):\d+",  # Extract IP or hostname
-        config_entry.data[CONF_SERIAL_URL],
+        serial_url_from_user_input(config_entry.data[CONF_SERIAL_URL]),
     ):
         configuration_url = f"http://{matches[1]}"
 
@@ -75,7 +76,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
         # )
 
-    receiver = ynca.Receiver(entry.data[CONF_SERIAL_URL], on_disconnect)
+    receiver = ynca.Receiver(
+        serial_url_from_user_input(entry.data[CONF_SERIAL_URL]), on_disconnect
+    )
     initialized = await hass.async_add_executor_job(initialize_receiver, receiver)
 
     if initialized:

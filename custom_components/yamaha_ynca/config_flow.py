@@ -12,6 +12,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import CONF_SERIAL_URL, DOMAIN
+from .helpers import serial_url_from_user_input
 
 import ynca
 
@@ -33,7 +34,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
             return None
 
     modelname = await hass.async_add_executor_job(
-        validate_connection, data[CONF_SERIAL_URL]
+        validate_connection, serial_url_from_user_input(data[CONF_SERIAL_URL])
     )
 
     if not modelname:
