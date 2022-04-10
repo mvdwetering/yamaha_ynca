@@ -47,7 +47,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
         self, user_input: Dict[str, Any] | None = None

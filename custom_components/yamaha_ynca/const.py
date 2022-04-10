@@ -6,8 +6,7 @@ import ynca
 DOMAIN = "yamaha_ynca"
 LOGGER = logging.getLogger(__package__)
 
-# Keep the value "serial_port" for backward compatibility
-CONF_SERIAL_URL = "serial_port"
+CONF_SERIAL_URL = "serial_url"
 
 MANUFACTURER_NAME = "Yamaha"
 

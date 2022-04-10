@@ -7,17 +7,16 @@ from typing import List
 
 import ynca
 
-from homeassistant.components.homeassistant import SERVICE_RELOAD_CONFIG_ENTRY
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import device_registry, entity_registry
 
 from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
 from .helpers import serial_url_from_user_input
 
-PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
+PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.SCENE]
 
 
 async def update_device_registry(
@@ -43,6 +42,35 @@ async def update_device_registry(
         sw_version=receiver.SYS.version,
         configuration_url=configuration_url,
     )
+
+
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+    """Migrate old entry."""
+    LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+
+        new = {**config_entry.data}
+
+        # Rename to `serial_url` for consistency
+        new["serial_url"] = new.pop("serial_port")
+
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new)
+
+        # Button entities are replaced by scene entities
+        # cleanup the button entities so the user does not have to
+        registry = entity_registry.async_get(hass)
+        entities = entity_registry.async_entries_for_config_entry(
+            registry, config_entry.entry_id
+        )
+        for entity in entities:
+            if entity.domain == Platform.BUTTON:
+                registry.async_remove(entity.entity_id)
+
+    LOGGER.info("Migration to version %s successful", config_entry.version)
+
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
