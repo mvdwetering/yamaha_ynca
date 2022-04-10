@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import custom_components.yamaha_ynca as yamaha_ynca
 import pytest
 import ynca
-from custom_components.yamaha_ynca.button import YamahaYncaSceneButton
+from custom_components.yamaha_ynca.scene import YamahaYncaScene
 
 
 @pytest.fixture
@@ -21,9 +21,9 @@ def mock_zone():
     return zone
 
 
-async def test_button_entity(mock_zone):
+async def test_scene_entity(mock_zone):
 
-    entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1234")
+    entity = YamahaYncaScene("ReceiverUniqueId", mock_zone, "1234")
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_scene_1234"
     assert entity.device_info["identifiers"] == {
@@ -31,7 +31,7 @@ async def test_button_entity(mock_zone):
     }
     assert entity.name == "ZoneName: SceneName 1234"
 
-    entity.press()
+    entity.activate()
     mock_zone.activate_scene.assert_called_once_with("1234")
 
     await entity.async_added_to_hass()

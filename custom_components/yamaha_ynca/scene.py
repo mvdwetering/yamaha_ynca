@@ -1,6 +1,6 @@
-import ynca
+from typing import Any
 
-from homeassistant.components.button import ButtonEntity
+from homeassistant.components.scene import Scene
 
 from .const import DOMAIN, ZONE_SUBUNIT_IDS
 from .debounce import debounce
@@ -15,20 +15,19 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         if zone_subunit := getattr(receiver, zone):
             for scene_id in zone_subunit.scenes.keys():
                 entities.append(
-                    YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
+                    YamahaYncaScene(config_entry.entry_id, zone_subunit, scene_id)
                 )
 
     async_add_entities(entities)
 
 
-class YamahaYncaSceneButton(ButtonEntity):
+class YamahaYncaScene(Scene):
     """Representation of a scene button on a Yamaha Ynca device."""
 
     def __init__(self, receiver_unique_id, zone, scene_id):
         self._zone = zone
         self._scene_id = scene_id
 
-        self._attr_icon = "mdi:palette"
         self._attr_unique_id = (
             f"{receiver_unique_id}_{self._zone.id}_scene_{self._scene_id}"
         )
@@ -54,6 +53,6 @@ class YamahaYncaSceneButton(ButtonEntity):
         """Return the name of the entity."""
         return f"{self._zone.name}: {self._zone.scenes[self._scene_id]}"
 
-    def press(self) -> None:
+    def activate(self, **kwargs: Any) -> None:
         """Activate scene."""
         self._zone.activate_scene(self._scene_id)
