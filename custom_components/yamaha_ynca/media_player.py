@@ -135,13 +135,13 @@ class YamahaYncaZone(MediaPlayerEntity):
             if subunit := getattr(self._receiver, subunit_id.value, None):
                 subunit.unregister_update_callback(self.debounced_update)
 
-    def get_input_from_source(self, source):
+    def _get_input_from_source(self, source):
         for input, name in self._receiver.inputs.items():
             if name == source:
                 return input
         return None
 
-    def _input_subunit(self) -> Optional[Type[ynca.SubunitBase]]:
+    def _input_subunit(self):
         """Returns Subunit for current selected input if possible, otherwise None"""
         for subunit, input_name in ynca.SUBUNIT_INPUT_MAPPINGS.items():
             if input_name == self._zone.input:
@@ -267,7 +267,8 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def select_source(self, source):
         """Select input source."""
-        self._zone.input = self.get_input_from_source(source)
+        if input := self._get_input_from_source(source):
+            self._zone.input = input
 
     def select_sound_mode(self, sound_mode):
         """Switch the sound mode of the entity."""

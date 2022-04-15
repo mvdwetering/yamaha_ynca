@@ -126,6 +126,10 @@ async def test_mediaplayer_entity_source(mock_zone, mock_receiver):
     assert mock_zone.input == "INPUT_ID_2"
     assert mp_entity.source == "Input Name 2"
 
+    mp_entity.select_source("invalid source") # does not change current source
+    assert mock_zone.input == "INPUT_ID_2"
+    assert mp_entity.source == "Input Name 2"
+
 
 async def test_mediaplayer_entity_sound_mode(mp_entity, mock_zone):
 
