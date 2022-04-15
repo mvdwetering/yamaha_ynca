@@ -23,6 +23,7 @@ async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Receiver
 ):
     # Add device explicitly to registry so other entities just have to report the identifier to link up
+    assert receiver.SYS is not None
 
     # Configuration URL for devices connected through IP
     configuration_url = None
@@ -73,6 +74,11 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     return True
 
 
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    # Just reload the integration on update. Crude, but it works
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
@@ -113,6 +119,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await update_device_registry(hass, entry, receiver)
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = receiver
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+
+        entry.async_on_unload(entry.add_update_listener(async_update_options))
 
     return initialized
 

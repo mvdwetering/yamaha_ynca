@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 import ynca
 
@@ -28,6 +28,7 @@ from homeassistant.components.media_player.const import (
     SUPPORT_REPEAT_SET,
     SUPPORT_SHUFFLE_SET,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
@@ -37,7 +38,7 @@ from homeassistant.const import (
 )
 
 
-from .const import DOMAIN, LOGGER, ZONE_SUBUNIT_IDS
+from .const import DOMAIN, LOGGER, ZONE_SUBUNIT_IDS, CONF_HIDDEN_INPUTS_FOR_ZONE
 from .debounce import debounce
 from .helpers import scale
 
@@ -68,15 +69,20 @@ RADIO_SOURCES = [
 STRAIGHT = "Straight"
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
 
     receiver = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone_subunit_id in ZONE_SUBUNIT_IDS:
         if zone_subunit := getattr(receiver, zone_subunit_id):
+            hidden_inputs = config_entry.options.get(
+                CONF_HIDDEN_INPUTS_FOR_ZONE(zone_subunit_id), []
+            )
             entities.append(
-                YamahaYncaZone(config_entry.entry_id, receiver, zone_subunit)
+                YamahaYncaZone(
+                    config_entry.entry_id, receiver, zone_subunit, hidden_inputs
+                )
             )
 
     async_add_entities(entities)
@@ -89,10 +95,15 @@ class YamahaYncaZone(MediaPlayerEntity):
     _attr_should_poll = False
 
     def __init__(
-        self, receiver_unique_id: str, receiver: ynca.Receiver, zone: Type[ynca.Zone]
+        self,
+        receiver_unique_id: str,
+        receiver: ynca.Receiver,
+        zone: Type[ynca.zone.ZoneBase],
+        hidden_inputs: List[str],
     ):
         self._receiver = receiver
         self._zone = zone
+        self._hidden_inputs = hidden_inputs
 
         self._attr_unique_id = f"{receiver_unique_id}_{self._zone.id}"
         self._attr_device_info = {
@@ -124,13 +135,13 @@ class YamahaYncaZone(MediaPlayerEntity):
             if subunit := getattr(self._receiver, subunit_id.value, None):
                 subunit.unregister_update_callback(self.debounced_update)
 
-    def get_input_from_source(self, source):
+    def _get_input_from_source(self, source):
         for input, name in self._receiver.inputs.items():
             if name == source:
                 return input
         return None
 
-    def _input_subunit(self) -> Optional[Type[ynca.SubunitBase]]:
+    def _input_subunit(self):
         """Returns Subunit for current selected input if possible, otherwise None"""
         for subunit, input_name in ynca.SUBUNIT_INPUT_MAPPINGS.items():
             if input_name == self._zone.input:
@@ -179,9 +190,14 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source_list(self):
         """List of available input sources."""
+        all_inputs = self._receiver.inputs
+        filtered_inputs = [
+            name for id, name in all_inputs.items() if id not in self._hidden_inputs
+        ]
+
         # Return the user given names instead HDMI1 etc...
         return sorted(
-            list(self._receiver.inputs.values()), key=str.lower
+            filtered_inputs, key=str.lower
         )  # Using `str.lower` does not work for all languages, but better than nothing
 
     @property
@@ -251,7 +267,8 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def select_source(self, source):
         """Select input source."""
-        self._zone.input = self.get_input_from_source(source)
+        if input := self._get_input_from_source(source):
+            self._zone.input = input
 
     def select_sound_mode(self, sound_mode):
         """Switch the sound mode of the entity."""

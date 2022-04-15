@@ -16,3 +16,7 @@ ZONE_SUBUNIT_IDS = [
     ynca.Subunit.ZONE3,
     ynca.Subunit.ZONE4,
 ]
+
+
+def CONF_HIDDEN_INPUTS_FOR_ZONE(zone: str):
+    return f"hidden_inputs_{zone}"

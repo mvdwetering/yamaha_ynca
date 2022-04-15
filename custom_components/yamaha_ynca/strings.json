@@ -16,5 +16,17 @@
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "hidden_inputs_MAIN": "Hidden inputs for main zone",
+          "hidden_inputs_ZONE2": "Hidden inputs for zone2",
+          "hidden_inputs_ZONE3": "Hidden inputs for zone3",
+          "hidden_inputs_ZONE4": "Hidden inputs for zone4"
+        }
+      }
+    }
   }
 }

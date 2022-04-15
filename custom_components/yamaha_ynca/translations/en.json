@@ -1,20 +1,32 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "title": "Provide serial port",
-          "description": "You can provide the device path, ip address (optionally with port) or any [URL handler as supported by pyserial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `socket://hostname_or_ip:50000` to access over network.",
-          "data": {
-            "serial_port": "e.g. /dev/ttyUSB0 or 192.168.1.123"
-          }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Provide serial port",
+        "description": "You can provide the device path, ip address (optionally with port) or any [URL handler as supported by pyserial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `socket://hostname_or_ip:50000` to access over network.",
+        "data": {
+          "serial_port": "e.g. /dev/ttyUSB0 or 192.168.1.123"
         }
-      },
-      "error": {
-        "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-        "unknown": "[%key:common::config_flow::error::unknown%]"
-      },
-      "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "hidden_inputs_MAIN": "Hidden inputs for main zone",
+          "hidden_inputs_ZONE2": "Hidden inputs for zone2",
+          "hidden_inputs_ZONE3": "Hidden inputs for zone3",
+          "hidden_inputs_ZONE4": "Hidden inputs for zone4"
+        }
       }
     }
   }
+}
