@@ -103,8 +103,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Create a list of inputs on the Receiver that the user can select
         receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
-        if receiver is None:
-            return self.async_abort(reason="cannot_connect")
 
         inputs = {}
         for id, name in receiver.inputs.items():
