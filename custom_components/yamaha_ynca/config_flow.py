@@ -7,6 +7,7 @@ from typing import Any, Dict
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
@@ -91,7 +92,7 @@ class CannotConnect(HomeAssistantError):
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
 
