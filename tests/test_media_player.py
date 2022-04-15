@@ -1,38 +1,39 @@
 """Test the Yamaha (YNCA) config flow."""
 from unittest.mock import Mock, create_autospec
 
-import custom_components.yamaha_ynca as yamaha_ynca
 import pytest
-import ynca
-from custom_components.yamaha_ynca.media_player import YamahaYncaZone
 from homeassistant.components.media_player.const import (
-    SUPPORT_SELECT_SOUND_MODE,
-    SUPPORT_SELECT_SOURCE,
-    SUPPORT_TURN_OFF,
-    SUPPORT_TURN_ON,
-    SUPPORT_PLAY,
-    SUPPORT_PAUSE,
-    SUPPORT_STOP,
-    SUPPORT_NEXT_TRACK,
-    SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_SHUFFLE_SET,
-    SUPPORT_REPEAT_SET,
-    SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_SET,
-    SUPPORT_VOLUME_STEP,
-    MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_CHANNEL,
+    MEDIA_TYPE_MUSIC,
     REPEAT_MODE_ALL,
     REPEAT_MODE_OFF,
     REPEAT_MODE_ONE,
+    SUPPORT_NEXT_TRACK,
+    SUPPORT_PAUSE,
+    SUPPORT_PLAY,
+    SUPPORT_PREVIOUS_TRACK,
+    SUPPORT_REPEAT_SET,
+    SUPPORT_SELECT_SOUND_MODE,
+    SUPPORT_SELECT_SOURCE,
+    SUPPORT_SHUFFLE_SET,
+    SUPPORT_STOP,
+    SUPPORT_TURN_OFF,
+    SUPPORT_TURN_ON,
+    SUPPORT_VOLUME_MUTE,
+    SUPPORT_VOLUME_SET,
+    SUPPORT_VOLUME_STEP,
 )
 from homeassistant.const import (
+    STATE_IDLE,
     STATE_OFF,
     STATE_ON,
-    STATE_PLAYING,
     STATE_PAUSED,
-    STATE_IDLE,
+    STATE_PLAYING,
 )
+
+import ynca
+import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components.yamaha_ynca.media_player import YamahaYncaZone
 
 
 @pytest.fixture

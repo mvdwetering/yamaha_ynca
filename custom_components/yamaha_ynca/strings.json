@@ -14,7 +14,20 @@
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "hidden_inputs_MAIN": "Hidden inputs for main zone",
+          "hidden_inputs_ZONE2": "Hidden inputs for zone2",
+          "hidden_inputs_ZONE3": "Hidden inputs for zone3",
+          "hidden_inputs_ZONE4": "Hidden inputs for zone4"
+        }
+      }
     }
   }
 }

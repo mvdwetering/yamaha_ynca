@@ -8,10 +8,17 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+import homeassistant.helpers.config_validation as cv
 
-from .const import CONF_SERIAL_URL, DOMAIN
+from .const import (
+    CONF_HIDDEN_INPUTS_FOR_ZONE,
+    CONF_SERIAL_URL,
+    DOMAIN,
+    ZONE_SUBUNIT_IDS,
+)
 from .helpers import serial_url_from_user_input
 
 import ynca
@@ -49,6 +56,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return OptionsFlowHandler(config_entry)
+
     async def async_step_user(
         self, user_input: Dict[str, Any] | None = None
     ) -> FlowResult:
@@ -76,3 +88,41 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    def __init__(self, config_entry):
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        # Create a list of inputs on the Receiver that the user can select
+        receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
+        if receiver is None:
+            return self.async_abort(reason="cannot_connect")
+
+        inputs = {}
+        for id, name in receiver.inputs.items():
+            inputs[id] = f"{id} ({name})" if id != name else name
+
+        # Sorts the inputs (3.7+ dicts maintain insertion order)
+        inputs = dict(sorted(inputs.items(), key=lambda tup: tup[0]))
+
+        # Build schema based on available zones
+        schema = {}
+        for zone_id in ZONE_SUBUNIT_IDS:
+            if getattr(receiver, zone_id, None):
+                schema[
+                    vol.Required(
+                        CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id),
+                        default=self.config_entry.options.get(
+                            CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id), []
+                        ),
+                    )
+                ] = cv.multi_select(inputs)
+
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))
