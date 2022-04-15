@@ -98,7 +98,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self,
         receiver_unique_id: str,
         receiver: ynca.Receiver,
-        zone: Type[ynca.Zone],
+        zone: Type[ynca.zone.ZoneBase],
         hidden_inputs: List[str],
     ):
         self._receiver = receiver

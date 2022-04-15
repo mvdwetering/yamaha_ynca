@@ -23,6 +23,7 @@ async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Receiver
 ):
     # Add device explicitly to registry so other entities just have to report the identifier to link up
+    assert receiver.SYS is not None
 
     # Configuration URL for devices connected through IP
     configuration_url = None
