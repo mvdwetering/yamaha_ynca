@@ -5,6 +5,7 @@ import ynca
 
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
+    MediaPlayerEntityFeature,
     MediaPlayerDeviceClass,
 )
 from homeassistant.components.media_player.const import (
@@ -13,20 +14,6 @@ from homeassistant.components.media_player.const import (
     REPEAT_MODE_ALL,
     REPEAT_MODE_OFF,
     REPEAT_MODE_ONE,
-    SUPPORT_TURN_OFF,
-    SUPPORT_TURN_ON,
-    SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_SET,
-    SUPPORT_VOLUME_STEP,
-    SUPPORT_SELECT_SOURCE,
-    SUPPORT_SELECT_SOUND_MODE,
-    SUPPORT_PLAY,
-    SUPPORT_PAUSE,
-    SUPPORT_STOP,
-    SUPPORT_NEXT_TRACK,
-    SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_REPEAT_SET,
-    SUPPORT_SHUFFLE_SET,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -43,12 +30,12 @@ from .debounce import debounce
 from .helpers import scale
 
 SUPPORT_YAMAHA_YNCA_BASE = (
-    SUPPORT_VOLUME_SET
-    | SUPPORT_VOLUME_MUTE
-    | SUPPORT_VOLUME_STEP
-    | SUPPORT_TURN_ON
-    | SUPPORT_TURN_OFF
-    | SUPPORT_SELECT_SOURCE
+    MediaPlayerEntityFeature.VOLUME_SET
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+    | MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.SELECT_SOURCE
 )
 
 LIMITED_PLAYBACK_CONTROL_SUBUNITS = [
@@ -223,20 +210,20 @@ class YamahaYncaZone(MediaPlayerEntity):
         """Flag of media commands that are supported."""
         supported_commands = SUPPORT_YAMAHA_YNCA_BASE
         if self._zone.soundprg:
-            supported_commands |= SUPPORT_SELECT_SOUND_MODE
+            supported_commands |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
 
         if input_subunit := self._input_subunit():
             if hasattr(input_subunit, "playback"):
-                supported_commands |= SUPPORT_PLAY
-                supported_commands |= SUPPORT_STOP
+                supported_commands |= MediaPlayerEntityFeature.PLAY
+                supported_commands |= MediaPlayerEntityFeature.STOP
                 if input_subunit.id not in LIMITED_PLAYBACK_CONTROL_SUBUNITS:
-                    supported_commands |= SUPPORT_PAUSE
-                    supported_commands |= SUPPORT_NEXT_TRACK
-                    supported_commands |= SUPPORT_PREVIOUS_TRACK
+                    supported_commands |= MediaPlayerEntityFeature.PAUSE
+                    supported_commands |= MediaPlayerEntityFeature.NEXT_TRACK
+                    supported_commands |= MediaPlayerEntityFeature.PREVIOUS_TRACK
             if hasattr(input_subunit, "repeat"):
-                supported_commands |= SUPPORT_REPEAT_SET
+                supported_commands |= MediaPlayerEntityFeature.REPEAT_SET
             if hasattr(input_subunit, "shuffle"):
-                supported_commands |= SUPPORT_SHUFFLE_SET
+                supported_commands |= MediaPlayerEntityFeature.SHUFFLE_SET
         return supported_commands
 
     def turn_on(self):

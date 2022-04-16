@@ -1,3 +1,3 @@
-# homeassistant version: 2022.3.7
-pytest-homeassistant-custom-component==0.7.6
-homeassistant-stubs==2022.3.7
+# homeassistant version: 2022.5.0
+pytest-homeassistant-custom-component==<version for HA 2022.5.0>
+homeassistant-stubs==2022.5.0
