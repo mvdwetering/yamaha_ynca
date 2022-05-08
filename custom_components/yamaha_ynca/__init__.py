@@ -16,13 +16,12 @@ from homeassistant.helpers import device_registry, entity_registry
 from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
 from .helpers import serial_url_from_user_input
 
-PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.SCENE]
+PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
 
 async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Receiver
 ):
-    # Add device explicitly to registry so other entities just have to report the identifier to link up
     assert receiver.SYS is not None
 
     # Configuration URL for devices connected through IP
@@ -33,6 +32,7 @@ async def update_device_registry(
     ):
         configuration_url = f"http://{matches[1]}"
 
+    # Add device explicitly to registry so other entities just have to report the identifier to link up
     registry = await device_registry.async_get_registry(hass)
     registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
@@ -50,15 +50,6 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1:
-
-        new = {**config_entry.data}
-
-        # Rename to `serial_url` for consistency
-        new["serial_url"] = new.pop("serial_port")
-
-        config_entry.version = 2
-        hass.config_entries.async_update_entry(config_entry, data=new)
-
         # Button entities are replaced by scene entities
         # cleanup the button entities so the user does not have to
         registry = entity_registry.async_get(hass)
@@ -68,6 +59,28 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         for entity in entities:
             if entity.domain == Platform.BUTTON:
                 registry.async_remove(entity.entity_id)
+
+        # Rename to `serial_url` for consistency
+        new = {**config_entry.data}
+        new["serial_url"] = new.pop("serial_port")
+
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new)
+
+    if config_entry.version == 2:
+        # Scene entities are replaced by Button entities
+        # (scenes limited to a single devics seem a bit weird)
+        # cleanup the scene entities so the user does not have to
+        registry = entity_registry.async_get(hass)
+        entities = entity_registry.async_entries_for_config_entry(
+            registry, config_entry.entry_id
+        )
+        for entity in entities:
+            if entity.domain == Platform.SCENE:
+                registry.async_remove(entity.entity_id)
+
+        config_entry.version = 3
+        hass.config_entries.async_update_entry(config_entry, data=new)
 
     LOGGER.info("Migration to version %s successful", config_entry.version)
 
