@@ -23,14 +23,21 @@ async def test_async_migration_entry_version_1(hass: HomeAssistant):
     entry_v1.add_to_hass(hass)
 
     mock_entity_registry = mock_registry(hass)
-    mock_entity_entry = mock_entity_registry.async_get_or_create(
+    mock_button_entity_entry = mock_entity_registry.async_get_or_create(
         Platform.BUTTON,
         yamaha_ynca.DOMAIN,
         "button.scene_button",
         config_entry=entry_v1,
         device_id="device_id",
     )
-    assert len(mock_entity_registry.entities) == 1  # Make sure entity was added
+    mock_scene_entity_entry = mock_entity_registry.async_get_or_create(
+        Platform.SCENE,
+        yamaha_ynca.DOMAIN,
+        "scene.scene_button",
+        config_entry=entry_v1,
+        device_id="device_id",
+    )
+    assert len(mock_entity_registry.entities) == 2  # Make sure entities were added
 
     # Migrate
     with patch(
@@ -44,9 +51,9 @@ async def test_async_migration_entry_version_1(hass: HomeAssistant):
 
     # Serial_port renamed to serial_url
     entry_v2 = hass.config_entries.async_get_entry(entry_v1.entry_id)
-    assert entry_v2.version == 2
+    assert entry_v2.version == 3
     assert entry_v2.title == entry_v1.title
     assert entry_v2.data["serial_url"] == "SerialPort"
 
-    # Button entities removed
+    # Button and Scene entities removed
     assert len(mock_entity_registry.entities) == 0
