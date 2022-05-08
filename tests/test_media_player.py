@@ -2,26 +2,13 @@
 from unittest.mock import Mock, create_autospec
 
 import pytest
+from homeassistant.components.media_player import MediaPlayerEntityFeature
 from homeassistant.components.media_player.const import (
     MEDIA_TYPE_CHANNEL,
     MEDIA_TYPE_MUSIC,
     REPEAT_MODE_ALL,
     REPEAT_MODE_OFF,
     REPEAT_MODE_ONE,
-    SUPPORT_NEXT_TRACK,
-    SUPPORT_PAUSE,
-    SUPPORT_PLAY,
-    SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_REPEAT_SET,
-    SUPPORT_SELECT_SOUND_MODE,
-    SUPPORT_SELECT_SOURCE,
-    SUPPORT_SHUFFLE_SET,
-    SUPPORT_STOP,
-    SUPPORT_TURN_OFF,
-    SUPPORT_TURN_ON,
-    SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_SET,
-    SUPPORT_VOLUME_STEP,
 )
 from homeassistant.const import (
     STATE_IDLE,
@@ -126,7 +113,7 @@ async def test_mediaplayer_entity_source(mock_zone, mock_receiver):
     assert mock_zone.input == "INPUT_ID_2"
     assert mp_entity.source == "Input Name 2"
 
-    mp_entity.select_source("invalid source") # does not change current source
+    mp_entity.select_source("invalid source")  # does not change current source
     assert mock_zone.input == "INPUT_ID_2"
     assert mp_entity.source == "Input Name 2"
 
@@ -165,19 +152,19 @@ async def test_mediaplayer_entity_supported_features(
 ):
 
     expected_supported_features = (
-        SUPPORT_VOLUME_SET
-        | SUPPORT_VOLUME_MUTE
-        | SUPPORT_VOLUME_STEP
-        | SUPPORT_TURN_ON
-        | SUPPORT_TURN_OFF
-        | SUPPORT_SELECT_SOURCE
+        MediaPlayerEntityFeature.VOLUME_SET
+        | MediaPlayerEntityFeature.VOLUME_MUTE
+        | MediaPlayerEntityFeature.VOLUME_STEP
+        | MediaPlayerEntityFeature.TURN_ON
+        | MediaPlayerEntityFeature.TURN_OFF
+        | MediaPlayerEntityFeature.SELECT_SOURCE
     )
 
     mock_zone.soundprg = None
     assert mp_entity.supported_features == expected_supported_features
 
     mock_zone.soundprg = "DspSoundProgram"
-    expected_supported_features |= SUPPORT_SELECT_SOUND_MODE
+    expected_supported_features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
     assert mp_entity.supported_features == expected_supported_features
 
     # Sources with `playback` attribute support playback controls
@@ -187,8 +174,8 @@ async def test_mediaplayer_entity_supported_features(
         ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
     )
     mock_zone.input = "NET RADIO"
-    expected_supported_features |= SUPPORT_PLAY
-    expected_supported_features |= SUPPORT_STOP
+    expected_supported_features |= MediaPlayerEntityFeature.PLAY
+    expected_supported_features |= MediaPlayerEntityFeature.STOP
     assert mp_entity.supported_features == expected_supported_features
 
     # Other sources also support pausem previous, next
@@ -196,12 +183,12 @@ async def test_mediaplayer_entity_supported_features(
         ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
     )
     mock_zone.input = "USB"
-    expected_supported_features |= SUPPORT_PAUSE
-    expected_supported_features |= SUPPORT_PREVIOUS_TRACK
-    expected_supported_features |= SUPPORT_NEXT_TRACK
+    expected_supported_features |= MediaPlayerEntityFeature.PAUSE
+    expected_supported_features |= MediaPlayerEntityFeature.PREVIOUS_TRACK
+    expected_supported_features |= MediaPlayerEntityFeature.NEXT_TRACK
     # USB also supports repeat and shuffle
-    expected_supported_features |= SUPPORT_REPEAT_SET
-    expected_supported_features |= SUPPORT_SHUFFLE_SET
+    expected_supported_features |= MediaPlayerEntityFeature.REPEAT_SET
+    expected_supported_features |= MediaPlayerEntityFeature.SHUFFLE_SET
 
     assert mp_entity.supported_features == expected_supported_features
 
