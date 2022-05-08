@@ -50,7 +50,7 @@ async def setup_integration(
     hass, mock_receiver=None, skip_setup=False, serial_url="SerialUrl"
 ):
     entry = MockConfigEntry(
-        version=2,
+        version=3,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title="ModelName",
