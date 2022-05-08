@@ -80,4 +80,4 @@ git tag "v$version"
 
 echo -e "${INFO}Done making release $version"
 echo -e "Verify and push when happy (don't forget the tags)"
-echo -e "After than switch back to 'dev'${NC}"
+echo -e "After that switch back to 'dev'${NC}"
