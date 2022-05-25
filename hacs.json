@@ -1,7 +1,5 @@
 {
     "name": "Yamaha (YNCA)",
     "render_readme": true,
-    "domains": ["media_player"],
     "homeassistant": "2022.5.0",
-    "iot_class": "Local Push"
 }
