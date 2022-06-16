@@ -33,7 +33,7 @@ async def update_device_registry(
         configuration_url = f"http://{matches[1]}"
 
     # Add device explicitly to registry so other entities just have to report the identifier to link up
-    registry = await device_registry.async_get_registry(hass)
+    registry = device_registry.async_get(hass)
     registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         identifiers={(DOMAIN, config_entry.entry_id)},
