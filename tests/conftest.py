@@ -23,15 +23,13 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 
 @pytest.fixture
-def mock_receiver(hass):
-    """Create a mocked YNCA Receiver instance."""
-    receiver = Mock(
-        spec=ynca.Receiver,
+def mock_ynca(hass):
+    """Create a mocked YNCA instance."""
+    mock_ynca = Mock(
+        spec=ynca.Ynca,
     )
 
-    receiver.inputs = {"INPUT_ID_1": "Input Name 1", "INPUT_ID_2": "Input Name 2"}
-
-    return receiver
+    return mock_ynca
 
 
 @pytest.fixture
@@ -43,11 +41,11 @@ def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
 class Integration(NamedTuple):
     entry: Type[ConfigEntry]
     on_disconnect: Callable
-    mock_receiver: Type[Mock]
+    mock_ynca: Type[Mock]
 
 
 async def setup_integration(
-    hass, mock_receiver=None, skip_setup=False, serial_url="SerialUrl"
+    hass, mock_ynca=None, skip_setup=False, serial_url="SerialUrl"
 ):
     entry = MockConfigEntry(
         version=3,
@@ -66,15 +64,13 @@ async def setup_integration(
             on_disconnect = args[1]
             return DEFAULT
 
-        mock_receiver = mock_receiver or create_autospec(ynca.Receiver)
+        mock_ynca = mock_ynca or create_autospec(ynca.Ynca)
 
-        mock_receiver.SYS.modelname = "ModelName"
-        mock_receiver.SYS.version = "Version"
+        mock_ynca.SYS.modelname = "ModelName"
+        mock_ynca.SYS.version = "Version"
 
-        with patch(
-            "ynca.Receiver", return_value=mock_receiver, side_effect=side_effect
-        ):
+        with patch("ynca.Ynca", return_value=mock_ynca, side_effect=side_effect):
             await hass.config_entries.async_setup(entry.entry_id)
             await hass.async_block_till_done()
 
-    return Integration(entry, on_disconnect, mock_receiver)
+    return Integration(entry, on_disconnect, mock_ynca)

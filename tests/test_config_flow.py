@@ -20,7 +20,7 @@ async def test_form(hass: HomeAssistant) -> None:
     assert result["errors"] is None
 
     with patch(
-        "ynca.Receiver.connection_check",
+        "ynca.Ynca.connection_check",
         return_value="ModelName",
     ) as mock_setup, patch(
         "custom_components.yamaha_ynca.async_setup_entry",
@@ -50,7 +50,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "ynca.Receiver.connection_check",
+        "ynca.Ynca.connection_check",
         side_effect=YncaConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -71,7 +71,7 @@ async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "ynca.Receiver.connection_check",
+        "ynca.Ynca.connection_check",
         side_effect=Exception("Unhandled exception"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -85,27 +85,33 @@ async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "unknown"}
 
 
-async def test_options_flow(hass: HomeAssistant, mock_receiver) -> None:
+async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
     """Test optionsflow."""
-    integration = await setup_integration(hass, mock_receiver)
+    with patch(
+        "ynca.get_all_zone_inputs",
+        return_value={"INPUT_ID_1": "Input Name 1", "INPUT_ID_2": "Input Name 2"},
+    ):
+        integration = await setup_integration(hass, mock_ynca)
 
-    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
+        result = await hass.config_entries.options.async_init(
+            integration.entry.entry_id
+        )
 
-    assert result["type"] == RESULT_TYPE_FORM
-    assert result["step_id"] == "init"
+        assert result["type"] == RESULT_TYPE_FORM
+        assert result["step_id"] == "init"
 
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input={
+                yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
+                yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
+            },
+        )
+
+        assert result["type"] == "create_entry"
+        assert result["data"] == {
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
-        },
-    )
-
-    assert result["type"] == "create_entry"
-    assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
-    }
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
+        }

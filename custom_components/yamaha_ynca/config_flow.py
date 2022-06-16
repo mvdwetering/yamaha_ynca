@@ -37,7 +37,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 
     def validate_connection(serial_url):
         try:
-            return ynca.Receiver(serial_url).connection_check()
+            return ynca.Ynca(serial_url).connection_check()
         except ynca.YncaConnectionError:
             return None
 
@@ -102,10 +102,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         # Create a list of inputs on the Receiver that the user can select
-        receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
+        ynca_receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
 
         inputs = {}
-        for id, name in receiver.inputs.items():
+        for id, name in ynca.get_all_zone_inputs(ynca_receiver).items():
             inputs[id] = f"{id} ({name})" if id != name else name
 
         # Sorts the inputs (3.7+ dicts maintain insertion order)
@@ -114,7 +114,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # Build schema based on available zones
         schema = {}
         for zone_id in ZONE_SUBUNIT_IDS:
-            if getattr(receiver, zone_id, None):
+            if getattr(ynca_receiver, zone_id, None):
                 schema[
                     vol.Required(
                         CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id),
