@@ -91,7 +91,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             menu_options=[STEP_ID_SERIAL, STEP_ID_NETWORK, STEP_ID_ADVANCED],
         )
 
-    async def async_step_connect(
+    async def async_try_connect(
         self,
         step_id: str,
         data_schema: vol.Schema,
@@ -125,7 +125,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id=STEP_ID_SERIAL, data_schema=get_serial_url_schema({})
             )
 
-        return await self.async_step_connect(
+        return await self.async_try_connect(
             STEP_ID_SERIAL, get_serial_url_schema(user_input), user_input
         )
 
@@ -140,7 +140,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         connection_data = {
             CONF_SERIAL_URL: f"{user_input[CONF_IP_ADDRESS]}:{user_input[CONF_PORT]}"
         }
-        return await self.async_step_connect(
+        return await self.async_try_connect(
             STEP_ID_NETWORK, get_network_schema(user_input), connection_data
         )
 
@@ -152,7 +152,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id=STEP_ID_ADVANCED, data_schema=get_serial_url_schema({})
             )
 
-        return await self.async_step_connect(
+        return await self.async_try_connect(
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
 
