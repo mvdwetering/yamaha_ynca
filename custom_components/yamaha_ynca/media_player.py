@@ -84,11 +84,11 @@ class YamahaYncaZone(MediaPlayerEntity):
     def __init__(
         self,
         receiver_unique_id: str,
-        receiver: ynca.Receiver,
+        ynca: ynca.Ynca,
         zone: Type[ynca.zone.ZoneBase],
         hidden_inputs: List[str],
     ):
-        self._receiver = receiver
+        self._ynca = ynca
         self._zone = zone
         self._hidden_inputs = hidden_inputs
 
@@ -104,35 +104,41 @@ class YamahaYncaZone(MediaPlayerEntity):
         # as it causes unneeded load and glitches in the UI.
         self.schedule_update_ha_state()
 
+    def _get_input_subunits(self):
+        inputs = ynca.get_all_zone_inputs(self._ynca)
+        for input_id in inputs.keys():
+            if subunit := getattr(self._ynca, input_id, None):
+                yield subunit
+
     async def async_added_to_hass(self):
         # Register to catch input renames on SYS
-        self._receiver.SYS.register_update_callback(self.debounced_update)
+        self._ynca.SYS.register_update_callback(self.debounced_update)
         self._zone.register_update_callback(self.debounced_update)
 
         # TODO: Optimize registrations as now all zones get triggered by all changes
         #       even when change happens on subunit that is not input of this zone
-        for subunit_id in ynca.SUBUNIT_INPUT_MAPPINGS.keys():
-            if subunit := getattr(self._receiver, subunit_id.value, None):
-                subunit.register_update_callback(self.debounced_update)
+        for subunit in self._get_input_subunits():
+            subunit.register_update_callback(self.debounced_update)
 
     async def async_will_remove_from_hass(self):
-        self._receiver.SYS.unregister_update_callback(self.debounced_update)
+        self._ynca.SYS.unregister_update_callback(self.debounced_update)
         self._zone.unregister_update_callback(self.debounced_update)
-        for subunit_id in ynca.SUBUNIT_INPUT_MAPPINGS.keys():
-            if subunit := getattr(self._receiver, subunit_id.value, None):
-                subunit.unregister_update_callback(self.debounced_update)
+
+        for subunit in self._get_input_subunits():
+            subunit.unregister_update_callback(self.debounced_update)
 
     def _get_input_from_source(self, source):
-        for input, name in self._receiver.inputs.items():
+        for input, name in ynca.get_all_zone_inputs(self._ynca).items():
             if name == source:
                 return input
         return None
 
     def _input_subunit(self):
         """Returns Subunit for current selected input if possible, otherwise None"""
-        for subunit, input_name in ynca.SUBUNIT_INPUT_MAPPINGS.items():
+        inputs = ynca.get_all_zone_inputs(self._ynca)
+        for input_id, input_name in inputs.items():
             if input_name == self._zone.input:
-                return getattr(self._receiver, subunit.value, None)
+                return getattr(self._ynca, input_id, None)
         return None
 
     @property
@@ -172,12 +178,12 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source(self):
         """Return the current input source."""
-        return self._receiver.inputs[self._zone.input]
+        return ynca.get_all_zone_inputs(self._ynca)[self._zone.input]
 
     @property
     def source_list(self):
         """List of available input sources."""
-        all_inputs = self._receiver.inputs
+        all_inputs = ynca.get_all_zone_inputs(self._ynca)
         filtered_inputs = [
             name for id, name in all_inputs.items() if id not in self._hidden_inputs
         ]

@@ -20,7 +20,7 @@ PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
 
 async def update_device_registry(
-    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Receiver
+    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Ynca
 ):
     assert receiver.SYS is not None
 
@@ -33,7 +33,7 @@ async def update_device_registry(
         configuration_url = f"http://{matches[1]}"
 
     # Add device explicitly to registry so other entities just have to report the identifier to link up
-    registry = await device_registry.async_get_registry(hass)
+    registry = device_registry.async_get(hass)
     registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         identifiers={(DOMAIN, config_entry.entry_id)},
@@ -95,18 +95,19 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
-    def initialize_receiver(receiver):
+    def initialize_ynca(ynca_receiver: ynca.Ynca):
         try:
-            # Sync function taking a long time (multiple seconds depending on receiver capabilities)
-            receiver.initialize()
+            # Sync function taking a long time (> 10 seconds depending on receiver capabilities)
+            ynca_receiver.initialize()
             return True
         except ynca.YncaConnectionError as e:
-            LOGGER.error("Connection to receiver failed")
+            LOGGER.error("Connection to YNCA receiver failed")
             raise ConfigEntryNotReady from e
         except ynca.YncaInitializationFailedException as e:
-            LOGGER.error("Initialization of receiver failed")
+            LOGGER.error("Initialization of YNCA receiver failed")
             raise ConfigEntryNotReady from e
         except Exception:
+            LOGGER.exception("Unexpected exception during initialization")
             return False
 
     def on_disconnect():
@@ -123,14 +124,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
         # )
 
-    receiver = ynca.Receiver(
+    ynca_receiver = ynca.Ynca(
         serial_url_from_user_input(entry.data[CONF_SERIAL_URL]), on_disconnect
     )
-    initialized = await hass.async_add_executor_job(initialize_receiver, receiver)
+    initialized = await hass.async_add_executor_job(initialize_ynca, ynca_receiver)
 
     if initialized:
-        await update_device_registry(hass, entry, receiver)
-        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = receiver
+        await update_device_registry(hass, entry, ynca_receiver)
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ynca_receiver
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
         entry.async_on_unload(entry.add_update_listener(async_update_options))
@@ -141,11 +142,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
 
-    def close_receiver(receiver):
-        receiver.close()
+    def close_ynca(ynca_receiver: ynca.Ynca):
+        ynca_receiver.close()
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        receiver = hass.data[DOMAIN].pop(entry.entry_id)
-        await hass.async_add_executor_job(close_receiver, receiver)
+        ynca_receiver = hass.data[DOMAIN].pop(entry.entry_id)
+        await hass.async_add_executor_job(close_ynca, ynca_receiver)
 
     return unload_ok

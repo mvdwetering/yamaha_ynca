@@ -2,19 +2,44 @@
   "config": {
     "step": {
       "user": {
-        "title": "Provide serial port",
-        "description": "You can provide the device path, ip address (optionally with port) or any [URL handler as supported by pyserial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `socket://hostname_or_ip:50000` to access over network.",
+        "menu_options": {
+          "serial": "Serial connection",
+          "network": "Network connection",
+          "advanced": "PySerial URL handler (advanced)"
+        },
+        "title": "Select connection method"
+      },
+      "serial": {
+        "title": "Serial connection",
         "data": {
-          "serial_port": "e.g. /dev/ttyUSB0 or 192.168.1.123"
+          "serial_url": "Serial port e.g. /dev/ttyUSB0"
+        }
+      },
+      "network": {
+        "title": "Network connection",
+        "description": "Input the IP address of the receiver and the port.\n\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
+        "data": {
+          "ip_address": "Receiver IP address e.g. 192.168.1.123",
+          "port": "YNCA port; default is 50000"
+        }
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Provide any [URL handler as supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\n\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `rfc2217://hostname_or_ip` to connect through an rfc2217 compatible server.",
+        "data": {
+          "serial_url": "URL handler"
         }
       }
     },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+      "connection_error": "Failed to connect, check settings.",
+      "connection_failed_serial": "Connection failed, check serial port.",
+      "connection_failed_network": "Connection failed, check IP address and port settings and make sure this is the _only_ device using YNCA on the receiver.",
+      "connection_failed_advanced": "Connection failed, check URL handler format.",
+      "unknown": "Unexpected error."
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Device is already configured"
     }
   },
   "options": {
@@ -22,9 +47,9 @@
       "init": {
         "data": {
           "hidden_inputs_MAIN": "Hidden inputs for main zone",
-          "hidden_inputs_ZONE2": "Hidden inputs for zone2",
-          "hidden_inputs_ZONE3": "Hidden inputs for zone3",
-          "hidden_inputs_ZONE4": "Hidden inputs for zone4"
+          "hidden_inputs_ZONE2": "Hidden inputs for zone 2",
+          "hidden_inputs_ZONE3": "Hidden inputs for zone 3",
+          "hidden_inputs_ZONE4": "Hidden inputs for zone 4"
         }
       }
     }

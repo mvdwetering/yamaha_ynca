@@ -7,6 +7,8 @@ DOMAIN = "yamaha_ynca"
 LOGGER = logging.getLogger(__package__)
 
 CONF_SERIAL_URL = "serial_url"
+CONF_IP_ADDRESS = "ip_address"
+CONF_PORT = "port"
 
 MANUFACTURER_NAME = "Yamaha"
 

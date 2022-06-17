@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 from typing import Any, Dict
 
 import voluptuous as vol  # type: ignore
@@ -17,16 +18,41 @@ import homeassistant.helpers.config_validation as cv
 from .const import (
     CONF_HIDDEN_INPUTS_FOR_ZONE,
     CONF_SERIAL_URL,
+    CONF_IP_ADDRESS,
+    CONF_PORT,
     DOMAIN,
     ZONE_SUBUNIT_IDS,
+    LOGGER,
 )
 from .helpers import serial_url_from_user_input
 
 import ynca
 
-_LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(CONF_SERIAL_URL): str})
+STEP_ID_SERIAL = "serial"
+STEP_ID_NETWORK = "network"
+STEP_ID_ADVANCED = "advanced"
+
+
+def get_serial_url_schema(user_input):
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_SERIAL_URL, default=user_input.get(CONF_SERIAL_URL, vol.UNDEFINED)
+            ): str
+        }
+    )
+
+
+def get_network_schema(user_input):
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_IP_ADDRESS, default=user_input.get(CONF_IP_ADDRESS, vol.UNDEFINED)
+            ): str,
+            vol.Required(CONF_PORT, default=user_input.get(CONF_PORT, 50000)): int,
+        }
+    )
 
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -36,17 +62,11 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     """
 
     def validate_connection(serial_url):
-        try:
-            return ynca.Receiver(serial_url).connection_check()
-        except ynca.YncaConnectionError:
-            return None
+        return ynca.Ynca(serial_url).connection_check()
 
     modelname = await hass.async_add_executor_job(
         validate_connection, serial_url_from_user_input(data[CONF_SERIAL_URL])
     )
-
-    if not modelname:
-        raise CannotConnect
 
     # Return info that you want to store in the config entry.
     return {"title": modelname}
@@ -66,29 +86,75 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: Dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        if user_input is None:
-            return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
-            )
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=[STEP_ID_SERIAL, STEP_ID_NETWORK, STEP_ID_ADVANCED],
+        )
+
+    async def async_try_connect(
+        self,
+        step_id: str,
+        data_schema: vol.Schema,
+        user_input: Dict[str, Any] | None = None,
+    ) -> FlowResult:
 
         errors = {}
-
         try:
             info = await validate_input(self.hass, user_input)
-        except CannotConnect:
-            errors["base"] = "cannot_connect"
+        except ynca.YncaConnectionError:
+            errors["base"] = "connection_error"
+        except ynca.YncaConnectionFailed:
+            errors["base"] = f"connection_failed_{step_id}"
         except Exception:  # pylint: disable=broad-except
+            LOGGER.exception("Unhandled exception during connection.")
             errors["base"] = "unknown"
         else:
             return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id=step_id,
+            data_schema=data_schema,
+            errors=errors,
         )
 
+    async def async_step_serial(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id=STEP_ID_SERIAL, data_schema=get_serial_url_schema({})
+            )
 
-class CannotConnect(HomeAssistantError):
-    """Error to indicate we cannot connect."""
+        return await self.async_try_connect(
+            STEP_ID_SERIAL, get_serial_url_schema(user_input), user_input
+        )
+
+    async def async_step_network(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id=STEP_ID_NETWORK, data_schema=get_network_schema({})
+            )
+
+        connection_data = {
+            CONF_SERIAL_URL: f"{user_input[CONF_IP_ADDRESS]}:{user_input[CONF_PORT]}"
+        }
+        return await self.async_try_connect(
+            STEP_ID_NETWORK, get_network_schema(user_input), connection_data
+        )
+
+    async def async_step_advanced(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id=STEP_ID_ADVANCED, data_schema=get_serial_url_schema({})
+            )
+
+        return await self.async_try_connect(
+            STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
+        )
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
@@ -102,10 +168,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         # Create a list of inputs on the Receiver that the user can select
-        receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
+        ynca_receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
 
         inputs = {}
-        for id, name in receiver.inputs.items():
+        for id, name in ynca.get_all_zone_inputs(ynca_receiver).items():
             inputs[id] = f"{id} ({name})" if id != name else name
 
         # Sorts the inputs (3.7+ dicts maintain insertion order)
@@ -114,7 +180,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # Build schema based on available zones
         schema = {}
         for zone_id in ZONE_SUBUNIT_IDS:
-            if getattr(receiver, zone_id, None):
+            if getattr(ynca_receiver, zone_id, None):
                 schema[
                     vol.Required(
                         CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id),
