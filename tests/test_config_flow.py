@@ -3,7 +3,11 @@ from unittest.mock import patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
+from homeassistant.data_entry_flow import (
+    RESULT_TYPE_CREATE_ENTRY,
+    RESULT_TYPE_FORM,
+    RESULT_TYPE_MENU,
+)
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from ynca import YncaConnectionError
@@ -11,10 +15,52 @@ from ynca import YncaConnectionError
 from .conftest import setup_integration
 
 
-async def test_form(hass: HomeAssistant) -> None:
-    """Test we get the form."""
+async def test_menu_form(hass: HomeAssistant) -> None:
+    """Test we get the menu form when initialized by user."""
+
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    assert result["type"] == RESULT_TYPE_MENU
+
+
+async def test_network_connect(hass: HomeAssistant) -> None:
+
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN, context={"source": "network"}
+    )
+    assert result["type"] == RESULT_TYPE_FORM
+    assert result["errors"] is None
+
+    with patch(
+        "ynca.Ynca.connection_check",
+        return_value="ModelName",
+    ) as mock_setup, patch(
+        "custom_components.yamaha_ynca.async_setup_entry",
+        return_value=True,
+    ) as mock_setup_entry:
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                yamaha_ynca.const.CONF_IP_ADDRESS: "192.168.1.123",
+                yamaha_ynca.const.CONF_PORT: 12345,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
+    assert result2["title"] == "ModelName"
+    assert result2["data"] == {
+        yamaha_ynca.CONF_SERIAL_URL: "192.168.1.123:12345",
+    }
+    assert len(mock_setup.mock_calls) == 1
+    assert len(mock_setup_entry.mock_calls) == 1
+
+
+async def test_advanced_connect(hass: HomeAssistant) -> None:
+
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN, context={"source": "advanced"}
     )
     assert result["type"] == RESULT_TYPE_FORM
     assert result["errors"] is None
@@ -46,7 +92,7 @@ async def test_form(hass: HomeAssistant) -> None:
 async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error."""
     result = await hass.config_entries.flow.async_init(
-        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_USER}
+        yamaha_ynca.DOMAIN, context={"source": "serial"}
     )
 
     with patch(
@@ -61,13 +107,13 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "cannot_connect"}
+    assert result2["errors"] == {"base": "cannot_connect_serial"}
 
 
 async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
     """Test we handle random exceptions."""
     result = await hass.config_entries.flow.async_init(
-        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_USER}
+        yamaha_ynca.DOMAIN, context={"source": "serial"}
     )
 
     with patch(
@@ -82,7 +128,7 @@ async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "unknown"}
+    assert result2["errors"] == {"base": "unknown_serial"}
 
 
 async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:

@@ -17,6 +17,8 @@ import homeassistant.helpers.config_validation as cv
 from .const import (
     CONF_HIDDEN_INPUTS_FOR_ZONE,
     CONF_SERIAL_URL,
+    CONF_IP_ADDRESS,
+    CONF_PORT,
     DOMAIN,
     ZONE_SUBUNIT_IDS,
 )
@@ -26,7 +28,30 @@ import ynca
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(CONF_SERIAL_URL): str})
+STEP_ID_SERIAL = "serial"
+STEP_ID_NETWORK = "network"
+STEP_ID_ADVANCED = "advanced"
+
+
+def get_serial_url_schema(user_input):
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_SERIAL_URL, default=user_input.get(CONF_SERIAL_URL, vol.UNDEFINED)
+            ): str
+        }
+    )
+
+
+def get_network_schema(user_input):
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_IP_ADDRESS, default=user_input.get(CONF_IP_ADDRESS, vol.UNDEFINED)
+            ): str,
+            vol.Required(CONF_PORT, default=user_input.get(CONF_PORT, 50000)): int,
+        }
+    )
 
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -66,24 +91,71 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: Dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        if user_input is None:
-            return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
-            )
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=[STEP_ID_SERIAL, STEP_ID_NETWORK, STEP_ID_ADVANCED],
+        )
+
+    async def async_step_connect(
+        self,
+        step_id: str,
+        data_schema: vol.Schema,
+        user_input: Dict[str, Any] | None = None,
+    ) -> FlowResult:
 
         errors = {}
-
         try:
             info = await validate_input(self.hass, user_input)
         except CannotConnect:
-            errors["base"] = "cannot_connect"
+            errors["base"] = f"cannot_connect_{step_id}"
         except Exception:  # pylint: disable=broad-except
-            errors["base"] = "unknown"
+            errors["base"] = f"unknown_{step_id}"
         else:
             return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id=step_id,
+            data_schema=data_schema,
+            errors=errors,
+        )
+
+    async def async_step_serial(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id=STEP_ID_SERIAL, data_schema=get_serial_url_schema({})
+            )
+
+        return await self.async_step_connect(
+            STEP_ID_SERIAL, get_serial_url_schema(user_input), user_input
+        )
+
+    async def async_step_network(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id=STEP_ID_NETWORK, data_schema=get_network_schema({})
+            )
+
+        connection_data = {
+            CONF_SERIAL_URL: f"{user_input[CONF_IP_ADDRESS]}:{user_input[CONF_PORT]}"
+        }
+        return await self.async_step_connect(
+            STEP_ID_NETWORK, get_network_schema(user_input), connection_data
+        )
+
+    async def async_step_advanced(
+        self, user_input: Dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(
+                step_id=STEP_ID_ADVANCED, data_schema=get_serial_url_schema({})
+            )
+
+        return await self.async_step_connect(
+            STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
 
 
