@@ -45,8 +45,8 @@ def mp_entity(mock_zone, mock_ynca):
     return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [])
 
 
-async def test_mediaplayer_entity(mp_entity, mock_zone):
-
+@patch("ynca.get_all_zone_inputs", return_value={})
+async def test_mediaplayer_entity(patched_get_all_zone_inputs, mp_entity, mock_zone):
     assert mp_entity.unique_id == "ReceiverUniqueId_ZoneId"
     assert mp_entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId")
@@ -62,7 +62,12 @@ async def test_mediaplayer_entity(mp_entity, mock_zone):
     )
 
 
-async def test_mediaplayer_entity_turn_on_off(mp_entity, mock_zone):
+@patch("ynca.get_all_zone_inputs", return_value={})
+async def test_mediaplayer_entity_turn_on_off(
+    patched_get_all_zone_inputs,
+    mp_entity,
+    mock_zone,
+):
 
     mp_entity.turn_on()
     assert mock_zone.pwr == True
@@ -150,7 +155,16 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity, mock_zone):
     assert mp_entity.sound_mode_list == sorted(ynca.SoundPrg)
 
 
-async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_ynca):
+@patch(
+    "ynca.get_all_zone_inputs",
+    return_value={
+        ynca.Subunit.USB: "USB",
+        ynca.Subunit.NETRADIO: "NET RADIO",
+    },
+)
+async def test_mediaplayer_entity_supported_features(
+    patched_get_all_zone_inputs, mp_entity, mock_zone, mock_ynca
+):
 
     expected_supported_features = (
         MediaPlayerEntityFeature.VOLUME_SET
@@ -194,7 +208,15 @@ async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_
     assert mp_entity.supported_features == expected_supported_features
 
 
-async def test_mediaplayer_entity_state(mp_entity, mock_zone, mock_ynca):
+@patch(
+    "ynca.get_all_zone_inputs",
+    return_value={
+        ynca.Subunit.USB: "USB",
+    },
+)
+async def test_mediaplayer_entity_state(
+    patched_get_all_zone_inputs, mp_entity, mock_zone, mock_ynca
+):
 
     mock_zone.pwr = False
     assert mp_entity.state == STATE_OFF
@@ -230,7 +252,18 @@ async def test_mediaplayer_playback_controls(mp_entity, mock_zone):
     mock_zone.playback.assert_called_with(ynca.Playback.SKIP_REV)
 
 
-async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
+@patch(
+    "ynca.get_all_zone_inputs",
+    return_value={
+        ynca.Subunit.USB: "USB",
+        ynca.Subunit.NETRADIO: "NET RADIO",
+        ynca.Subunit.TUN: "TUNER",
+        ynca.Subunit.SIRIUSIR: "SIRIUS InternetRadio",
+    },
+)
+async def test_mediaplayer_mediainfo(
+    patched_get_all_zone_inputs, mp_entity, mock_zone, mock_ynca
+):
 
     assert mp_entity.media_album_name is None
     assert mp_entity.media_artist is None
@@ -283,7 +316,16 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     assert mp_entity.media_content_type is MEDIA_TYPE_CHANNEL
 
 
-async def test_mediaplayer_entity_shuffle(mp_entity, mock_zone, mock_ynca):
+@patch(
+    "ynca.get_all_zone_inputs",
+    return_value={
+        ynca.Subunit.USB: "USB",
+        ynca.Subunit.NETRADIO: "NET RADIO",
+    },
+)
+async def test_mediaplayer_entity_shuffle(
+    patched_get_all_zone_inputs, mp_entity, mock_zone, mock_ynca
+):
 
     # Unsupported subunit selected
     assert mp_entity.shuffle == None
@@ -310,7 +352,16 @@ async def test_mediaplayer_entity_shuffle(mp_entity, mock_zone, mock_ynca):
     assert mp_entity.shuffle == None
 
 
-async def test_mediaplayer_entity_repeat(mp_entity, mock_zone, mock_ynca):
+@patch(
+    "ynca.get_all_zone_inputs",
+    return_value={
+        ynca.Subunit.USB: "USB",
+        ynca.Subunit.NETRADIO: "NET RADIO",
+    },
+)
+async def test_mediaplayer_entity_repeat(
+    patched_get_all_zone_inputs, mp_entity, mock_zone, mock_ynca
+):
 
     # Unsupported subunit selected
     assert mp_entity.repeat == None
