@@ -11,17 +11,16 @@
       },
       "serial": {
         "title": "Serial connection",
-        "description": "Input a serial port e.g. /dev/ttyUSB0",
         "data": {
           "serial_url": "Serial port e.g. /dev/ttyUSB0"
         }
       },
       "network": {
         "title": "Network connection",
-        "description": "Input the IP address of the receiver and the port.\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
+        "description": "Input the IP address of the receiver and the port.\n\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
         "data": {
-          "ip_address": "IP address e.g. 192.168.178.123",
-          "port": "Port; default is 50000"
+          "ip_address": "Receiver IP address e.g. 192.168.1.123",
+          "port": "YNCA port; default is 50000"
         }
       },
       "advanced": {
@@ -33,12 +32,11 @@
       }
     },
     "error": {
-      "cannot_connect_serial": "Failed to connect, check serial port",
-      "cannot_connect_network": "Connection failed, check IP address and port settings",
-      "cannot_connect_advanced": "Failed to connect, check URL handler",
-      "unknown_serial": "Unexpected error, check serial port",
-      "unknown_network": "Unexpected error, check if another device is already connected to the receiver",
-      "unknown_advanced": "Unexpected error, check URL handler"
+      "connection_error": "Failed to connect, check settings.",
+      "connection_failed_serial": "Connection failed, check serial port.",
+      "connection_failed_network": "Connection failed, check IP address and port settings and make sure this is the _only_ device using YNCA on the receiver.",
+      "connection_failed_advanced": "Connection failed, check URL handler format.",
+      "unknown": "Unexpected error."
     },
     "abort": {
       "already_configured": "Device is already configured"

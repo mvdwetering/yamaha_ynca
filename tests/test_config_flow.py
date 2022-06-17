@@ -10,7 +10,10 @@ from homeassistant.data_entry_flow import (
 )
 
 import custom_components.yamaha_ynca as yamaha_ynca
-from ynca import YncaConnectionError
+from ynca import (
+    YncaConnectionError,
+    YncaConnectionFailed,
+)
 
 from .conftest import setup_integration
 
@@ -89,7 +92,7 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert len(mock_setup_entry.mock_calls) == 1
 
 
-async def test_form_cannot_connect(hass: HomeAssistant) -> None:
+async def test_connection_error(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error."""
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": "serial"}
@@ -107,10 +110,31 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "cannot_connect_serial"}
+    assert result2["errors"] == {"base": "connection_error"}
 
 
-async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
+async def test_connection_failed(hass: HomeAssistant) -> None:
+    """Test we handle cannot connect error."""
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN, context={"source": "serial"}
+    )
+
+    with patch(
+        "ynca.Ynca.connection_check",
+        side_effect=YncaConnectionFailed("Connection failed"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                yamaha_ynca.CONF_SERIAL_URL: "SerialUrl",
+            },
+        )
+
+    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["errors"] == {"base": "connection_failed_serial"}
+
+
+async def test_unhandled_exception(hass: HomeAssistant) -> None:
     """Test we handle random exceptions."""
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": "serial"}
@@ -128,7 +152,7 @@ async def test_form_unhandled_exception(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "unknown_serial"}
+    assert result2["errors"] == {"base": "unknown"}
 
 
 async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:

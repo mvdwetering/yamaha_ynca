@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 from typing import Any, Dict
 
 import voluptuous as vol  # type: ignore
@@ -21,12 +22,12 @@ from .const import (
     CONF_PORT,
     DOMAIN,
     ZONE_SUBUNIT_IDS,
+    LOGGER,
 )
 from .helpers import serial_url_from_user_input
 
 import ynca
 
-_LOGGER = logging.getLogger(__name__)
 
 STEP_ID_SERIAL = "serial"
 STEP_ID_NETWORK = "network"
@@ -61,17 +62,11 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     """
 
     def validate_connection(serial_url):
-        try:
-            return ynca.Ynca(serial_url).connection_check()
-        except ynca.YncaConnectionError:
-            return None
+        return ynca.Ynca(serial_url).connection_check()
 
     modelname = await hass.async_add_executor_job(
         validate_connection, serial_url_from_user_input(data[CONF_SERIAL_URL])
     )
-
-    if not modelname:
-        raise CannotConnect
 
     # Return info that you want to store in the config entry.
     return {"title": modelname}
@@ -106,10 +101,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         try:
             info = await validate_input(self.hass, user_input)
-        except CannotConnect:
-            errors["base"] = f"cannot_connect_{step_id}"
+        except ynca.YncaConnectionError:
+            errors["base"] = "connection_error"
+        except ynca.YncaConnectionFailed:
+            errors["base"] = f"connection_failed_{step_id}"
         except Exception:  # pylint: disable=broad-except
-            errors["base"] = f"unknown_{step_id}"
+            LOGGER.exception("Unhandled exception during connection.")
+            errors["base"] = "unknown"
         else:
             return self.async_create_entry(title=info["title"], data=user_input)
 
@@ -157,10 +155,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_connect(
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
-
-
-class CannotConnect(HomeAssistantError):
-    """Error to indicate we cannot connect."""
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
