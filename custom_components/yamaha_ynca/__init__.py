@@ -97,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     def initialize_ynca(ynca_receiver: ynca.Ynca):
         try:
-            # Sync function taking a long time (multiple seconds depending on receiver capabilities)
+            # Sync function taking a long time (> 10 seconds depending on receiver capabilities)
             ynca_receiver.initialize()
             return True
         except ynca.YncaConnectionError as e:
@@ -107,6 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             LOGGER.error("Initialization of YNCA receiver failed")
             raise ConfigEntryNotReady from e
         except Exception:
+            LOGGER.exception("Unexpected exception during initialization")
             return False
 
     def on_disconnect():
