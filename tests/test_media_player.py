@@ -169,6 +169,18 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity, mock_zone):
 
 
 @patch(
+    "ynca.get_modelinfo",
+    return_value=ynca.modelinfo.ModelInfo(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
+)
+async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
+    patched_get_modelinfo, mp_entity, mock_zone
+):
+
+    mock_zone.soundprg = "DspSoundProgram"
+    assert "All-Ch Stereo" in mp_entity.sound_mode_list
+
+
+@patch(
     "ynca.get_all_zone_inputs",
     return_value={
         ynca.Subunit.USB: "USB",
