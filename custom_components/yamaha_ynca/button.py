@@ -13,7 +13,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     entities = []
     for zone in ZONE_SUBUNIT_IDS:
         if zone_subunit := getattr(receiver, zone):
-            for scene_id in zone_subunit.scenes.keys():
+            for scene_id in zone_subunit.scenenames.keys():
                 entities.append(
                     YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
                 )
@@ -50,7 +50,7 @@ class YamahaYncaSceneButton(ButtonEntity):
 
     @property
     def name(self):
-        return f"{self._zone.name}: {self._zone.scenes[self._scene_id]}"
+        return f"{self._zone.zonename}: {self._zone.scenenames[self._scene_id]}"
 
     def press(self) -> None:
         self._zone.activate_scene(self._scene_id)

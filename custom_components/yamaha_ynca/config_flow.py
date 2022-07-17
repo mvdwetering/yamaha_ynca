@@ -95,7 +95,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         step_id: str,
         data_schema: vol.Schema,
-        user_input: Dict[str, Any] | None = None,
+        user_input: Dict[str, Any],
     ) -> FlowResult:
 
         errors = {}

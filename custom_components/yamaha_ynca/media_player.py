@@ -144,7 +144,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def name(self):
         """Return the name of the entity."""
-        return self._zone.name
+        return self._zone.zonename or self._zone.id
 
     @property
     def state(self):
@@ -178,7 +178,9 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source(self):
         """Return the current input source."""
-        return ynca.get_all_zone_inputs(self._ynca)[self._zone.input]
+        return ynca.get_all_zone_inputs(self._ynca).get(
+            self._zone.input, self._zone.input
+        )
 
     @property
     def source_list(self):
@@ -205,7 +207,8 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
-            sound_modes.extend(ynca.SoundPrg)
+            modelinfo = ynca.get_modelinfo(self._ynca.SYS.modelname)
+            sound_modes.extend(modelinfo.soundprg if modelinfo else ynca.SoundPrg)
         sound_modes.sort(
             key=str.lower
         )  # Using `str.lower` does not work for all languages, but better than nothing

@@ -31,8 +31,8 @@ def mock_zone():
     )
 
     zone.id = "ZoneId"
-    zone.name = "ZoneName"
-    zone.scenes = {"1234": "SceneName 1234"}
+    zone.zonename = "ZoneName"
+    zone.scene_names = {"1234": "SceneName 1234"}
     zone.max_volume = 10
     zone.min_volume = -5
     zone.input = "INPUT_ID_1"
@@ -62,13 +62,22 @@ async def test_mediaplayer_entity(patched_get_all_zone_inputs, mp_entity, mock_z
     )
 
 
+async def test_mediaplayer_entity_name(
+    mp_entity,
+    mock_zone,
+):
+    assert mp_entity.name == "ZoneName"
+
+    mock_zone.zonename = None
+    assert mp_entity.name == "ZoneId"
+
+
 @patch("ynca.get_all_zone_inputs", return_value={})
 async def test_mediaplayer_entity_turn_on_off(
     patched_get_all_zone_inputs,
     mp_entity,
     mock_zone,
 ):
-
     mp_entity.turn_on()
     assert mock_zone.pwr == True
     assert mp_entity.state == STATE_ON
@@ -125,6 +134,10 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
         assert mock_zone.input == "INPUT_ID_2"
         assert mp_entity.source == "Input Name 2"
 
+        # Input without mapped name shows as ID
+        mock_zone.input = "INPUT_ID_WITHOUT_NAME"
+        assert mp_entity.source == "INPUT_ID_WITHOUT_NAME"
+
 
 async def test_mediaplayer_entity_sound_mode(mp_entity, mock_zone):
 
@@ -153,6 +166,18 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity, mock_zone):
 
     mock_zone.soundprg = "DspSoundProgram"
     assert mp_entity.sound_mode_list == sorted(ynca.SoundPrg)
+
+
+@patch(
+    "ynca.get_modelinfo",
+    return_value=ynca.modelinfo.ModelInfo(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
+)
+async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
+    patched_get_modelinfo, mp_entity, mock_zone
+):
+
+    mock_zone.soundprg = "DspSoundProgram"
+    assert "All-Ch Stereo" in mp_entity.sound_mode_list
 
 
 @patch(
