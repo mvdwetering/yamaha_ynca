@@ -31,8 +31,8 @@ def mock_zone():
     )
 
     zone.id = "ZoneId"
-    zone.name = "ZoneName"
-    zone.scenes = {"1234": "SceneName 1234"}
+    zone.zonename = "ZoneName"
+    zone.scene_names = {"1234": "SceneName 1234"}
     zone.max_volume = 10
     zone.min_volume = -5
     zone.input = "INPUT_ID_1"
@@ -62,13 +62,22 @@ async def test_mediaplayer_entity(patched_get_all_zone_inputs, mp_entity, mock_z
     )
 
 
+async def test_mediaplayer_entity_name(
+    mp_entity,
+    mock_zone,
+):
+    assert mp_entity.name == "ZoneName"
+
+    mock_zone.zonename = None
+    assert mp_entity.name == "ZoneId"
+
+
 @patch("ynca.get_all_zone_inputs", return_value={})
 async def test_mediaplayer_entity_turn_on_off(
     patched_get_all_zone_inputs,
     mp_entity,
     mock_zone,
 ):
-
     mp_entity.turn_on()
     assert mock_zone.pwr == True
     assert mp_entity.state == STATE_ON
