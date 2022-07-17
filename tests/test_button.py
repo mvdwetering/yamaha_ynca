@@ -14,8 +14,8 @@ def mock_zone():
     )
 
     zone.id = "ZoneId"
-    zone.name = "ZoneName"
-    zone.scenes = {"1234": "SceneName 1234"}
+    zone.zonename = "ZoneName"
+    zone.scenenames = {"1234": "SceneName 1234"}
 
     return zone
 
