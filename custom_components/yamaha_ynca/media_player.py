@@ -178,7 +178,9 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source(self):
         """Return the current input source."""
-        return ynca.get_all_zone_inputs(self._ynca)[self._zone.input]
+        return ynca.get_all_zone_inputs(self._ynca).get(
+            self._zone.input, self._zone.input
+        )
 
     @property
     def source_list(self):

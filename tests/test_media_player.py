@@ -134,6 +134,10 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
         assert mock_zone.input == "INPUT_ID_2"
         assert mp_entity.source == "Input Name 2"
 
+        # Input without mapped name shows as ID
+        mock_zone.input = "INPUT_ID_WITHOUT_NAME"
+        assert mp_entity.source == "INPUT_ID_WITHOUT_NAME"
+
 
 async def test_mediaplayer_entity_sound_mode(mp_entity, mock_zone):
 
