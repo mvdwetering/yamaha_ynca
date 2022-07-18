@@ -101,11 +101,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ynca_receiver.initialize()
             return True
         except ynca.YncaConnectionError as e:
-            LOGGER.error("Connection to YNCA receiver failed")
-            raise ConfigEntryNotReady from e
+            raise ConfigEntryNotReady("Connection to YNCA receiver failed") from e
         except ynca.YncaInitializationFailedException as e:
-            LOGGER.error("Initialization of YNCA receiver failed")
-            raise ConfigEntryNotReady from e
+            raise ConfigEntryNotReady("Initialization of YNCA receiver failed") from e
         except Exception:
             LOGGER.exception("Unexpected exception during initialization")
             return False
