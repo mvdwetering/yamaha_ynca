@@ -1,1 +1,1 @@
-homeassistant-stubs==2022.5.2
+homeassistant-stubs==2022.7.0

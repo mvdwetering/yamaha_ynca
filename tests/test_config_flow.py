@@ -3,11 +3,7 @@ from unittest.mock import patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import (
-    RESULT_TYPE_CREATE_ENTRY,
-    RESULT_TYPE_FORM,
-    RESULT_TYPE_MENU,
-)
+from homeassistant.data_entry_flow import FlowResultType
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from ynca import (
@@ -24,7 +20,7 @@ async def test_menu_form(hass: HomeAssistant) -> None:
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == RESULT_TYPE_MENU
+    assert result["type"] == FlowResultType.MENU
 
 
 async def test_network_connect(hass: HomeAssistant) -> None:
@@ -32,7 +28,7 @@ async def test_network_connect(hass: HomeAssistant) -> None:
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": "network"}
     )
-    assert result["type"] == RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
     with patch(
@@ -51,7 +47,7 @@ async def test_network_connect(hass: HomeAssistant) -> None:
         )
         await hass.async_block_till_done()
 
-    assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
         yamaha_ynca.CONF_SERIAL_URL: "192.168.1.123:12345",
@@ -65,7 +61,7 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": "advanced"}
     )
-    assert result["type"] == RESULT_TYPE_FORM
+    assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
     with patch(
@@ -83,7 +79,7 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
         )
         await hass.async_block_till_done()
 
-    assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
         yamaha_ynca.CONF_SERIAL_URL: "SerialUrl",
@@ -109,7 +105,7 @@ async def test_connection_error(hass: HomeAssistant) -> None:
             },
         )
 
-    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "connection_error"}
 
 
@@ -130,7 +126,7 @@ async def test_connection_failed(hass: HomeAssistant) -> None:
             },
         )
 
-    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "connection_failed_serial"}
 
 
@@ -151,7 +147,7 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
             },
         )
 
-    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "unknown"}
 
 
@@ -167,7 +163,7 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             integration.entry.entry_id
         )
 
-        assert result["type"] == RESULT_TYPE_FORM
+        assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
         result = await hass.config_entries.options.async_configure(
