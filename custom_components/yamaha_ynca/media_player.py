@@ -139,7 +139,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         for inputinfo in ynca.get_inputinfo_list(self._ynca):
             if inputinfo.subunit is None:
                 continue
-            if inputinfo.input == self._zone.input:
+            if inputinfo.input == self._zone.inp:
                 return getattr(self._ynca, inputinfo.subunit.value, None)
         return None
 
@@ -183,12 +183,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         current_input_info = [
             inputinfo
             for inputinfo in ynca.get_inputinfo_list(self._ynca)
-            if inputinfo.input == self._zone.input
+            if inputinfo.input == self._zone.inp
         ]
         return (
             current_input_info[0].name
             if len(current_input_info) > 0
-            else self._zone.input
+            else self._zone.inp
         )
 
     @property
@@ -275,7 +275,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def select_source(self, source):
         """Select input source."""
         if input := self._get_input_from_source(source):
-            self._zone.input = input
+            self._zone.inp = input
 
     def select_sound_mode(self, sound_mode):
         """Switch the sound mode of the entity."""
