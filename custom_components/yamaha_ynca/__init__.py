@@ -7,7 +7,7 @@ from typing import List
 
 import ynca
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
 from homeassistant.const import Platform
 from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -114,9 +114,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # The unittest hangs on this it seems.
         # Same for the alternative approach below.
-        asyncio.run_coroutine_threadsafe(
-            hass.config_entries.async_reload(entry.entry_id), hass.loop
-        ).result()
+        try:
+            asyncio.run_coroutine_threadsafe(
+                hass.config_entries.async_reload(entry.entry_id), hass.loop
+            ).result()
+        except OperationNotAllowed:
+            # Can not reload when during setup
+            # Which is fine, so just let it go
+            pass
 
         # hass.services.call(
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
