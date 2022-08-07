@@ -171,8 +171,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ynca_receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
 
         inputs = {}
-        for id, name in ynca.get_all_zone_inputs(ynca_receiver).items():
-            inputs[id] = f"{id} ({name})" if id != name else name
+        for inputinfo in ynca.get_inputinfo_list(ynca_receiver):
+            inputs[inputinfo.input] = (
+                f"{inputinfo.input} ({inputinfo.name})"
+                if inputinfo.input != inputinfo.name
+                else inputinfo.name
+            )
 
         # Sorts the inputs (3.7+ dicts maintain insertion order)
         inputs = dict(sorted(inputs.items(), key=lambda tup: tup[0]))

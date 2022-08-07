@@ -6,10 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 import custom_components.yamaha_ynca as yamaha_ynca
-from ynca import (
-    YncaConnectionError,
-    YncaConnectionFailed,
-)
+import ynca
 
 from .conftest import setup_integration
 
@@ -96,7 +93,7 @@ async def test_connection_error(hass: HomeAssistant) -> None:
 
     with patch(
         "ynca.Ynca.connection_check",
-        side_effect=YncaConnectionError("Connection error"),
+        side_effect=ynca.YncaConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -117,7 +114,7 @@ async def test_connection_failed(hass: HomeAssistant) -> None:
 
     with patch(
         "ynca.Ynca.connection_check",
-        side_effect=YncaConnectionFailed("Connection failed"),
+        side_effect=ynca.YncaConnectionFailed("Connection failed"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -154,8 +151,11 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
     """Test optionsflow."""
     with patch(
-        "ynca.get_all_zone_inputs",
-        return_value={"INPUT_ID_1": "Input Name 1", "INPUT_ID_2": "Input Name 2"},
+        "ynca.get_inputinfo_list",
+        return_value=[
+            ynca.InputInfo(None, "INPUT_ID_1", "Input Name 1"),
+            ynca.InputInfo(None, "INPUT_ID_2", "Input Name 2"),
+        ],
     ):
         integration = await setup_integration(hass, mock_ynca)
 
