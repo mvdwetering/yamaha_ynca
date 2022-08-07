@@ -80,6 +80,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     _attr_device_class = MediaPlayerDeviceClass.RECEIVER
     _attr_should_poll = False
+    _attr_has_entity_name = True
 
     def __init__(
         self,

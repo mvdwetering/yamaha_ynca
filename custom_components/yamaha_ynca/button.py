@@ -24,6 +24,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class YamahaYncaSceneButton(ButtonEntity):
     """Representation of a scene button on a Yamaha Ynca device."""
 
+    _attr_has_entity_name = True
+
     def __init__(self, receiver_unique_id, zone, scene_id):
         self._zone = zone
         self._scene_id = scene_id
