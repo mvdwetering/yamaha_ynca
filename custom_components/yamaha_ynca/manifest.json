@@ -15,5 +15,6 @@
     "@mvdwetering"
   ],
   "iot_class": "local_push",
+  "loggers": ["ynca"],
   "version": "0.0.0"
 }
