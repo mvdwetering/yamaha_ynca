@@ -168,10 +168,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         # Create a list of inputs on the Receiver that the user can select
-        ynca_receiver = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
+        domain_entry_data = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
 
         inputs = {}
-        for inputinfo in ynca.get_inputinfo_list(ynca_receiver):
+        for inputinfo in ynca.get_inputinfo_list(domain_entry_data.api):
             inputs[inputinfo.input] = (
                 f"{inputinfo.input} ({inputinfo.name})"
                 if inputinfo.input != inputinfo.name
@@ -184,7 +184,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # Build schema based on available zones
         schema = {}
         for zone_id in ZONE_SUBUNIT_IDS:
-            if getattr(ynca_receiver, zone_id, None):
+            if getattr(domain_entry_data.api, zone_id, None):
                 schema[
                     vol.Required(
                         CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id),

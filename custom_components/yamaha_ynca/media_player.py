@@ -58,17 +58,20 @@ STRAIGHT = "Straight"
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
 
-    receiver: ynca.Ynca = hass.data[DOMAIN][config_entry.entry_id]
+    domain_entry_data = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone_subunit_id in ZONE_SUBUNIT_IDS:
-        if zone_subunit := getattr(receiver, zone_subunit_id):
+        if zone_subunit := getattr(domain_entry_data.api, zone_subunit_id):
             hidden_inputs = config_entry.options.get(
                 CONF_HIDDEN_INPUTS_FOR_ZONE(zone_subunit_id), []
             )
             entities.append(
                 YamahaYncaZone(
-                    config_entry.entry_id, receiver, zone_subunit, hidden_inputs
+                    config_entry.entry_id,
+                    domain_entry_data.api,
+                    zone_subunit,
+                    hidden_inputs,
                 )
             )
 

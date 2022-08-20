@@ -8,11 +8,11 @@ from .debounce import debounce
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
-    receiver = hass.data[DOMAIN][config_entry.entry_id]
+    domain_entry_data = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone in ZONE_SUBUNIT_IDS:
-        if zone_subunit := getattr(receiver, zone):
+        if zone_subunit := getattr(domain_entry_data.api, zone):
             for scene_id in zone_subunit.scenenames.keys():
                 entities.append(
                     YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
