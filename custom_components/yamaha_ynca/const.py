@@ -14,6 +14,8 @@ CONF_PORT = "port"
 
 MANUFACTURER_NAME = "Yamaha"
 
+ZONE_MIN_VOLUME = -80.5
+
 ZONE_SUBUNIT_IDS = [
     ynca.Subunit.MAIN,
     ynca.Subunit.ZONE2,

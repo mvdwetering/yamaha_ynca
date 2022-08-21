@@ -25,7 +25,13 @@ from homeassistant.const import (
 )
 
 
-from .const import DOMAIN, LOGGER, ZONE_SUBUNIT_IDS, CONF_HIDDEN_INPUTS_FOR_ZONE
+from .const import (
+    DOMAIN,
+    LOGGER,
+    ZONE_MIN_VOLUME,
+    ZONE_SUBUNIT_IDS,
+    CONF_HIDDEN_INPUTS_FOR_ZONE,
+)
 from .debounce import debounce
 from .helpers import scale
 
@@ -172,9 +178,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        return scale(
-            self._zone.volume, [self._zone.min_volume, self._zone.max_volume], [0, 1]
-        )
+        return scale(self._zone.vol, [ZONE_MIN_VOLUME, self._zone.maxvol], [0, 1])
 
     @property
     def is_volume_muted(self):
@@ -260,17 +264,15 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_volume_level(self, volume):
         """Set volume level, convert range from 0..1."""
-        self._zone.volume = scale(
-            volume, [0, 1], [self._zone.min_volume, self._zone.max_volume]
-        )
+        self._zone.vol = scale(volume, [0, 1], [ZONE_MIN_VOLUME, self._zone.maxvol])
 
     def volume_up(self):
         """Volume up media player."""
-        self._zone.volume_up()
+        self._zone.vol_up()
 
     def volume_down(self):
         """Volume down media player."""
-        self._zone.volume_down()
+        self._zone.vol_down()
 
     def mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""

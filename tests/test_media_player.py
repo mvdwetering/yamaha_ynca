@@ -33,8 +33,7 @@ def mock_zone():
     zone.id = "ZoneId"
     zone.zonename = "ZoneName"
     zone.scene_names = {"1234": "SceneName 1234"}
-    zone.max_volume = 10
-    zone.min_volume = -5
+    zone.maxvol = 10
     zone.inp = "INPUT_ID_1"
 
     return zone
@@ -101,18 +100,18 @@ async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
 async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
 
     mp_entity.set_volume_level(1)
-    assert mock_zone.volume == 10
+    assert mock_zone.vol == 10
     assert mp_entity.volume_level == 1
 
     mp_entity.set_volume_level(0)
-    assert mock_zone.volume == -5
+    assert mock_zone.vol == -80.5
     assert mp_entity.volume_level == 0
 
     mp_entity.volume_up()
-    assert mock_zone.volume_up.call_count == 1
+    assert mock_zone.vol_up.call_count == 1
 
     mp_entity.volume_down()
-    assert mock_zone.volume_down.call_count == 1
+    assert mock_zone.vol_down.call_count == 1
 
 
 async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
