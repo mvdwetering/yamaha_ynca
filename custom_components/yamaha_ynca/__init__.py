@@ -156,7 +156,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if initialized:
         await update_device_registry(hass, entry, ynca_receiver)
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = DomainEntryData(
-            ynca_receiver, ynca_receiver.get_communication_log_items()
+            api=ynca_receiver,
+            initialization_events=ynca_receiver.get_communication_log_items(),
         )
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 

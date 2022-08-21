@@ -18,7 +18,7 @@ async def async_get_config_entry_diagnostics(
     data = {}
     data["config_entry"] = entry.as_dict()
 
-    # Add data from the entry
+    # Add data from the device itself
     if domain_entry_data := hass.data[DOMAIN].get(entry.entry_id, None):
         api: ynca.Ynca = domain_entry_data.api
         data["SYS"] = {
