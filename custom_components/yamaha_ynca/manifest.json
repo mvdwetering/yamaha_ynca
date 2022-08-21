@@ -5,7 +5,7 @@
   "documentation": "https://github.com/mvdwetering/yamaha_ynca",
   "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "requirements": [
-    "ynca==3.6.0"
+    "ynca==3.8.0"
   ],
   "ssdp": [],
   "zeroconf": [],
@@ -15,5 +15,8 @@
     "@mvdwetering"
   ],
   "iot_class": "local_push",
-  "version": "4.3.0"
+  "loggers": [
+    "ynca"
+  ],
+  "version": "4.4.0"
 }

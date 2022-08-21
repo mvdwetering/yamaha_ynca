@@ -16,7 +16,7 @@ async def test_async_setup_entry(hass, device_reg):
     assert len(hass.config_entries.async_entries(yamaha_ynca.DOMAIN)) == 1
     assert integration.entry.state is ConfigEntryState.LOADED
 
-    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id]
+    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
     assert len(mock_ynca.initialize.mock_calls) == 1
 
     assert len(device_reg.devices.keys()) == 1
@@ -92,7 +92,7 @@ async def test_async_setup_entry_fails_unknown_reason(hass):
 async def test_async_unload_entry(hass):
     """Test successful unload of entry."""
     integration = await setup_integration(hass)
-    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id]
+    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
 
     assert await hass.config_entries.async_unload(integration.entry.entry_id)
     await hass.async_block_till_done()
@@ -106,7 +106,7 @@ async def test_reload_on_disconnect(hass):
     """Test successful unload of entry."""
     integration = await setup_integration(hass)
 
-    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id]
+    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
 
     # This should work (it works in real environment) but it locks up the test completely :(
     # Don't know what is going on.

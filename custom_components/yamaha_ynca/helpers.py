@@ -1,7 +1,6 @@
 """Helpers for the Yamaha (YNCA) integration."""
 
 import ipaddress
-import logging
 
 
 def scale(input_value, input_range, output_range):

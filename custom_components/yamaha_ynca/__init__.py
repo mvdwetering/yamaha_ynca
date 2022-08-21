@@ -2,21 +2,34 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 import re
 from typing import List
 
 import ynca
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
 from homeassistant.const import Platform
 from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry, entity_registry
 
-from .const import CONF_SERIAL_URL, DOMAIN, LOGGER, MANUFACTURER_NAME
+from .const import (
+    COMMUNICATION_LOG_SIZE,
+    CONF_SERIAL_URL,
+    DOMAIN,
+    LOGGER,
+    MANUFACTURER_NAME,
+)
 from .helpers import serial_url_from_user_input
 
 PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
+
+
+@dataclass
+class DomainEntryData:
+    api: ynca.Ynca
+    initialization_events: List[str]
 
 
 async def update_device_registry(
@@ -101,13 +114,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ynca_receiver.initialize()
             return True
         except ynca.YncaConnectionError as e:
-            LOGGER.error("Connection to YNCA receiver failed")
-            raise ConfigEntryNotReady from e
+            raise ConfigEntryNotReady(
+                "Connection to YNCA receiver %s failed" % entry.title
+            ) from e
         except ynca.YncaInitializationFailedException as e:
-            LOGGER.error("Initialization of YNCA receiver failed")
-            raise ConfigEntryNotReady from e
+            raise ConfigEntryNotReady(
+                "Initialization of YNCA receiver %s failed" % entry.title
+            ) from e
         except Exception:
-            LOGGER.exception("Unexpected exception during initialization")
+            LOGGER.exception(
+                "Unexpected exception during initialization of %s" % entry.title
+            )
             return False
 
     def on_disconnect():
@@ -116,22 +133,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # The unittest hangs on this it seems.
         # Same for the alternative approach below.
-        asyncio.run_coroutine_threadsafe(
-            hass.config_entries.async_reload(entry.entry_id), hass.loop
-        ).result()
+        try:
+            asyncio.run_coroutine_threadsafe(
+                hass.config_entries.async_reload(entry.entry_id), hass.loop
+            ).result()
+        except OperationNotAllowed:
+            # Can not reload when during setup
+            # Which is fine, so just let it go
+            pass
 
         # hass.services.call(
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
         # )
 
     ynca_receiver = ynca.Ynca(
-        serial_url_from_user_input(entry.data[CONF_SERIAL_URL]), on_disconnect
+        serial_url_from_user_input(entry.data[CONF_SERIAL_URL]),
+        on_disconnect,
+        COMMUNICATION_LOG_SIZE,
     )
     initialized = await hass.async_add_executor_job(initialize_ynca, ynca_receiver)
 
     if initialized:
         await update_device_registry(hass, entry, ynca_receiver)
-        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ynca_receiver
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = DomainEntryData(
+            api=ynca_receiver,
+            initialization_events=ynca_receiver.get_communication_log_items(),
+        )
         hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
         entry.async_on_unload(entry.add_update_listener(async_update_options))
@@ -146,7 +173,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ynca_receiver.close()
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        ynca_receiver = hass.data[DOMAIN].pop(entry.entry_id)
-        await hass.async_add_executor_job(close_ynca, ynca_receiver)
+        domain_entry_info = hass.data[DOMAIN].pop(entry.entry_id)
+        await hass.async_add_executor_job(close_ynca, domain_entry_info.api)
 
     return unload_ok

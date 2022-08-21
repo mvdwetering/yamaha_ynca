@@ -25,7 +25,13 @@ from homeassistant.const import (
 )
 
 
-from .const import DOMAIN, LOGGER, ZONE_SUBUNIT_IDS, CONF_HIDDEN_INPUTS_FOR_ZONE
+from .const import (
+    DOMAIN,
+    LOGGER,
+    ZONE_MIN_VOLUME,
+    ZONE_SUBUNIT_IDS,
+    CONF_HIDDEN_INPUTS_FOR_ZONE,
+)
 from .debounce import debounce
 from .helpers import scale
 
@@ -58,17 +64,20 @@ STRAIGHT = "Straight"
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
 
-    receiver = hass.data[DOMAIN][config_entry.entry_id]
+    domain_entry_data = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone_subunit_id in ZONE_SUBUNIT_IDS:
-        if zone_subunit := getattr(receiver, zone_subunit_id):
+        if zone_subunit := getattr(domain_entry_data.api, zone_subunit_id):
             hidden_inputs = config_entry.options.get(
                 CONF_HIDDEN_INPUTS_FOR_ZONE(zone_subunit_id), []
             )
             entities.append(
                 YamahaYncaZone(
-                    config_entry.entry_id, receiver, zone_subunit, hidden_inputs
+                    config_entry.entry_id,
+                    domain_entry_data.api,
+                    zone_subunit,
+                    hidden_inputs,
                 )
             )
 
@@ -80,6 +89,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     _attr_device_class = MediaPlayerDeviceClass.RECEIVER
     _attr_should_poll = False
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -105,9 +115,10 @@ class YamahaYncaZone(MediaPlayerEntity):
         self.schedule_update_ha_state()
 
     def _get_input_subunits(self):
-        inputs = ynca.get_all_zone_inputs(self._ynca)
-        for input_id in inputs.keys():
-            if subunit := getattr(self._ynca, input_id, None):
+        for inputinfo in ynca.get_inputinfo_list(self._ynca):
+            if inputinfo.subunit is None:
+                continue
+            if subunit := getattr(self._ynca, inputinfo.subunit.value, None):
                 yield subunit
 
     async def async_added_to_hass(self):
@@ -128,17 +139,18 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.unregister_update_callback(self.debounced_update)
 
     def _get_input_from_source(self, source):
-        for input, name in ynca.get_all_zone_inputs(self._ynca).items():
-            if name == source:
-                return input
+        for inputinfo in ynca.get_inputinfo_list(self._ynca):
+            if inputinfo.name == source:
+                return inputinfo.input
         return None
 
     def _input_subunit(self):
         """Returns Subunit for current selected input if possible, otherwise None"""
-        inputs = ynca.get_all_zone_inputs(self._ynca)
-        for input_id, input_name in inputs.items():
-            if input_name == self._zone.input:
-                return getattr(self._ynca, input_id, None)
+        for inputinfo in ynca.get_inputinfo_list(self._ynca):
+            if inputinfo.subunit is None:
+                continue
+            if inputinfo.input == self._zone.inp:
+                return getattr(self._ynca, inputinfo.subunit.value, None)
         return None
 
     @property
@@ -166,9 +178,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        return scale(
-            self._zone.volume, [self._zone.min_volume, self._zone.max_volume], [0, 1]
-        )
+        return scale(self._zone.vol, [ZONE_MIN_VOLUME, self._zone.maxvol], [0, 1])
 
     @property
     def is_volume_muted(self):
@@ -178,16 +188,25 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source(self):
         """Return the current input source."""
-        return ynca.get_all_zone_inputs(self._ynca).get(
-            self._zone.input, self._zone.input
+        current_input_info = [
+            inputinfo
+            for inputinfo in ynca.get_inputinfo_list(self._ynca)
+            if inputinfo.input == self._zone.inp
+        ]
+        return (
+            current_input_info[0].name
+            if len(current_input_info) > 0
+            else self._zone.inp
         )
 
     @property
     def source_list(self):
         """List of available input sources."""
-        all_inputs = ynca.get_all_zone_inputs(self._ynca)
+        inputinfos = ynca.get_inputinfo_list(self._ynca)
         filtered_inputs = [
-            name for id, name in all_inputs.items() if id not in self._hidden_inputs
+            inputinfo.name
+            for inputinfo in inputinfos
+            if inputinfo.input not in self._hidden_inputs
         ]
 
         # Return the user given names instead HDMI1 etc...
@@ -245,17 +264,15 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_volume_level(self, volume):
         """Set volume level, convert range from 0..1."""
-        self._zone.volume = scale(
-            volume, [0, 1], [self._zone.min_volume, self._zone.max_volume]
-        )
+        self._zone.vol = scale(volume, [0, 1], [ZONE_MIN_VOLUME, self._zone.maxvol])
 
     def volume_up(self):
         """Volume up media player."""
-        self._zone.volume_up()
+        self._zone.vol_up()
 
     def volume_down(self):
         """Volume down media player."""
-        self._zone.volume_down()
+        self._zone.vol_down()
 
     def mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
@@ -264,7 +281,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def select_source(self, source):
         """Select input source."""
         if input := self._get_input_from_source(source):
-            self._zone.input = input
+            self._zone.inp = input
 
     def select_sound_mode(self, sound_mode):
         """Switch the sound mode of the entity."""
