@@ -8,7 +8,9 @@ According to the protocol documentation the following AV receivers should be sup
 
 ## Features
 
+* Full UI support for adding devices
 * Connect through serial, IP or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+* Support for multiple zones
 * Power on/off
 * Volume and mute
 * Source selection
@@ -24,7 +26,6 @@ According to the protocol documentation the following AV receivers should be sup
 
 Recommended as you get notified of updates.
 
-* Add this repository `https://github.com/mvdwetering/yamaha_ynca` to HACS as a "custom repository" with category "integration"
 * Add integration within HACS (use the + button and search for "YNCA")
 * Restart Home Assistant
 * Go to the Home Assistant integrations menu and press the Add button and search for "Yamaha (YNCA)"
