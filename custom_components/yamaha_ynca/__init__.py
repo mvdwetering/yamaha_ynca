@@ -21,15 +21,9 @@ from .const import (
     LOGGER,
     MANUFACTURER_NAME,
 )
-from .helpers import serial_url_from_user_input
+from .helpers import serial_url_from_user_input, DomainEntryData
 
 PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
-
-
-@dataclass
-class DomainEntryData:
-    api: ynca.Ynca
-    initialization_events: List[str]
 
 
 async def update_device_registry(

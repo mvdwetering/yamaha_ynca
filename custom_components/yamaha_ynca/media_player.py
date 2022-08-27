@@ -33,7 +33,7 @@ from .const import (
     CONF_HIDDEN_INPUTS_FOR_ZONE,
 )
 from .debounce import debounce
-from .helpers import scale
+from .helpers import scale, DomainEntryData
 
 SUPPORT_YAMAHA_YNCA_BASE = (
     MediaPlayerEntityFeature.VOLUME_SET
@@ -64,7 +64,7 @@ STRAIGHT = "Straight"
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
 
-    domain_entry_data = hass.data[DOMAIN][config_entry.entry_id]
+    domain_entry_data: DomainDataEntry = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone_subunit_id in ZONE_SUBUNIT_IDS:

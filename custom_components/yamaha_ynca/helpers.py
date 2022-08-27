@@ -1,6 +1,16 @@
 """Helpers for the Yamaha (YNCA) integration."""
 
+from dataclasses import dataclass
 import ipaddress
+from typing import List
+
+import ynca
+
+
+@dataclass
+class DomainEntryData:
+    api: ynca.Ynca
+    initialization_events: List[str]
 
 
 def scale(input_value, input_range, output_range):

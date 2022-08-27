@@ -4,11 +4,12 @@ from homeassistant.components.button import ButtonEntity
 
 from .const import DOMAIN, ZONE_SUBUNIT_IDS
 from .debounce import debounce
+from .helpers import DomainEntryData
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
-    domain_entry_data = hass.data[DOMAIN][config_entry.entry_id]
+    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone in ZONE_SUBUNIT_IDS:
