@@ -3,7 +3,6 @@ from typing import Any
 from homeassistant.components.button import ButtonEntity
 
 from .const import DOMAIN, ZONE_SUBUNIT_IDS
-from .debounce import debounce
 from .helpers import DomainEntryData
 
 
@@ -38,18 +37,14 @@ class YamahaYncaSceneButton(ButtonEntity):
             "identifiers": {(DOMAIN, receiver_unique_id)},
         }
 
-    # @debounce(0.200)
-    def debounced_update(self):
-        # Debounced update because lots of updates come in when switching sources
-        # and I don't want to spam HA with all those updates
-        # as it causes unneeded load and glitches in the UI.
+    def update_callback(self):
         self.schedule_update_ha_state()
 
     async def async_added_to_hass(self):
-        self._zone.register_update_callback(self.debounced_update)
+        self._zone.register_update_callback(self.update_callback)
 
     async def async_will_remove_from_hass(self):
-        self._zone.unregister_update_callback(self.debounced_update)
+        self._zone.unregister_update_callback(self.update_callback)
 
     @property
     def name(self):

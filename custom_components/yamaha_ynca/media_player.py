@@ -32,7 +32,6 @@ from .const import (
     ZONE_SUBUNIT_IDS,
     CONF_HIDDEN_INPUTS_FOR_ZONE,
 )
-from .debounce import debounce
 from .helpers import scale, DomainEntryData
 
 SUPPORT_YAMAHA_YNCA_BASE = (
@@ -107,11 +106,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             "identifiers": {(DOMAIN, receiver_unique_id)},
         }
 
-    # @debounce(0.200)
-    def debounced_update(self):
-        # Debounced update because lots of updates come in when switching sources
-        # and I don't want to spam HA with all those updates
-        # as it causes unneeded load and glitches in the UI.
+    def update_callback(self):
         self.schedule_update_ha_state()
 
     def _get_input_subunits(self):
@@ -123,20 +118,20 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     async def async_added_to_hass(self):
         # Register to catch input renames on SYS
-        self._ynca.SYS.register_update_callback(self.debounced_update)
-        self._zone.register_update_callback(self.debounced_update)
+        self._ynca.SYS.register_update_callback(self.update_callback)
+        self._zone.register_update_callback(self.update_callback)
 
         # TODO: Optimize registrations as now all zones get triggered by all changes
         #       even when change happens on subunit that is not input of this zone
         for subunit in self._get_input_subunits():
-            subunit.register_update_callback(self.debounced_update)
+            subunit.register_update_callback(self.update_callback)
 
     async def async_will_remove_from_hass(self):
-        self._ynca.SYS.unregister_update_callback(self.debounced_update)
-        self._zone.unregister_update_callback(self.debounced_update)
+        self._ynca.SYS.unregister_update_callback(self.update_callback)
+        self._zone.unregister_update_callback(self.update_callback)
 
         for subunit in self._get_input_subunits():
-            subunit.unregister_update_callback(self.debounced_update)
+            subunit.unregister_update_callback(self.update_callback)
 
     def _get_input_from_source(self, source):
         for inputinfo in ynca.get_inputinfo_list(self._ynca):
