@@ -21,7 +21,6 @@ from homeassistant.const import (
     STATE_ON,
     STATE_PLAYING,
     STATE_PAUSED,
-    STATE_IDLE,
 )
 
 
@@ -166,7 +165,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             if playbackinfo == ynca.PlaybackInfo.PAUSE:
                 return STATE_PAUSED
             if playbackinfo == ynca.PlaybackInfo.STOP:
-                return STATE_IDLE
+                return STATE_ON
 
         return STATE_ON
 
