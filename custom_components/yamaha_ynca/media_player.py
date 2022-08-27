@@ -62,7 +62,7 @@ STRAIGHT = "Straight"
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
 
-    domain_entry_data: DomainDataEntry = hass.data[DOMAIN][config_entry.entry_id]
+    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone_subunit_id in ZONE_SUBUNIT_IDS:
