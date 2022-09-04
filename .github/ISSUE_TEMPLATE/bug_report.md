@@ -26,6 +26,9 @@ If possible add diagnostics data from HA. The "Download diagnostics" option can 
 
 Please add the file itself (drag-and-drop in this box). Do not, copy-paste the contents here as it will make the issue unreadable
 
+**Logging**
+If there are errors in the Home Assistant logs please add them here.
+
 **Home Assistant version information:**
  - Version [e.g. 2022.8.0]
 
