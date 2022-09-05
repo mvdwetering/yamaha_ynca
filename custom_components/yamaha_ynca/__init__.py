@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
+from enum import unique
 import re
 from typing import List
 
@@ -13,6 +13,7 @@ from homeassistant.const import Platform
 from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
@@ -21,15 +22,11 @@ from .const import (
     LOGGER,
     MANUFACTURER_NAME,
 )
-from .helpers import serial_url_from_user_input
+from .helpers import serial_url_from_user_input, DomainEntryData
 
 PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
-
-@dataclass
-class DomainEntryData:
-    api: ynca.Ynca
-    initialization_events: List[str]
+SERVICE_SEND_RAW_YNCA = "send_raw_ynca"
 
 
 async def update_device_registry(
@@ -105,6 +102,13 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
+async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall):
+    config_entry_ids = await async_extract_config_entry_ids(hass, call)
+    for config_entry_id in config_entry_ids:
+        if domain_entry_info := hass.data[DOMAIN].get(config_entry_id, None):
+            domain_entry_info.api.send_raw(call.data.get("raw_data"))
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
@@ -159,7 +163,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             api=ynca_receiver,
             initialization_events=ynca_receiver.get_communication_log_items(),
         )
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+        if not hass.services.has_service(DOMAIN, SERVICE_SEND_RAW_YNCA):
+
+            async def async_handle_send_raw_ynca_local(call: ServiceCall):
+                await async_handle_send_raw_ynca(hass, call)
+
+            hass.services.async_register(
+                DOMAIN, SERVICE_SEND_RAW_YNCA, async_handle_send_raw_ynca_local
+            )
 
         entry.async_on_unload(entry.add_update_listener(async_update_options))
 
@@ -175,5 +188,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         domain_entry_info = hass.data[DOMAIN].pop(entry.entry_id)
         await hass.async_add_executor_job(close_ynca, domain_entry_info.api)
+
+    if len(hass.data[DOMAIN]) == 0:
+        hass.services.async_remove(DOMAIN, SERVICE_SEND_RAW_YNCA)
 
     return unload_ok

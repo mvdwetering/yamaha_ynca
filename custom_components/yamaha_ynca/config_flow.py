@@ -24,7 +24,7 @@ from .const import (
     ZONE_SUBUNIT_IDS,
     LOGGER,
 )
-from .helpers import serial_url_from_user_input
+from .helpers import DomainEntryData, serial_url_from_user_input
 
 import ynca
 
@@ -72,7 +72,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     return {"title": modelname}
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
     VERSION = 3
@@ -168,7 +168,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         # Create a list of inputs on the Receiver that the user can select
-        domain_entry_data = self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
+        domain_entry_data: DomainEntryData = self.hass.data[DOMAIN].get(
+            self.config_entry.entry_id, None
+        )
 
         inputs = {}
         for inputinfo in ynca.get_inputinfo_list(domain_entry_data.api):

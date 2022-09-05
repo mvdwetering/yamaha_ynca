@@ -1,0 +1,19 @@
+# Describes the format for available Yamaha (YNCA) services
+
+send_raw_ynca:
+  name: Send raw YNCA command
+  description: Send raw YNCA commands, intended for debugging. Note that to see the responses in the logs the debug level of `ynca` needs to be set to debug.
+  target:
+    device:
+      integration: yamaha_ynca
+    entity:
+      integration: yamaha_ynca
+      domain: media_player
+  fields:
+    raw_data:
+      name: Raw YNCA data
+      description: Raw YNCA data to send. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE
+      example: "@MAIN:INP=HDMI3"
+      required: true
+      selector:
+        text:

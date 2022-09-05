@@ -11,7 +11,6 @@ from homeassistant.components.media_player.const import (
     REPEAT_MODE_ONE,
 )
 from homeassistant.const import (
-    STATE_IDLE,
     STATE_OFF,
     STATE_ON,
     STATE_PAUSED,
@@ -263,7 +262,7 @@ async def test_mediaplayer_entity_state(
     assert mp_entity.state == STATE_PAUSED
 
     mock_ynca.USB.playbackinfo = ynca.PlaybackInfo.STOP
-    assert mp_entity.state == STATE_IDLE
+    assert mp_entity.state == STATE_ON
 
 
 async def test_mediaplayer_playback_controls(mp_entity, mock_zone):
