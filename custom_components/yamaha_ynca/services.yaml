@@ -12,7 +12,8 @@ send_raw_ynca:
   fields:
     raw_data:
       name: Raw YNCA data
-      example: "@MAIN:PWR=On"
+      description: Raw YNCA data to send. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE
+      example: "@MAIN:INP=HDMI3"
       required: true
       selector:
         text:
