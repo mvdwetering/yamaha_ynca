@@ -186,6 +186,7 @@ async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
     return_value=[
         ynca.InputInfo(ynca.Subunit.USB, "USB", "USB"),
         ynca.InputInfo(ynca.Subunit.NETRADIO, "NET RADIO", "NET RADIO"),
+        ynca.InputInfo(ynca.Subunit.SPOTIFY, "SPOTIFY", "SPOTIFY"),
     ],
 )
 async def test_mediaplayer_entity_supported_features(
@@ -219,18 +220,26 @@ async def test_mediaplayer_entity_supported_features(
     expected_supported_features |= MediaPlayerEntityFeature.STOP
     assert mp_entity.supported_features == expected_supported_features
 
-    # Other sources also support pausem previous, next
+    # Other sources support pause, previous, next
+    # Repeat/shuffle capability depends on availability of repeat/shuffle attributes on YNCA subunit
+    mock_ynca.SPOTIFY = create_autospec(
+        ynca.mediaplayback_subunits.Spotify, id=ynca.Subunit.SPOTIFY
+    )
+    mock_ynca.SPOTIFY.repeat = None
+    mock_ynca.SPOTIFY.shuffle = None
+    mock_zone.inp = "SPOTIFY"
+    expected_supported_features |= MediaPlayerEntityFeature.PAUSE
+    expected_supported_features |= MediaPlayerEntityFeature.PREVIOUS_TRACK
+    expected_supported_features |= MediaPlayerEntityFeature.NEXT_TRACK
+    assert mp_entity.supported_features == expected_supported_features
+
+    # USB also supports repeat and shuffle
     mock_ynca.USB = create_autospec(
         ynca.mediaplayback_subunits.Usb, id=ynca.Subunit.USB
     )
     mock_zone.inp = "USB"
-    expected_supported_features |= MediaPlayerEntityFeature.PAUSE
-    expected_supported_features |= MediaPlayerEntityFeature.PREVIOUS_TRACK
-    expected_supported_features |= MediaPlayerEntityFeature.NEXT_TRACK
-    # USB also supports repeat and shuffle
     expected_supported_features |= MediaPlayerEntityFeature.REPEAT_SET
     expected_supported_features |= MediaPlayerEntityFeature.SHUFFLE_SET
-
     assert mp_entity.supported_features == expected_supported_features
 
 
@@ -412,7 +421,7 @@ async def test_mediaplayer_entity_repeat(
     assert mock_ynca.USB.repeat == ynca.Repeat.ALL
     assert mp_entity.repeat == REPEAT_MODE_ALL
 
-    # Subunit not supporting shuffle
+    # Subunit not supporting repeat
     mock_zone.inp = "NET RADIO"
     mock_ynca.NETRADIO = create_autospec(
         ynca.netradio.NetRadio, id=ynca.Subunit.NETRADIO
