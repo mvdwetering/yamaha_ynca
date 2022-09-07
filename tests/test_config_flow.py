@@ -171,6 +171,7 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             user_input={
                 yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
                 yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
+                yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["VILLAGE_VANGUARD"],
             },
         )
 
@@ -180,4 +181,5 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
+            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["VILLAGE_VANGUARD"],
         }

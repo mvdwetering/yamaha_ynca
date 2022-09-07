@@ -49,7 +49,8 @@
           "hidden_inputs_MAIN": "Hidden inputs for main zone",
           "hidden_inputs_ZONE2": "Hidden inputs for zone 2",
           "hidden_inputs_ZONE3": "Hidden inputs for zone 3",
-          "hidden_inputs_ZONE4": "Hidden inputs for zone 4"
+          "hidden_inputs_ZONE4": "Hidden inputs for zone 4",
+          "hidden_sound_modes": "Hidden sound modes"
         }
       }
     }
