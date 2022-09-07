@@ -342,7 +342,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._input_subunit():
             if subunit.id in RADIO_SOURCES:
                 return MEDIA_TYPE_CHANNEL
-            if hasattr(subunit, "song"):
+            if getattr(subunit, "song", None) is not None:
                 return MEDIA_TYPE_MUSIC
         return None
 
