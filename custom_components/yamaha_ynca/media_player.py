@@ -242,9 +242,9 @@ class YamahaYncaZone(MediaPlayerEntity):
                     supported_commands |= MediaPlayerEntityFeature.PAUSE
                     supported_commands |= MediaPlayerEntityFeature.NEXT_TRACK
                     supported_commands |= MediaPlayerEntityFeature.PREVIOUS_TRACK
-            if hasattr(input_subunit, "repeat"):
+            if getattr(input_subunit, "repeat", None) is not None:
                 supported_commands |= MediaPlayerEntityFeature.REPEAT_SET
-            if hasattr(input_subunit, "shuffle"):
+            if getattr(input_subunit, "shuffle", None) is not None:
                 supported_commands |= MediaPlayerEntityFeature.SHUFFLE_SET
         return supported_commands
 
@@ -305,8 +305,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def shuffle(self) -> Optional[bool]:
         """Boolean if shuffle is enabled."""
         if subunit := self._input_subunit():
-            if hasattr(subunit, "shuffle"):
-                return subunit.shuffle
+            return getattr(subunit, "shuffle", None)
         return None
 
     def set_shuffle(self, shuffle):
@@ -317,12 +316,12 @@ class YamahaYncaZone(MediaPlayerEntity):
     def repeat(self) -> Optional[str]:
         """Return current repeat mode."""
         if subunit := self._input_subunit():
-            if hasattr(subunit, "repeat"):
-                if subunit.repeat == ynca.Repeat.SINGLE:
+            if repeat := getattr(subunit, "repeat", None):
+                if repeat == ynca.Repeat.SINGLE:
                     return REPEAT_MODE_ONE
-                if subunit.repeat == ynca.Repeat.ALL:
+                if repeat == ynca.Repeat.ALL:
                     return REPEAT_MODE_ALL
-                if subunit.repeat == ynca.Repeat.OFF:
+                if repeat == ynca.Repeat.OFF:
                     return REPEAT_MODE_OFF
         return None
 
@@ -343,7 +342,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._input_subunit():
             if subunit.id in RADIO_SOURCES:
                 return MEDIA_TYPE_CHANNEL
-            if hasattr(subunit, "song"):
+            if getattr(subunit, "song", None) is not None:
                 return MEDIA_TYPE_MUSIC
         return None
 
