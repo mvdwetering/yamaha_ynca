@@ -23,6 +23,7 @@ ZONE_SUBUNIT_IDS = [
     ynca.Subunit.ZONE4,
 ]
 
+CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 
 def CONF_HIDDEN_INPUTS_FOR_ZONE(zone: str):
     return f"hidden_inputs_{zone}"

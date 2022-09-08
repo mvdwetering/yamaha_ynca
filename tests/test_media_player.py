@@ -40,7 +40,7 @@ def mock_zone():
 
 @pytest.fixture
 def mp_entity(mock_zone, mock_ynca):
-    return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [])
+    return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
 
 
 @patch("ynca.get_inputinfo_list", return_value=[])
@@ -122,7 +122,7 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
         ],
     ):
         mp_entity = YamahaYncaZone(
-            "ReceiverUniqueId", mock_ynca, mock_zone, ["INPUT_ID_1"]
+            "ReceiverUniqueId", mock_ynca, mock_zone, ["INPUT_ID_1"], []
         )
 
         assert mp_entity.source_list == ["Input Name 2"]
@@ -179,6 +179,15 @@ async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
 
     mock_zone.soundprg = "DspSoundProgram"
     assert "All-Ch Stereo" in mp_entity.sound_mode_list
+
+
+async def test_mediaplayer_entity_hidden_sound_mode(mock_ynca, mock_zone):
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId", mock_ynca, mock_zone, ["INPUT_ID_1"], ["MONO_MOVIE"]
+    )
+
+    assert "Drama" in mp_entity.sound_mode_list
+    assert "Mono movie" not in mp_entity.sound_mode_list
 
 
 @patch(

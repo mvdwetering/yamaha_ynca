@@ -25,6 +25,7 @@ from homeassistant.const import (
 
 
 from .const import (
+    CONF_HIDDEN_SOUND_MODES,
     DOMAIN,
     LOGGER,
     ZONE_MIN_VOLUME,
@@ -70,12 +71,15 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
             hidden_inputs = config_entry.options.get(
                 CONF_HIDDEN_INPUTS_FOR_ZONE(zone_subunit_id), []
             )
+            hidden_sound_modes = config_entry.options.get(CONF_HIDDEN_SOUND_MODES, [])
+
             entities.append(
                 YamahaYncaZone(
                     config_entry.entry_id,
                     domain_entry_data.api,
                     zone_subunit,
                     hidden_inputs,
+                    hidden_sound_modes,
                 )
             )
 
@@ -95,10 +99,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         ynca: ynca.Ynca,
         zone: Type[ynca.zone.ZoneBase],
         hidden_inputs: List[str],
+        hidden_sound_modes: List[str],
     ):
         self._ynca = ynca
         self._zone = zone
         self._hidden_inputs = hidden_inputs
+        self._hidden_sound_modes = hidden_sound_modes
 
         self._attr_unique_id = f"{receiver_unique_id}_{self._zone.id}"
         self._attr_device_info = {
@@ -221,7 +227,13 @@ class YamahaYncaZone(MediaPlayerEntity):
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
             modelinfo = ynca.get_modelinfo(self._ynca.SYS.modelname)
-            sound_modes.extend(modelinfo.soundprg if modelinfo else ynca.SoundPrg)
+            filtered_sound_modes = [
+                sound_mode.value
+                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
+                if sound_mode.name not in self._hidden_sound_modes
+            ]
+            sound_modes.extend(filtered_sound_modes)
+
         sound_modes.sort(
             key=str.lower
         )  # Using `str.lower` does not work for all languages, but better than nothing
