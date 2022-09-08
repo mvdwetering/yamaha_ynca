@@ -1,8 +1,6 @@
 """Config flow for Yamaha (YNCA) integration."""
 from __future__ import annotations
 
-import logging
-import traceback
 from typing import Any, Dict
 
 import voluptuous as vol  # type: ignore
@@ -17,6 +15,7 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import (
     CONF_HIDDEN_INPUTS_FOR_ZONE,
+    CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
     CONF_IP_ADDRESS,
     CONF_PORT,
@@ -167,26 +166,42 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        # Create a list of inputs on the Receiver that the user can select
+        schema = {}
+
         domain_entry_data: DomainEntryData = self.hass.data[DOMAIN].get(
             self.config_entry.entry_id, None
         )
+        api = domain_entry_data.api
+        modelinfo = ynca.get_modelinfo(api.SYS.modelname)
 
+        # Hiding sound modes
+        sound_modes = {}
+        for sound_mode in ynca.SoundPrg:
+            if modelinfo and not sound_mode in modelinfo.soundprg:
+                continue
+            sound_modes[sound_mode.name] = sound_mode.value
+        sound_modes = dict(sorted(sound_modes.items(), key=lambda tup: tup[1]))
+
+        schema[
+            vol.Required(
+                CONF_HIDDEN_SOUND_MODES,
+                default=self.config_entry.options.get(CONF_HIDDEN_SOUND_MODES, []),
+            )
+        ] = cv.multi_select(sound_modes)
+
+        # Hiding inputs per zone
         inputs = {}
-        for inputinfo in ynca.get_inputinfo_list(domain_entry_data.api):
+        for inputinfo in ynca.get_inputinfo_list(api):
             inputs[inputinfo.input] = (
                 f"{inputinfo.input} ({inputinfo.name})"
                 if inputinfo.input != inputinfo.name
                 else inputinfo.name
             )
-
         # Sorts the inputs (3.7+ dicts maintain insertion order)
         inputs = dict(sorted(inputs.items(), key=lambda tup: tup[0]))
 
-        # Build schema based on available zones
-        schema = {}
         for zone_id in ZONE_SUBUNIT_IDS:
-            if getattr(domain_entry_data.api, zone_id, None):
+            if getattr(api, zone_id, None):
                 schema[
                     vol.Required(
                         CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id),
