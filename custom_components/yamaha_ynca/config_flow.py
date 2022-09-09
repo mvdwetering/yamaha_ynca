@@ -74,7 +74,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
-    VERSION = 3
+    VERSION = 4
 
     @staticmethod
     @callback
@@ -175,17 +175,27 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         modelinfo = ynca.get_modelinfo(api.SYS.modelname)
 
         # Hiding sound modes
-        sound_modes = {}
+        sound_modes = []
         for sound_mode in ynca.SoundPrg:
             if modelinfo and not sound_mode in modelinfo.soundprg:
-                continue
-            sound_modes[sound_mode.name] = sound_mode.value
-        sound_modes = dict(sorted(sound_modes.items(), key=lambda tup: tup[1]))
+                continue  # Skip soundmodes not supported on the model
+            # sound_modes[sound_mode.value] = sound_mode.value
+            sound_modes.append(sound_mode.value)
+        # sound_modes = dict(sorted(sound_modes.items(), key=lambda tup: tup[1]))
+        sound_modes.sort(key=str.lower)
+
+        # Protect against supported soundmode list updates
+        stored_sound_modes = self.config_entry.options.get(CONF_HIDDEN_SOUND_MODES, [])
+        stored_sound_modes = [
+            stored_sound_mode
+            for stored_sound_mode in stored_sound_modes
+            if stored_sound_mode in sound_modes
+        ]
 
         schema[
             vol.Required(
                 CONF_HIDDEN_SOUND_MODES,
-                default=self.config_entry.options.get(CONF_HIDDEN_SOUND_MODES, []),
+                default=stored_sound_modes,
             )
         ] = cv.multi_select(sound_modes)
 
