@@ -74,7 +74,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
-    VERSION = 3
+    VERSION = 4
 
     @staticmethod
     @callback
@@ -178,8 +178,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         sound_modes = {}
         for sound_mode in ynca.SoundPrg:
             if modelinfo and not sound_mode in modelinfo.soundprg:
-                continue
-            sound_modes[sound_mode.name] = sound_mode.value
+                continue  # Skip soundmodes not supported on the model
+            sound_modes[sound_mode.value] = sound_mode.value
         sound_modes = dict(sorted(sound_modes.items(), key=lambda tup: tup[1]))
 
         schema[

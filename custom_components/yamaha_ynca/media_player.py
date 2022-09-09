@@ -227,16 +227,20 @@ class YamahaYncaZone(MediaPlayerEntity):
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
             modelinfo = ynca.get_modelinfo(self._ynca.SYS.modelname)
-            filtered_sound_modes = [
+            device_sound_modes = [
                 sound_mode.value
                 for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
-                if sound_mode.name not in self._hidden_sound_modes
             ]
-            sound_modes.extend(filtered_sound_modes)
+            sound_modes.extend(device_sound_modes)
 
-        sound_modes.sort(
-            key=str.lower
-        )  # Using `str.lower` does not work for all languages, but better than nothing
+        # Filter hidden sound modes
+        sound_modes = [
+            sound_mode
+            for sound_mode in sound_modes
+            if sound_mode not in self._hidden_sound_modes
+        ]
+        sound_modes.sort(key=str.lower)
+
         return sound_modes if len(sound_modes) > 0 else None
 
     @property

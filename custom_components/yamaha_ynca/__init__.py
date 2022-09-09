@@ -17,6 +17,7 @@ from homeassistant.helpers.service import ServiceCall, async_extract_config_entr
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
+    CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
     DOMAIN,
     LOGGER,
@@ -55,46 +56,83 @@ async def update_device_registry(
     )
 
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entry."""
-    LOGGER.debug("Migrating from version %s", config_entry.version)
+    from_version = config_entry.version
+    LOGGER.debug("Migrating from version %s", from_version)
 
     if config_entry.version == 1:
-        # Button entities are replaced by scene entities
-        # cleanup the button entities so the user does not have to
-        registry = entity_registry.async_get(hass)
-        entities = entity_registry.async_entries_for_config_entry(
-            registry, config_entry.entry_id
-        )
-        for entity in entities:
-            if entity.domain == Platform.BUTTON:
-                registry.async_remove(entity.entity_id)
-
-        # Rename to `serial_url` for consistency
-        new = {**config_entry.data}
-        new["serial_url"] = new.pop("serial_port")
-
-        config_entry.version = 2
-        hass.config_entries.async_update_entry(config_entry, data=new)
+        migrate_v1(hass, config_entry)
 
     if config_entry.version == 2:
-        # Scene entities are replaced by Button entities
-        # (scenes limited to a single devics seem a bit weird)
-        # cleanup the scene entities so the user does not have to
-        registry = entity_registry.async_get(hass)
-        entities = entity_registry.async_entries_for_config_entry(
-            registry, config_entry.entry_id
-        )
-        for entity in entities:
-            if entity.domain == Platform.SCENE:
-                registry.async_remove(entity.entity_id)
+        migrate_v2(hass, config_entry)
 
-        config_entry.version = 3
-        hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
+    if config_entry.version == 3:
+        migrate_v3(hass, config_entry)
 
-    LOGGER.info("Migration to version %s successful", config_entry.version)
+    # When adding new migrations do _not_ forget
+    # to increase the VERSION of the YamahaYncaConfigFlow
+
+    LOGGER.info(
+        "Migration from ConfigEntry version %s to version %s successful",
+        from_version,
+        config_entry.version,
+    )
 
     return True
+
+
+def migrate_v3(hass: HomeAssistant, config_entry: ConfigEntry):
+    # Changed how hidden soundmodes are stored
+    # Used to the the enum name, now it is the value
+
+    options = dict(config_entry.options)
+    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES, None):
+        new_hidden_soundmodes = [
+            ynca.SoundPrg[old_hidden_soundmode].value
+            for old_hidden_soundmode in old_hidden_soundmodes
+        ]
+        options[CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
+
+    config_entry.version = 4
+    hass.config_entries.async_update_entry(
+        config_entry, data=config_entry.data, options=options
+    )
+
+
+def migrate_v2(hass: HomeAssistant, config_entry: ConfigEntry):
+    # Scene entities are replaced by Button entities
+    # (scenes limited to a single devics seem a bit weird)
+    # cleanup the scene entities so the user does not have to
+    registry = entity_registry.async_get(hass)
+    entities = entity_registry.async_entries_for_config_entry(
+        registry, config_entry.entry_id
+    )
+    for entity in entities:
+        if entity.domain == Platform.SCENE:
+            registry.async_remove(entity.entity_id)
+
+    config_entry.version = 3
+    hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
+
+
+def migrate_v1(hass: HomeAssistant, config_entry: ConfigEntry):
+    # Button entities are replaced by scene entities
+    # cleanup the button entities so the user does not have to
+    registry = entity_registry.async_get(hass)
+    entities = entity_registry.async_entries_for_config_entry(
+        registry, config_entry.entry_id
+    )
+    for entity in entities:
+        if entity.domain == Platform.BUTTON:
+            registry.async_remove(entity.entity_id)
+
+    # Rename to `serial_url` for consistency
+    new = {**config_entry.data}
+    new["serial_url"] = new.pop("serial_port")
+
+    config_entry.version = 2
+    hass.config_entries.async_update_entry(config_entry, data=new)
 
 
 async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:

@@ -45,7 +45,11 @@ class Integration(NamedTuple):
 
 
 async def setup_integration(
-    hass, mock_ynca=None, skip_setup=False, serial_url="SerialUrl"
+    hass,
+    mock_ynca=None,
+    skip_setup=False,
+    serial_url="SerialUrl",
+    modelname="ModelName",
 ):
     entry = MockConfigEntry(
         version=3,
@@ -66,7 +70,7 @@ async def setup_integration(
 
         mock_ynca = mock_ynca or create_autospec(ynca.Ynca)
 
-        mock_ynca.SYS.modelname = "ModelName"
+        mock_ynca.SYS.modelname = modelname
         mock_ynca.SYS.version = "Version"
 
         with patch("ynca.Ynca", return_value=mock_ynca, side_effect=side_effect):

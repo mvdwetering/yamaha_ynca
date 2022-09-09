@@ -157,7 +157,7 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             ynca.InputInfo(None, "INPUT_ID_2", "Input Name 2"),
         ],
     ):
-        integration = await setup_integration(hass, mock_ynca)
+        integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
 
         result = await hass.config_entries.options.async_init(
             integration.entry.entry_id
@@ -171,7 +171,7 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             user_input={
                 yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
                 yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
-                yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["VILLAGE_VANGUARD"],
+                yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
             },
         )
 
@@ -181,5 +181,5 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
             yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
-            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["VILLAGE_VANGUARD"],
+            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
         }
