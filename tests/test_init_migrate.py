@@ -9,74 +9,47 @@ from pytest_homeassistant_custom_component.common import (
     mock_registry,
 )
 
+from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES
 
-async def test_async_migration_entry_version_1(hass: HomeAssistant):
-    """Test a successful setup entry."""
 
-    entry_v1 = MockConfigEntry(
+async def test_async_migration_entry(hass: HomeAssistant):
+    """Full chain of migrations should result is last version"""
+
+    old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title="ModelName",
         data={"serial_port": "SerialPort"},
         version=1,
     )
-    entry_v1.add_to_hass(hass)
+    old_entry.add_to_hass(hass)
+
+    migration_success = await yamaha_ynca.async_migrate_entry(hass, old_entry)
+    await hass.async_block_till_done()
+
+    assert migration_success == True
+
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 4
+
+
+async def test_async_migration_entry_version_1(hass: HomeAssistant):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_port": "SerialPort"},
+        version=1,
+    )
+    old_entry.add_to_hass(hass)
 
     mock_entity_registry = mock_registry(hass)
     mock_button_entity_entry = mock_entity_registry.async_get_or_create(
         Platform.BUTTON,
         yamaha_ynca.DOMAIN,
         "button.scene_button",
-        config_entry=entry_v1,
-        device_id="device_id",
-    )
-    mock_scene_entity_entry = mock_entity_registry.async_get_or_create(
-        Platform.SCENE,
-        yamaha_ynca.DOMAIN,
-        "scene.scene_button",
-        config_entry=entry_v1,
-        device_id="device_id",
-    )
-    assert len(mock_entity_registry.entities) == 2  # Make sure entities were added
-
-    # Migrate
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get",
-        return_value=mock_entity_registry,
-    ):
-        migration_success = await yamaha_ynca.async_migrate_entry(hass, entry_v1)
-    await hass.async_block_till_done()
-
-    assert migration_success
-
-    # Serial_port renamed to serial_url
-    entry_v3 = hass.config_entries.async_get_entry(entry_v1.entry_id)
-    assert entry_v3.version == 3
-    assert entry_v3.title == entry_v1.title
-    assert entry_v3.data["serial_url"] == "SerialPort"
-
-    # Button and Scene entities removed
-    assert len(mock_entity_registry.entities) == 0
-
-
-async def test_async_migration_entry_version_2(hass: HomeAssistant):
-    """Test a successful setup entry."""
-
-    entry_v2 = MockConfigEntry(
-        domain=yamaha_ynca.DOMAIN,
-        entry_id="entry_id",
-        title="ModelName",
-        data={"serial_url": "SerialUrl"},
-        version=2,
-    )
-    entry_v2.add_to_hass(hass)
-
-    mock_entity_registry = mock_registry(hass)
-    mock_scene_entity_entry = mock_entity_registry.async_get_or_create(
-        Platform.SCENE,
-        yamaha_ynca.DOMAIN,
-        "scene.scene_button",
-        config_entry=entry_v2,
+        config_entry=old_entry,
         device_id="device_id",
     )
     assert len(mock_entity_registry.entities) == 1  # Make sure entities were added
@@ -86,16 +59,94 @@ async def test_async_migration_entry_version_2(hass: HomeAssistant):
         "homeassistant.helpers.entity_registry.async_get",
         return_value=mock_entity_registry,
     ):
-        migration_success = await yamaha_ynca.async_migrate_entry(hass, entry_v2)
+        yamaha_ynca.migrate_v1(hass, old_entry)
     await hass.async_block_till_done()
 
-    assert migration_success
+    # Button entities removed
+    assert len(mock_entity_registry.entities) == 0
 
     # Serial_port renamed to serial_url
-    entry_v3 = hass.config_entries.async_get_entry(entry_v2.entry_id)
-    assert entry_v3.version == 3
-    assert entry_v3.title == entry_v2.title
-    assert entry_v3.data["serial_url"] == "SerialUrl"
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 2
+    assert new_entry.data["serial_url"] == "SerialPort"
+
+
+async def test_async_migration_entry_version_2(hass: HomeAssistant):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl"},
+        version=2,
+    )
+    old_entry.add_to_hass(hass)
+
+    mock_entity_registry = mock_registry(hass)
+    mock_scene_entity_entry = mock_entity_registry.async_get_or_create(
+        Platform.SCENE,
+        yamaha_ynca.DOMAIN,
+        "scene.scene_button",
+        config_entry=old_entry,
+        device_id="device_id",
+    )
+    assert len(mock_entity_registry.entities) == 1  # Make sure entities were added
+
+    # Migrate
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get",
+        return_value=mock_entity_registry,
+    ):
+        yamaha_ynca.migrate_v2(hass, old_entry)
+    await hass.async_block_till_done()
 
     # Scene entities removed
     assert len(mock_entity_registry.entities) == 0
+
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 3
+
+
+async def test_async_migration_entry_version_3_hidden_soundmodes(hass: HomeAssistant):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl"},
+        options={CONF_HIDDEN_SOUND_MODES: ["CHURCH_IN_ROYAUMONT"]},
+        version=3,
+    )
+    old_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrate_v3(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # Hidden soundmodes are translated from enum name to value
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 4
+    assert new_entry.options[CONF_HIDDEN_SOUND_MODES] == ["Church in Royaumont"]
+
+
+async def test_async_migration_entry_version_3_no_hidden_soundmodes(
+    hass: HomeAssistant,
+):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl"},
+        version=3,
+    )
+    old_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrate_v3(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # Hidden soundmodes are translated from enum name to value
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 4
+    assert new_entry.options.get(CONF_HIDDEN_SOUND_MODES, None) is None
