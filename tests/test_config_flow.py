@@ -158,6 +158,11 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
         ],
     ):
         integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+        options = dict(integration.entry.options)
+        options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
+            "UNSUPPORTED",  # Test that obsolete values don't break the schema
+        ]
+        integration.entry.options = options
 
         result = await hass.config_entries.options.async_init(
             integration.entry.entry_id
@@ -171,7 +176,9 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
             user_input={
                 yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
                 yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
-                yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
+                yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
+                    "Hall in Vienna",
+                ],
             },
         )
 

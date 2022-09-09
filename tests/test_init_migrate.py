@@ -114,7 +114,7 @@ async def test_async_migration_entry_version_3_hidden_soundmodes(hass: HomeAssis
         entry_id="entry_id",
         title="ModelName",
         data={"serial_url": "SerialUrl"},
-        options={CONF_HIDDEN_SOUND_MODES: ["CHURCH_IN_ROYAUMONT"]},
+        options={CONF_HIDDEN_SOUND_MODES: ["CHURCH_IN_ROYAUMONT", "UNSUPPORTED"]},
         version=3,
     )
     old_entry.add_to_hass(hass)

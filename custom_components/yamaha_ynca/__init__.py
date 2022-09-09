@@ -74,7 +74,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     # to increase the VERSION of the YamahaYncaConfigFlow
 
     LOGGER.info(
-        "Migration from ConfigEntry version %s to version %s successful",
+        "Migration of ConfigEntry from version %s to version %s successful",
         from_version,
         config_entry.version,
     )
@@ -84,14 +84,16 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
 def migrate_v3(hass: HomeAssistant, config_entry: ConfigEntry):
     # Changed how hidden soundmodes are stored
-    # Used to the the enum name, now it is the value
+    # Used to be the enum name, now it is the value
 
     options = dict(config_entry.options)
     if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES, None):
-        new_hidden_soundmodes = [
-            ynca.SoundPrg[old_hidden_soundmode].value
-            for old_hidden_soundmode in old_hidden_soundmodes
-        ]
+        new_hidden_soundmodes = []
+        for old_hidden_soundmode in old_hidden_soundmodes:
+            try:
+                new_hidden_soundmodes.append(ynca.SoundPrg[old_hidden_soundmode].value)
+            except KeyError:
+                pass
         options[CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
 
     config_entry.version = 4
@@ -187,6 +189,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # hass.services.call(
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
         # )
+
+    hass.config_entries.async_update_entry(entry, data=entry.data)
 
     ynca_receiver = ynca.Ynca(
         serial_url_from_user_input(entry.data[CONF_SERIAL_URL]),
