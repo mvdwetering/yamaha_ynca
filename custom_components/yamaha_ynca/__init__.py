@@ -74,7 +74,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     # to increase the VERSION of the YamahaYncaConfigFlow
 
     LOGGER.info(
-        "Migration from ConfigEntry version %s to version %s successful",
+        "Migration of ConfigEntry from version %s to version %s successful",
         from_version,
         config_entry.version,
     )
