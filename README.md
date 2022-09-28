@@ -4,7 +4,7 @@ Custom integration for Home Assistant to support Yamaha AV receivers with the YN
 
 According to the protocol documentation the following AV receivers should be supported (not all tested), there might be more.
 
-> RX-A700, RX-A710, RX-A800, RX-A810, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A2000, RX-A2010, RX-A3000, RX-A3010, RX-V475, RX-V671, RX-V673, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700
+> RX-A700, RX-A710, RX-A800, RX-A810, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1040, RX-A2000, RX-A2010, RX-A3000, RX-A3010, RX-V475, RX-V671, RX-V673, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700
 
 In case of issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
