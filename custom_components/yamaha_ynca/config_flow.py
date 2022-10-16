@@ -179,9 +179,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         for sound_mode in ynca.SoundPrg:
             if modelinfo and not sound_mode in modelinfo.soundprg:
                 continue  # Skip soundmodes not supported on the model
-            # sound_modes[sound_mode.value] = sound_mode.value
             sound_modes.append(sound_mode.value)
-        # sound_modes = dict(sorted(sound_modes.items(), key=lambda tup: tup[1]))
         sound_modes.sort(key=str.lower)
 
         # Protect against supported soundmode list updates
