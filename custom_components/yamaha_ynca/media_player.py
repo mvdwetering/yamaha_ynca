@@ -162,9 +162,9 @@ class YamahaYncaZone(MediaPlayerEntity):
             if playbackinfo == ynca.PlaybackInfo.PAUSE:
                 return MediaPlayerState.PAUSED
             if playbackinfo == ynca.PlaybackInfo.STOP:
-                return MediaPlayerState.ON
+                return MediaPlayerState.IDLE
 
-        return MediaPlayerState.ON
+        return MediaPlayerState.IDLE
 
     @property
     def volume_level(self):
