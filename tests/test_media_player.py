@@ -71,7 +71,7 @@ async def test_mediaplayer_entity_turn_on_off(
 ):
     mp_entity.turn_on()
     assert mock_zone.pwr == True
-    assert mp_entity.state == MediaPlayerState.ON
+    assert mp_entity.state == MediaPlayerState.IDLE
 
     mp_entity.turn_off()
     assert mock_zone.pwr == False
@@ -259,7 +259,7 @@ async def test_mediaplayer_entity_state(
     assert mp_entity.state == MediaPlayerState.OFF
 
     mock_zone.pwr = True
-    assert mp_entity.state == MediaPlayerState.ON
+    assert mp_entity.state == MediaPlayerState.IDLE
 
     mock_zone.inp = "USB"
     mock_ynca.USB = create_autospec(
@@ -273,7 +273,7 @@ async def test_mediaplayer_entity_state(
     assert mp_entity.state == MediaPlayerState.PAUSED
 
     mock_ynca.USB.playbackinfo = ynca.PlaybackInfo.STOP
-    assert mp_entity.state == MediaPlayerState.ON
+    assert mp_entity.state == MediaPlayerState.IDLE
 
 
 async def test_mediaplayer_playback_controls(mp_entity, mock_zone):
