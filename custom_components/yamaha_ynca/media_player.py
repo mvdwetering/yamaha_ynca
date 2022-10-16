@@ -7,21 +7,12 @@ from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerDeviceClass,
+    MediaPlayerState,
+    MediaType,
+    RepeatMode,
 )
-from homeassistant.components.media_player.const import (
-    MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_CHANNEL,
-    REPEAT_MODE_ALL,
-    REPEAT_MODE_OFF,
-    REPEAT_MODE_ONE,
-)
+
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    STATE_OFF,
-    STATE_ON,
-    STATE_PLAYING,
-    STATE_PAUSED,
-)
 
 
 from .const import (
@@ -162,18 +153,18 @@ class YamahaYncaZone(MediaPlayerEntity):
     def state(self):
         """Return the state of the entity."""
         if not self._zone.pwr:
-            return STATE_OFF
+            return MediaPlayerState.OFF
 
         if input_subunit := self._input_subunit():
             playbackinfo = getattr(input_subunit, "playbackinfo", None)
             if playbackinfo == ynca.PlaybackInfo.PLAY:
-                return STATE_PLAYING
+                return MediaPlayerState.PLAYING
             if playbackinfo == ynca.PlaybackInfo.PAUSE:
-                return STATE_PAUSED
+                return MediaPlayerState.PAUSED
             if playbackinfo == ynca.PlaybackInfo.STOP:
-                return STATE_ON
+                return MediaPlayerState.IDLE
 
-        return STATE_ON
+        return MediaPlayerState.IDLE
 
     @property
     def volume_level(self):
@@ -334,21 +325,21 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._input_subunit():
             if repeat := getattr(subunit, "repeat", None):
                 if repeat == ynca.Repeat.SINGLE:
-                    return REPEAT_MODE_ONE
+                    return RepeatMode.ONE
                 if repeat == ynca.Repeat.ALL:
-                    return REPEAT_MODE_ALL
+                    return RepeatMode.ALL
                 if repeat == ynca.Repeat.OFF:
-                    return REPEAT_MODE_OFF
+                    return RepeatMode.OFF
         return None
 
     def set_repeat(self, repeat):
         """Set repeat mode."""
         subunit = self._input_subunit()
-        if repeat == REPEAT_MODE_ALL:
+        if repeat == RepeatMode.ALL:
             subunit.repeat = ynca.Repeat.ALL
-        elif repeat == REPEAT_MODE_OFF:
+        elif repeat == RepeatMode.OFF:
             subunit.repeat = ynca.Repeat.OFF
-        elif repeat == REPEAT_MODE_ONE:
+        elif repeat == RepeatMode.ONE:
             subunit.repeat = ynca.Repeat.SINGLE
 
     # Media info
@@ -357,9 +348,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         """Content type of current playing media."""
         if subunit := self._input_subunit():
             if subunit.id in RADIO_SOURCES:
-                return MEDIA_TYPE_CHANNEL
+                return MediaType.CHANNEL
             if getattr(subunit, "song", None) is not None:
-                return MEDIA_TYPE_MUSIC
+                return MediaType.MUSIC
         return None
 
     @property
