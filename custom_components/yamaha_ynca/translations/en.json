@@ -17,14 +17,14 @@
       },
       "network": {
         "title": "Network connection",
-        "description": "Input the IP address of the receiver and the port.\n\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
+        "description": "Input the IP address or hostname of the receiver and the port.\n\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
         "data": {
-          "ip_address": "Receiver IP address e.g. 192.168.1.123",
+          "host": "Receiver IP address or hostname e.g. 192.168.1.123",
           "port": "YNCA port; default is 50000"
         }
       },
       "advanced": {
-        "title": "Advanced",
+        "title": "PySerial URL handler (advanced)",
         "description": "Provide any [URL handler as supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\n\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `rfc2217://hostname_or_ip` to connect through an rfc2217 compatible server.",
         "data": {
           "serial_url": "URL handler"
