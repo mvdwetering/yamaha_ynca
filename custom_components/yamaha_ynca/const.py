@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__package__)
 COMMUNICATION_LOG_SIZE = 1000
 
 CONF_SERIAL_URL = "serial_url"
-CONF_IP_ADDRESS = "ip_address"
+CONF_HOST = "host"
 CONF_PORT = "port"
 
 MANUFACTURER_NAME = "Yamaha"
@@ -24,6 +24,7 @@ ZONE_SUBUNIT_IDS = [
 ]
 
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
+
 
 def CONF_HIDDEN_INPUTS_FOR_ZONE(zone: str):
     return f"hidden_inputs_{zone}"

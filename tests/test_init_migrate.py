@@ -13,7 +13,7 @@ from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES
 
 
 async def test_async_migration_entry(hass: HomeAssistant):
-    """Full chain of migrations should result is last version"""
+    """Full chain of migrations should result in last version"""
 
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
@@ -30,7 +30,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     assert migration_success == True
 
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
-    assert new_entry.version == 4
+    assert new_entry.version == 5
 
 
 async def test_async_migration_entry_version_1(hass: HomeAssistant):
@@ -150,3 +150,67 @@ async def test_async_migration_entry_version_3_no_hidden_soundmodes(
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry.version == 4
     assert new_entry.options.get(CONF_HIDDEN_SOUND_MODES, None) is None
+
+
+async def test_async_migration_entry_version_4_is_ipaddress(hass: HomeAssistant):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "1.2.3.4"},
+        version=4,
+    )
+    old_entry.add_to_hass(hass)
+
+    yamaha_ynca.migrate_v4(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # IP address converted to socket:// url
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 5
+    assert new_entry.data["serial_url"] == "socket://1.2.3.4:50000"
+
+
+async def test_async_migration_entry_version_4_is_ipaddress_and_port(
+    hass: HomeAssistant,
+):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "1.2.3.4:56789"},
+        version=4,
+    )
+    old_entry.add_to_hass(hass)
+
+    yamaha_ynca.migrate_v4(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # IP address converted to socket:// url
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 5
+    assert new_entry.data["serial_url"] == "socket://1.2.3.4:56789"
+
+
+async def test_async_migration_entry_version_4_is_not_ipaddress(
+    hass: HomeAssistant,
+):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "not an ip address"},
+        version=4,
+    )
+    old_entry.add_to_hass(hass)
+
+    yamaha_ynca.migrate_v4(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # IP address converted to socket:// url
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 5
+    assert new_entry.data["serial_url"] == "not an ip address"
