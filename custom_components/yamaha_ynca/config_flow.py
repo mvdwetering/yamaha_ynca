@@ -17,13 +17,13 @@ from .const import (
     CONF_HIDDEN_INPUTS_FOR_ZONE,
     CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
-    CONF_IP_ADDRESS,
+    CONF_HOST,
     CONF_PORT,
     DOMAIN,
     ZONE_SUBUNIT_IDS,
     LOGGER,
 )
-from .helpers import DomainEntryData, serial_url_from_user_input
+from .helpers import DomainEntryData
 
 import ynca
 
@@ -47,7 +47,7 @@ def get_network_schema(user_input):
     return vol.Schema(
         {
             vol.Required(
-                CONF_IP_ADDRESS, default=user_input.get(CONF_IP_ADDRESS, vol.UNDEFINED)
+                CONF_HOST, default=user_input.get(CONF_HOST, vol.UNDEFINED)
             ): str,
             vol.Required(CONF_PORT, default=user_input.get(CONF_PORT, 50000)): int,
         }
@@ -64,7 +64,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         return ynca.Ynca(serial_url).connection_check()
 
     modelname = await hass.async_add_executor_job(
-        validate_connection, serial_url_from_user_input(data[CONF_SERIAL_URL])
+        validate_connection, data[CONF_SERIAL_URL]
     )
 
     # Return info that you want to store in the config entry.
@@ -74,7 +74,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
-    VERSION = 4
+    VERSION = 5
 
     @staticmethod
     @callback
@@ -137,7 +137,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         connection_data = {
-            CONF_SERIAL_URL: f"{user_input[CONF_IP_ADDRESS]}:{user_input[CONF_PORT]}"
+            CONF_SERIAL_URL: f"socket://{user_input[CONF_HOST]}:{user_input[CONF_PORT]}"
         }
         return await self.async_try_connect(
             STEP_ID_NETWORK, get_network_schema(user_input), connection_data

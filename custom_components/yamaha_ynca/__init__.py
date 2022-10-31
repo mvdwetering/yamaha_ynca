@@ -23,7 +23,7 @@ from .const import (
     LOGGER,
     MANUFACTURER_NAME,
 )
-from .helpers import serial_url_from_user_input, DomainEntryData
+from .helpers import DomainEntryData
 
 PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
 
@@ -39,7 +39,7 @@ async def update_device_registry(
     configuration_url = None
     if matches := re.match(
         r"socket:\/\/(.+):\d+",  # Extract IP or hostname
-        serial_url_from_user_input(config_entry.data[CONF_SERIAL_URL]),
+        config_entry.data[CONF_SERIAL_URL],
     ):
         configuration_url = f"http://{matches[1]}"
 
@@ -70,6 +70,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 3:
         migrate_v3(hass, config_entry)
 
+    if config_entry.version == 4:
+        migrate_v4(hass, config_entry)
+
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
 
@@ -80,6 +83,33 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
     return True
+
+
+def migrate_v4(hass: HomeAssistant, config_entry: ConfigEntry):
+    # For "network" type the IP address or host is stored as a socket:// url directly
+    # Convert serial urls using the old "network" format
+    # Re-uses the old `serial_url_from_user_input` helper function
+    import ipaddress
+
+    def serial_url_from_user_input(user_input: str) -> str:
+        # Try and see if an IP address was passed in
+        # and convert to a socket url
+        try:
+            parts = user_input.split(":")
+            if len(parts) <= 2:
+                ipaddress.ip_address(parts[0])  # Throws when invalid IP
+                port = int(parts[1]) if len(parts) == 2 else 50000
+                return f"socket://{parts[0]}:{port}"
+        except ValueError:
+            pass
+
+        return user_input
+
+    new = {**config_entry.data}
+    new["serial_url"] = serial_url_from_user_input(config_entry.data["serial_url"])
+
+    config_entry.version = 5
+    hass.config_entries.async_update_entry(config_entry, data=new)
 
 
 def migrate_v3(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -193,7 +223,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.config_entries.async_update_entry(entry, data=entry.data)
 
     ynca_receiver = ynca.Ynca(
-        serial_url_from_user_input(entry.data[CONF_SERIAL_URL]),
+        entry.data[CONF_SERIAL_URL],
         on_disconnect,
         COMMUNICATION_LOG_SIZE,
     )

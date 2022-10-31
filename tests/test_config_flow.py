@@ -38,7 +38,7 @@ async def test_network_connect(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                yamaha_ynca.const.CONF_IP_ADDRESS: "192.168.1.123",
+                yamaha_ynca.const.CONF_HOST: "hostname_or_ipaddress",
                 yamaha_ynca.const.CONF_PORT: 12345,
             },
         )
@@ -47,7 +47,7 @@ async def test_network_connect(hass: HomeAssistant) -> None:
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
-        yamaha_ynca.CONF_SERIAL_URL: "192.168.1.123:12345",
+        yamaha_ynca.CONF_SERIAL_URL: "socket://hostname_or_ipaddress:12345",
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
