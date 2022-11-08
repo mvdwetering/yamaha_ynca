@@ -3,5 +3,5 @@ pytest-mock
 pytest-cov
 
 # homeassistant version: 2022.10.4
-pytest-homeassistant-custom-component==0.12.9
+pytest-homeassistant-custom-component==0.12.18
 
