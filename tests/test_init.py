@@ -29,8 +29,6 @@ async def test_async_setup_entry(hass, device_reg):
     assert device.name == "Yamaha ModelName"
     assert device.configuration_url is None
 
-    # TODO Check for entities/states
-
 
 async def test_async_setup_entry_socket_has_configuration_url(hass, device_reg):
     """Test a successful setup entry."""

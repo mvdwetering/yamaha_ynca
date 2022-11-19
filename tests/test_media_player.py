@@ -1,5 +1,5 @@
 """Test the Yamaha (YNCA) config flow."""
-from unittest.mock import Mock, create_autospec, patch
+from unittest.mock import Mock, call, create_autospec, patch
 
 import pytest
 from homeassistant.components.media_player import (
@@ -11,7 +11,8 @@ from homeassistant.components.media_player import (
 
 import ynca
 import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.media_player import YamahaYncaZone
+from custom_components.yamaha_ynca.media_player import YamahaYncaZone, async_setup_entry
+from tests.conftest import setup_integration
 
 
 @pytest.fixture
@@ -35,7 +36,43 @@ def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
     return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
 
 
-async def test_mediaplayer_entity(mp_entity, mock_zone):
+@patch("custom_components.yamaha_ynca.media_player.YamahaYncaZone", autospec=True)
+async def test_async_setup_entry(
+    yamahayncazone_mock,
+    hass,
+    mock_ynca,
+):
+
+    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
+
+    mock_ynca.main.zonename = "_MAIN_"
+    mock_ynca.zone2.zonename = "_ZONE2_"
+
+    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    integration.entry.options = {
+        "hidden_sound_modes": ["Adventure"],
+        "hidden_inputs_MAIN": ["Airplay"],
+    }
+    add_entities_mock = Mock()
+
+    await async_setup_entry(hass, integration.entry, add_entities_mock)
+
+    yamahayncazone_mock.assert_has_calls(
+        [
+            call("entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]),
+            call("entry_id", mock_ynca, mock_ynca.zone2, [], ["Adventure"]),
+        ]
+    )
+
+    add_entities_mock.assert_called_once()
+    entities = add_entities_mock.call_args.args[0]
+    assert len(entities) == 2
+
+
+async def test_mediaplayer_entity(mp_entity, mock_zone, mock_ynca):
+    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+
     assert mp_entity.unique_id == "ReceiverUniqueId_ZoneId"
     assert mp_entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId")
@@ -44,10 +81,22 @@ async def test_mediaplayer_entity(mp_entity, mock_zone):
 
     await mp_entity.async_added_to_hass()
     mock_zone.register_update_callback.assert_called_once()
+    mock_ynca.netradio.register_update_callback.assert_called_once()
+
+    zone_callback = mock_zone.register_update_callback.call_args.args[0]
+    netradio_callback = mock_ynca.netradio.register_update_callback.call_args.args[0]
+    mp_entity.schedule_update_ha_state = Mock()
+
+    zone_callback("FUNCTION", "VALUE")
+    mp_entity.schedule_update_ha_state.call_count == 1
+
+    netradio_callback("FUNCTION", "VALUE")
+    mp_entity.schedule_update_ha_state.call_count == 2
 
     await mp_entity.async_will_remove_from_hass()
-    mock_zone.unregister_update_callback.assert_called_once_with(
-        mock_zone.register_update_callback.call_args.args[0]
+    mock_zone.unregister_update_callback.assert_called_once_with(zone_callback)
+    mock_ynca.netradio.unregister_update_callback.assert_called_once_with(
+        netradio_callback
     )
 
 

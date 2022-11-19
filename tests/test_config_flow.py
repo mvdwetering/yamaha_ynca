@@ -1,5 +1,5 @@
 """Test the Yamaha (YNCA) config flow."""
-from unittest.mock import create_autospec, patch
+from unittest.mock import Mock, create_autospec, patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
@@ -151,13 +151,16 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
     """Test optionsflow."""
 
+    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
+    mock_ynca.zone3 = Mock(spec=ynca.subunits.zone.Zone3)
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
 
     integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
     options = dict(integration.entry.options)
     options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
-        "UNSUPPORTED",  # Test that obsolete values don't break the schema
+        "Obsolete",  # Test that obsolete values don't break the schema
     ]
     integration.entry.options = options
 
@@ -182,6 +185,5 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
         yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
         yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
         yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
     }

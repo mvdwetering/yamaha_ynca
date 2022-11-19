@@ -50,6 +50,12 @@ def mock_ynca(hass):
         spec=ynca.YncaApi,
     )
 
+    # No zones by default
+    mock_ynca.main = None
+    mock_ynca.zone2 = None
+    mock_ynca.zone3 = None
+    mock_ynca.zone4 = None
+
     # No input subunits
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, None)

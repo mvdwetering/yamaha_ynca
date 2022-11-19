@@ -14,7 +14,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for zone_attr_name in ZONE_SUBUNITS:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             for scene_id in range(1, 12 + 1):
-                if getattr(zone_subunit, f"scene{scene_id}name", None):
+                if getattr(zone_subunit, f"scene{scene_id}name"):
                     entities.append(
                         YamahaYncaSceneButton(
                             config_entry.entry_id, zone_subunit, scene_id
