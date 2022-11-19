@@ -115,22 +115,22 @@ async def test_mediaplayer_entity_turn_on_off(
     mock_zone,
 ):
     mp_entity.turn_on()
-    assert mock_zone.pwr == ynca.Pwr.ON
-    assert mp_entity.state == MediaPlayerState.IDLE
+    assert mock_zone.pwr is ynca.Pwr.ON
+    assert mp_entity.state is MediaPlayerState.IDLE
 
     mp_entity.turn_off()
-    assert mock_zone.pwr == ynca.Pwr.STANDBY
-    assert mp_entity.state == MediaPlayerState.OFF
+    assert mock_zone.pwr is ynca.Pwr.STANDBY
+    assert mp_entity.state is MediaPlayerState.OFF
 
 
 async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
 
     mp_entity.mute_volume(True)
-    assert mock_zone.mute == ynca.Mute.ON
+    assert mock_zone.mute is ynca.Mute.ON
     assert mp_entity.is_volume_muted == True
 
     mp_entity.mute_volume(False)
-    assert mock_zone.mute == ynca.Mute.OFF
+    assert mock_zone.mute is ynca.Mute.OFF
     assert mp_entity.is_volume_muted == False
 
 
@@ -160,17 +160,17 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
 
     # Select a rename-able source
     mp_entity.select_source("Input HDMI 4")
-    assert mock_zone.inp == ynca.Input.HDMI4
+    assert mock_zone.inp is ynca.Input.HDMI4
     assert mp_entity.source == "Input HDMI 4"
 
     # Select a source that maps to built in subunit
     mp_entity.select_source("NET RADIO")
-    assert mock_zone.inp == ynca.Input.NETRADIO
+    assert mock_zone.inp is ynca.Input.NETRADIO
     assert mp_entity.source == "NET RADIO"
 
     # Invalid source does not change input
     mp_entity.select_source("invalid source")
-    assert mock_zone.inp == ynca.Input.NETRADIO
+    assert mock_zone.inp is ynca.Input.NETRADIO
     assert mp_entity.source == "NET RADIO"
 
     # Input without mapped name shows as Unknown
@@ -193,14 +193,14 @@ async def test_mediaplayer_entity_source_list(mock_zone, mock_ynca):
 async def test_mediaplayer_entity_sound_mode(mp_entity, mock_zone):
 
     mp_entity.select_sound_mode("Village Vanguard")
-    assert mock_zone.soundprg == ynca.SoundPrg.VILLAGE_VANGUARD
-    assert mock_zone.straight == ynca.Straight.OFF
+    assert mock_zone.soundprg is ynca.SoundPrg.VILLAGE_VANGUARD
+    assert mock_zone.straight is ynca.Straight.OFF
     assert mp_entity.sound_mode == "Village Vanguard"
 
     # Straight is special as it is a separate setting on the Zone
     mp_entity.select_sound_mode("Straight")
-    assert mock_zone.soundprg == ynca.SoundPrg.VILLAGE_VANGUARD
-    assert mock_zone.straight == ynca.Straight.ON
+    assert mock_zone.soundprg is ynca.SoundPrg.VILLAGE_VANGUARD
+    assert mock_zone.straight is ynca.Straight.ON
     assert mp_entity.sound_mode == "Straight"
 
 
@@ -291,22 +291,22 @@ async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_
 async def test_mediaplayer_entity_state(mp_entity, mock_zone, mock_ynca):
 
     mock_zone.pwr = ynca.Pwr.STANDBY
-    assert mp_entity.state == MediaPlayerState.OFF
+    assert mp_entity.state is MediaPlayerState.OFF
 
     mock_zone.pwr = ynca.Pwr.ON
-    assert mp_entity.state == MediaPlayerState.IDLE
+    assert mp_entity.state is MediaPlayerState.IDLE
 
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
 
     mock_ynca.usb.playbackinfo = ynca.PlaybackInfo.PLAY
-    assert mp_entity.state == MediaPlayerState.PLAYING
+    assert mp_entity.state is MediaPlayerState.PLAYING
 
     mock_ynca.usb.playbackinfo = ynca.PlaybackInfo.PAUSE
-    assert mp_entity.state == MediaPlayerState.PAUSED
+    assert mp_entity.state is MediaPlayerState.PAUSED
 
     mock_ynca.usb.playbackinfo = ynca.PlaybackInfo.STOP
-    assert mp_entity.state == MediaPlayerState.IDLE
+    assert mp_entity.state is MediaPlayerState.IDLE
 
 
 async def test_mediaplayer_playback_controls(mp_entity, mock_zone):
@@ -374,48 +374,48 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
 async def test_mediaplayer_entity_shuffle(mp_entity, mock_zone, mock_ynca):
 
     # Unsupported subunit selected
-    assert mp_entity.shuffle == None
+    assert mp_entity.shuffle is None
 
     # Subunit supporting shuffle
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
 
     mp_entity.set_shuffle(True)
-    assert mock_ynca.usb.shuffle == ynca.Shuffle.ON
+    assert mock_ynca.usb.shuffle is ynca.Shuffle.ON
     assert mp_entity.shuffle == True
 
     mp_entity.set_shuffle(False)
-    assert mock_ynca.usb.shuffle == ynca.Shuffle.OFF
+    assert mock_ynca.usb.shuffle is ynca.Shuffle.OFF
     assert mp_entity.shuffle == False
 
     # Subunit not supporting shuffle
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
-    assert mp_entity.shuffle == None
+    assert mp_entity.shuffle is None
 
 
 async def test_mediaplayer_entity_repeat(mp_entity, mock_zone, mock_ynca):
 
     # Unsupported subunit selected
-    assert mp_entity.repeat == None
+    assert mp_entity.repeat is None
 
     # Subunit supporting repeat
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
 
     mp_entity.set_repeat(RepeatMode.OFF)
-    assert mock_ynca.usb.repeat == ynca.Repeat.OFF
-    assert mp_entity.repeat == RepeatMode.OFF
+    assert mock_ynca.usb.repeat is ynca.Repeat.OFF
+    assert mp_entity.repeat is RepeatMode.OFF
 
     mp_entity.set_repeat(RepeatMode.ONE)
-    assert mock_ynca.usb.repeat == ynca.Repeat.SINGLE
-    assert mp_entity.repeat == RepeatMode.ONE
+    assert mock_ynca.usb.repeat is ynca.Repeat.SINGLE
+    assert mp_entity.repeat is RepeatMode.ONE
 
     mp_entity.set_repeat(RepeatMode.ALL)
-    assert mock_ynca.usb.repeat == ynca.Repeat.ALL
-    assert mp_entity.repeat == RepeatMode.ALL
+    assert mock_ynca.usb.repeat is ynca.Repeat.ALL
+    assert mp_entity.repeat is RepeatMode.ALL
 
     # Subunit not supporting repeat
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.NETRADIO = create_autospec(ynca.subunits.netradio.NetRadio)
-    assert mp_entity.repeat == None
+    assert mp_entity.repeat is None

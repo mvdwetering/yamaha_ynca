@@ -271,7 +271,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             self._zone.straight = ynca.Straight.ON
         else:
             self._zone.straight = ynca.Straight.OFF
-            self._zone.soundprg = sound_mode
+            self._zone.soundprg = ynca.SoundPrg(sound_mode)
 
     # Playback controls (zone forwards to active subunit automatically it seems)
     def media_play(self):
