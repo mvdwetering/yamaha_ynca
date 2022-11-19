@@ -13,9 +13,9 @@ async def test_diagnostics(hass: HomeAssistant):
 
     assert "config_entry" in diagnostics
 
-    assert "SYS" in diagnostics
-    assert diagnostics["SYS"]["modelname"] == "ModelName"
-    assert diagnostics["SYS"]["version"] == "Version"
+    assert "sys" in diagnostics
+    assert diagnostics["sys"]["modelname"] == "ModelName"
+    assert diagnostics["sys"]["version"] == "Version"
 
     assert "communication" in diagnostics
     assert "initialization" in diagnostics["communication"]

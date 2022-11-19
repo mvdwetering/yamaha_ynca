@@ -46,10 +46,10 @@ async def test_async_setup_entry_fails_with_connection_error(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
-    mock_ynca = create_autospec(ynca.Ynca)
+    mock_ynca = create_autospec(ynca.YncaApi)
     mock_ynca.initialize.side_effect = ynca.YncaConnectionError("Connection error")
 
-    with patch("ynca.Ynca", return_value=mock_ynca):
+    with patch("ynca.YncaApi", return_value=mock_ynca):
         await hass.config_entries.async_setup(integration.entry.entry_id)
         await hass.async_block_till_done()
 
@@ -61,12 +61,12 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
-    mock_ynca = create_autospec(ynca.Ynca)
+    mock_ynca = create_autospec(ynca.YncaApi)
     mock_ynca.initialize.side_effect = ynca.YncaInitializationFailedException(
         "Initialize failed"
     )
 
-    with patch("ynca.Ynca", return_value=mock_ynca):
+    with patch("ynca.YncaApi", return_value=mock_ynca):
         await hass.config_entries.async_setup(integration.entry.entry_id)
         await hass.async_block_till_done()
 
@@ -78,10 +78,10 @@ async def test_async_setup_entry_fails_unknown_reason(hass):
     """Test a successful setup entry."""
     integration = await setup_integration(hass, skip_setup=True)
 
-    mock_ynca = create_autospec(ynca.Ynca)
+    mock_ynca = create_autospec(ynca.YncaApi)
     mock_ynca.initialize.side_effect = Exception("Unexpected exception")
 
-    with patch("ynca.Ynca", return_value=mock_ynca):
+    with patch("ynca.YncaApi", return_value=mock_ynca):
         await hass.config_entries.async_setup(integration.entry.entry_id)
         await hass.async_block_till_done()
 

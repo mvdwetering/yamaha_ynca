@@ -1,5 +1,5 @@
 """Test the Yamaha (YNCA) config flow."""
-from unittest.mock import patch
+from unittest.mock import create_autospec, patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
@@ -29,7 +29,7 @@ async def test_network_connect(hass: HomeAssistant) -> None:
     assert result["errors"] is None
 
     with patch(
-        "ynca.Ynca.connection_check",
+        "ynca.YncaApi.connection_check",
         return_value="ModelName",
     ) as mock_setup, patch(
         "custom_components.yamaha_ynca.async_setup_entry",
@@ -62,7 +62,7 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert result["errors"] is None
 
     with patch(
-        "ynca.Ynca.connection_check",
+        "ynca.YncaApi.connection_check",
         return_value="ModelName",
     ) as mock_setup, patch(
         "custom_components.yamaha_ynca.async_setup_entry",
@@ -92,7 +92,7 @@ async def test_connection_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "ynca.Ynca.connection_check",
+        "ynca.YncaApi.connection_check",
         side_effect=ynca.YncaConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -113,7 +113,7 @@ async def test_connection_failed(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "ynca.Ynca.connection_check",
+        "ynca.YncaApi.connection_check",
         side_effect=ynca.YncaConnectionFailed("Connection failed"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -134,7 +134,7 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "ynca.Ynca.connection_check",
+        "ynca.YncaApi.connection_check",
         side_effect=Exception("Unhandled exception"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -150,43 +150,38 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 
 async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
     """Test optionsflow."""
-    with patch(
-        "ynca.get_inputinfo_list",
-        return_value=[
-            ynca.InputInfo(None, "INPUT_ID_1", "Input Name 1"),
-            ynca.InputInfo(None, "INPUT_ID_2", "Input Name 2"),
-        ],
-    ):
-        integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
-        options = dict(integration.entry.options)
-        options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
-            "UNSUPPORTED",  # Test that obsolete values don't break the schema
-        ]
-        integration.entry.options = options
 
-        result = await hass.config_entries.options.async_init(
-            integration.entry.entry_id
-        )
+    mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
+    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
 
-        assert result["type"] == FlowResultType.FORM
-        assert result["step_id"] == "init"
+    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    options = dict(integration.entry.options)
+    options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
+        "UNSUPPORTED",  # Test that obsolete values don't break the schema
+    ]
+    integration.entry.options = options
 
-        result = await hass.config_entries.options.async_configure(
-            result["flow_id"],
-            user_input={
-                yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
-                yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
-                yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
-                    "Hall in Vienna",
-                ],
-            },
-        )
+    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
-        assert result["type"] == "create_entry"
-        assert result["data"] == {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["INPUT_ID_1"],
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["INPUT_ID_2"],
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
-            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
-        }
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "init"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
+            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
+                "Hall in Vienna",
+            ],
+        },
+    )
+
+    assert result["type"] == "create_entry"
+    assert result["data"] == {
+        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
+        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
+        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
+        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE4"): [],
+        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
+    }

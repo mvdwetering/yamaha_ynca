@@ -31,9 +31,9 @@ SERVICE_SEND_RAW_YNCA = "send_raw_ynca"
 
 
 async def update_device_registry(
-    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.Ynca
+    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
 ):
-    assert receiver.SYS is not None
+    assert receiver.sys is not None
 
     # Configuration URL for devices connected through IP
     configuration_url = None
@@ -49,9 +49,9 @@ async def update_device_registry(
         config_entry_id=config_entry.entry_id,
         identifiers={(DOMAIN, config_entry.entry_id)},
         manufacturer=MANUFACTURER_NAME,
-        name=f"{MANUFACTURER_NAME} {receiver.SYS.modelname}",
-        model=receiver.SYS.modelname,
-        sw_version=receiver.SYS.version,
+        name=f"{MANUFACTURER_NAME} {receiver.sys.modelname}",
+        model=receiver.sys.modelname,
+        sw_version=receiver.sys.version,
         configuration_url=configuration_url,
     )
 
@@ -182,7 +182,7 @@ async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
-    def initialize_ynca(ynca_receiver: ynca.Ynca):
+    def initialize_ynca(ynca_receiver: ynca.YncaApi):
         try:
             # Sync function taking a long time (> 10 seconds depending on receiver capabilities)
             ynca_receiver.initialize()
@@ -222,7 +222,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.config_entries.async_update_entry(entry, data=entry.data)
 
-    ynca_receiver = ynca.Ynca(
+    ynca_receiver = ynca.YncaApi(
         entry.data[CONF_SERIAL_URL],
         on_disconnect,
         COMMUNICATION_LOG_SIZE,
@@ -254,7 +254,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
 
-    def close_ynca(ynca_receiver: ynca.Ynca):
+    def close_ynca(ynca_receiver: ynca.YncaApi):
         ynca_receiver.close()
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
