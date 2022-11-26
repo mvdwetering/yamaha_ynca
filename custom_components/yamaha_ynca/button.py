@@ -55,4 +55,4 @@ class YamahaYncaSceneButton(ButtonEntity):
         return f"{self._zone.zonename}: {getattr(self._zone, f'scene{self._scene_id}name', f'Scene {self._scene_id}')}"
 
     def press(self) -> None:
-        self._zone.scene_recall(self._scene_id)
+        self._zone.scene(self._scene_id)

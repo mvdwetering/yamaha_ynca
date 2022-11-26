@@ -73,7 +73,7 @@ async def test_button_entity(mock_zone):
     assert entity.name == "ZoneName: SceneName One"
 
     entity.press()
-    mock_zone.scene_recall.assert_called_once_with("1")
+    mock_zone.scene.assert_called_once_with("1")
 
     await entity.async_added_to_hass()
     mock_zone.register_update_callback.assert_called_once()
