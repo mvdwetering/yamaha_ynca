@@ -222,11 +222,11 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity, mock_zone):
 
 
 @patch(
-    "ynca.get_modelinfo",
+    "ynca.YncaModelInfo.get",
     return_value=ynca.modelinfo.ModelInfo(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
 )
 async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
-    patched_get_modelinfo, mp_entity, mock_zone
+    patched_YncaModelInfo_get, mp_entity, mock_zone
 ):
 
     mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE

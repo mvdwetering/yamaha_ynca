@@ -186,7 +186,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
-            modelinfo = ynca.get_modelinfo(self._ynca.sys.modelname)
+            modelinfo = ynca.YncaModelInfo.get(self._ynca.sys.modelname)
             device_sound_modes = [
                 sound_mode.value
                 for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
