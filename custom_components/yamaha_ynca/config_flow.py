@@ -13,6 +13,8 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 
+from custom_components.yamaha_ynca.input_helpers import InputHelper
+
 from .const import (
     CONF_HIDDEN_INPUTS_FOR_ZONE,
     CONF_HIDDEN_SOUND_MODES,
@@ -20,7 +22,7 @@ from .const import (
     CONF_HOST,
     CONF_PORT,
     DOMAIN,
-    ZONE_SUBUNIT_IDS,
+    ZONE_SUBUNITS,
     LOGGER,
 )
 from .helpers import DomainEntryData
@@ -61,7 +63,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     """
 
     def validate_connection(serial_url):
-        return ynca.Ynca(serial_url).connection_check()
+        return ynca.YncaApi(serial_url).connection_check()
 
     modelname = await hass.async_add_executor_job(
         validate_connection, data[CONF_SERIAL_URL]
@@ -74,6 +76,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
+    # When updating also update the one used in `setup_integration` for tests
     VERSION = 5
 
     @staticmethod
@@ -172,11 +175,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.config_entry.entry_id, None
         )
         api = domain_entry_data.api
-        modelinfo = ynca.get_modelinfo(api.SYS.modelname)
+        modelinfo = ynca.YncaModelInfo.get(api.sys.modelname)
 
         # Hiding sound modes
         sound_modes = []
         for sound_mode in ynca.SoundPrg:
+            if sound_mode is ynca.SoundPrg.UNKNOWN:
+                continue
             if modelinfo and not sound_mode in modelinfo.soundprg:
                 continue  # Skip soundmodes not supported on the model
             sound_modes.append(sound_mode.value)
@@ -199,22 +204,23 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Hiding inputs per zone
         inputs = {}
-        for inputinfo in ynca.get_inputinfo_list(api):
-            inputs[inputinfo.input] = (
-                f"{inputinfo.input} ({inputinfo.name})"
-                if inputinfo.input != inputinfo.name
-                else inputinfo.name
+        for input, name in InputHelper.get_source_mapping(api).items():
+            inputs[input.value] = (
+                f"{input.value} ({name})"
+                if input.value.lower() != name.strip().lower()
+                else name
             )
-        # Sorts the inputs (3.7+ dicts maintain insertion order)
-        inputs = dict(sorted(inputs.items(), key=lambda tup: tup[0]))
 
-        for zone_id in ZONE_SUBUNIT_IDS:
-            if getattr(api, zone_id, None):
+        # Sorts the inputs (3.7+ dicts maintain insertion order)
+        inputs = dict(sorted(inputs.items(), key=lambda item: item[1]))
+
+        for zone_attr_name in ZONE_SUBUNITS:
+            if getattr(api, zone_attr_name, None):
                 schema[
                     vol.Required(
-                        CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id),
+                        CONF_HIDDEN_INPUTS_FOR_ZONE(zone_attr_name.upper()),
                         default=self.config_entry.options.get(
-                            CONF_HIDDEN_INPUTS_FOR_ZONE(zone_id), []
+                            CONF_HIDDEN_INPUTS_FOR_ZONE(zone_attr_name.upper()), []
                         ),
                     )
                 ] = cv.multi_select(inputs)
