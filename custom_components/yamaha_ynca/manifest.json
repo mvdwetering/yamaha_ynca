@@ -5,7 +5,7 @@
   "documentation": "https://github.com/mvdwetering/yamaha_ynca",
   "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "requirements": [
-    "ynca==4.0.0b2"
+    "ynca==4.0.0"
   ],
   "ssdp": [],
   "zeroconf": [],
