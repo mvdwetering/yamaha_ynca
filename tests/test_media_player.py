@@ -271,7 +271,7 @@ async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_
 
     # Other sources support pause, previous, next
     # Repeat/shuffle capability depends on availability of repeat/shuffle attributes on YNCA subunit
-    mock_ynca.spotify = create_autospec(ynca.subunits.mediaplayback_subunits.Spotify)
+    mock_ynca.spotify = create_autospec(ynca.subunits.spotify.Spotify)
     mock_ynca.spotify.repeat = None
     mock_ynca.spotify.shuffle = None
     mock_zone.inp = ynca.Input.SPOTIFY
@@ -281,7 +281,7 @@ async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_
     assert mp_entity.supported_features == expected_supported_features
 
     # USB also supports repeat and shuffle
-    mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
     mock_zone.inp = ynca.Input.USB
     expected_supported_features |= MediaPlayerEntityFeature.REPEAT_SET
     expected_supported_features |= MediaPlayerEntityFeature.SHUFFLE_SET
@@ -297,7 +297,7 @@ async def test_mediaplayer_entity_state(mp_entity, mock_zone, mock_ynca):
     assert mp_entity.state is MediaPlayerState.IDLE
 
     mock_zone.inp = ynca.Input.USB
-    mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
 
     mock_ynca.usb.playbackinfo = ynca.PlaybackInfo.PLAY
     assert mp_entity.state is MediaPlayerState.PLAYING
@@ -332,7 +332,7 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
 
     # Some subunits support Music with Artist, Album, Song
     mock_zone.inp = ynca.Input.USB
-    mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
 
     mock_ynca.usb.album = "AlbumName"
     mock_ynca.usb.artist = "ArtistName"
@@ -378,7 +378,7 @@ async def test_mediaplayer_entity_shuffle(mp_entity, mock_zone, mock_ynca):
 
     # Subunit supporting shuffle
     mock_zone.inp = ynca.Input.USB
-    mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
 
     mp_entity.set_shuffle(True)
     assert mock_ynca.usb.shuffle is ynca.Shuffle.ON
@@ -401,7 +401,7 @@ async def test_mediaplayer_entity_repeat(mp_entity, mock_zone, mock_ynca):
 
     # Subunit supporting repeat
     mock_zone.inp = ynca.Input.USB
-    mock_ynca.usb = create_autospec(ynca.subunits.mediaplayback_subunits.Usb)
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
 
     mp_entity.set_repeat(RepeatMode.OFF)
     assert mock_ynca.usb.repeat is ynca.Repeat.OFF
