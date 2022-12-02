@@ -1,7 +1,6 @@
 """Constants for the Yamaha (YNCA) integration."""
 
 import logging
-import ynca
 
 DOMAIN = "yamaha_ynca"
 LOGGER = logging.getLogger(__package__)
@@ -14,13 +13,14 @@ CONF_PORT = "port"
 
 MANUFACTURER_NAME = "Yamaha"
 
+ZONE_MAX_VOLUME = 16.5  # Seems to be 16.5 when MAXVOL function not implemented
 ZONE_MIN_VOLUME = -80.5
 
-ZONE_SUBUNIT_IDS = [
-    ynca.Subunit.MAIN,
-    ynca.Subunit.ZONE2,
-    ynca.Subunit.ZONE3,
-    ynca.Subunit.ZONE4,
+ZONE_SUBUNITS = [
+    "main",
+    "zone2",
+    "zone3",
+    "zone4",
 ]
 
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"

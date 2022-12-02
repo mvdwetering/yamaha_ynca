@@ -8,7 +8,7 @@ import ynca
 
 @dataclass
 class DomainEntryData:
-    api: ynca.Ynca
+    api: ynca.YncaApi
     initialization_events: List[str]
 
 

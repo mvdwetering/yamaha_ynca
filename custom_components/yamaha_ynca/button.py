@@ -2,7 +2,7 @@ from typing import Any
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, ZONE_SUBUNIT_IDS
+from .const import DOMAIN, ZONE_SUBUNITS
 from .helpers import DomainEntryData
 
 
@@ -11,12 +11,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone in ZONE_SUBUNIT_IDS:
-        if zone_subunit := getattr(domain_entry_data.api, zone):
-            for scene_id in zone_subunit.scenenames.keys():
-                entities.append(
-                    YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
-                )
+    for zone_attr_name in ZONE_SUBUNITS:
+        if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
+            for scene_id in range(1, 12 + 1):
+                if getattr(zone_subunit, f"scene{scene_id}name"):
+                    entities.append(
+                        YamahaYncaSceneButton(
+                            config_entry.entry_id, zone_subunit, scene_id
+                        )
+                    )
 
     async_add_entities(entities)
 
@@ -37,8 +40,9 @@ class YamahaYncaSceneButton(ButtonEntity):
             "identifiers": {(DOMAIN, receiver_unique_id)},
         }
 
-    def update_callback(self):
-        self.schedule_update_ha_state()
+    def update_callback(self, function, value):
+        if function in ["ZONENAME", f"SCENE{self._scene_id}NAME"]:
+            self.schedule_update_ha_state()
 
     async def async_added_to_hass(self):
         self._zone.register_update_callback(self.update_callback)
@@ -48,7 +52,7 @@ class YamahaYncaSceneButton(ButtonEntity):
 
     @property
     def name(self):
-        return f"{self._zone.zonename}: {self._zone.scenenames[self._scene_id]}"
+        return f"{self._zone.zonename}: {getattr(self._zone, f'scene{self._scene_id}name', f'Scene {self._scene_id}')}"
 
     def press(self) -> None:
-        self._zone.activate_scene(self._scene_id)
+        self._zone.scene(self._scene_id)
