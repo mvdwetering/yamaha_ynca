@@ -328,7 +328,8 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def _is_radio_subunit(self, subunit: ynca.subunit.Subunit) -> bool:
         return (
-            subunit is self._ynca.netradio
+            subunit is self._ynca.dab
+            or subunit is self._ynca.netradio
             or subunit is self._ynca.tun
             or subunit is self._ynca.sirius
             or subunit is self._ynca.siriusir
@@ -371,12 +372,24 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_channel(self) -> Optional[str]:
         """Channel currently playing."""
         if subunit := self._get_input_subunit():
-            # Tuner
+            # Tuner (AM/FM or DAB/FM)
             if band := getattr(subunit, "band", None):
-                if band is ynca.BandTun.FM:
-                    return f"FM {subunit.fmfreq:.2f} MHz"
                 if band is ynca.BandTun.AM:
                     return f"AM {subunit.amfreq} kHz"
+                if band is ynca.BandTun.FM:
+                    return (
+                        subunit.rdsprgservice
+                        if subunit.rdsprgservice
+                        else f"FM {subunit.fmfreq:.2f} MHz"
+                    )
+                if band is ynca.BandDab.FM:
+                    return (
+                        subunit.fmrdsprgservice
+                        if subunit.fmrdsprgservice
+                        else f"FM {subunit.fmfreq:.2f} MHz"
+                    )
+                if band is ynca.BandDab.DAB:
+                    return subunit.dabservicelabel
 
             # Netradio
             if station := getattr(subunit, "station", None):

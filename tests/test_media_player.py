@@ -349,18 +349,47 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     assert mp_entity.media_channel == "StationName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
-    # Tuner (analog radio) is a "channel"
-    # There is no station name, so name is built from band and frequency
+    # Tuner (AM/FM analog radio) is a "channel"
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
-    mock_ynca.tun.band = ynca.BandTun.FM
-    mock_ynca.tun.fmfreq = 123.45
-    assert mp_entity.media_channel == "FM 123.45 MHz"
-    assert mp_entity.media_content_type is MediaType.CHANNEL
 
+    # AM has no station name, so name is built from band and frequency
     mock_ynca.tun.band = ynca.BandTun.AM
     mock_ynca.tun.amfreq = 1234
     assert mp_entity.media_channel == "AM 1234 kHz"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # FM can have name from RDS info or falls back to band and frequency
+    mock_ynca.tun.band = ynca.BandTun.FM
+    mock_ynca.tun.fmfreq = 123.45
+    mock_ynca.tun.rdsprgservice = None
+    assert mp_entity.media_channel == "FM 123.45 MHz"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
+    assert mp_entity.media_channel == "RDS PRG SERVICE"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # Tuner (DAB/FM radio) is a "channel"
+    mock_zone.inp = ynca.Input.TUNER
+    mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
+    mock_ynca.tun = None  # Unit has either tun or dab, not both
+
+    # DAB FM can have name from RDS info or falls back to band and frequency
+    mock_ynca.dab.band = ynca.BandDab.FM
+    mock_ynca.dab.fmfreq = 123.45
+    mock_ynca.dab.fmrdsprgservice = None
+    assert mp_entity.media_channel == "FM 123.45 MHz"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
+    assert mp_entity.media_channel == "FM RDS PRG SERVICE"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # DAB (digital) gets name from label
+    mock_ynca.dab.band = ynca.BandDab.DAB
+    mock_ynca.dab.dabservicelabel = "DAB SERVICE LABEL"
+    assert mp_entity.media_channel == "DAB SERVICE LABEL"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
     # Sirius subunits expose name by the "chname" attribute
