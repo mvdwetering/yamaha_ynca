@@ -2,7 +2,7 @@
 
 send_raw_ynca:
   name: Send raw YNCA command
-  description: Send raw YNCA commands, intended for debugging. Note that to see the responses in the logs the debug level of `ynca` needs to be set to debug.
+  description: Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Ymaha (YNCA) integration.
   target:
     device:
       integration: yamaha_ynca
