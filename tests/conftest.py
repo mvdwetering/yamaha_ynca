@@ -20,6 +20,7 @@ import ynca
 INPUT_SUBUNITS = [
     "airplay",
     "bt",
+    "dab",
     "ipod",
     "ipodusb",
     "napster",
