@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Type, cast
+from typing import List, Optional
 
 import ynca
 
@@ -382,23 +382,25 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_channel(self) -> Optional[str]:
         """Channel currently playing."""
         if subunit := self._get_input_subunit():
-            # Tuner (AM/FM or DAB/FM)
-            if band := getattr(subunit, "band", None):
-                if band is ynca.BandTun.AM:
+            if subunit is self._ynca.tun:
+                # AM/FM Tuner
+                if subunit.band is ynca.BandTun.AM:
                     return f"AM {subunit.amfreq} kHz"
-                if band is ynca.BandTun.FM:
+                if subunit.band is ynca.BandTun.FM:
                     return (
                         subunit.rdsprgservice
                         if subunit.rdsprgservice
                         else f"FM {subunit.fmfreq:.2f} MHz"
                     )
-                if band is ynca.BandDab.FM:
+            if subunit is self._ynca.dab:
+                 # DAB/FM Tuner
+                if subunit.band is ynca.BandDab.FM:
                     return (
                         subunit.fmrdsprgservice
                         if subunit.fmrdsprgservice
                         else f"FM {subunit.fmfreq:.2f} MHz"
                     )
-                if band is ynca.BandDab.DAB:
+                if subunit.band is ynca.BandDab.DAB:
                     return subunit.dabservicelabel
 
             # Netradio
