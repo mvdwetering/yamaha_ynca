@@ -175,6 +175,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.config_entry.entry_id, None
         )
         api = domain_entry_data.api
+        assert api.sys is not None
+        assert isinstance(api.sys.modelname, str)
         modelinfo = ynca.YncaModelInfo.get(api.sys.modelname)
 
         # Hiding sound modes

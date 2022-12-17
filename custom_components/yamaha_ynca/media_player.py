@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Type
+from typing import List, Optional, Type, cast
 
 import ynca
 
@@ -75,7 +75,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self,
         receiver_unique_id: str,
         ynca: ynca.YncaApi,
-        zone: Type[ynca.subunits.zone.ZoneBase],
+        zone: ynca.subunits.zone.ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
     ):
@@ -102,6 +102,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     async def async_added_to_hass(self):
         # Register to catch input renames on SYS
+        assert self._ynca.sys is not None
         self._ynca.sys.register_update_callback(self.update_callback)
         self._zone.register_update_callback(self.update_callback)
 
@@ -109,6 +110,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.register_update_callback(self.update_callback)
 
     async def async_will_remove_from_hass(self):
+        assert self._ynca.sys is not None
         self._ynca.sys.unregister_update_callback(self.update_callback)
         self._zone.unregister_update_callback(self.update_callback)
 
@@ -116,6 +118,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.unregister_update_callback(self.update_callback)
 
     def _get_input_subunit(self):
+        assert type(self._zone.inp) is ynca.Input
         return InputHelper.get_subunit_for_input(self._ynca, self._zone.inp)
 
     @property
@@ -157,6 +160,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source(self):
         """Return the current input source."""
+        assert type(self._zone.inp) is ynca.Input
         return InputHelper.get_name_of_input(self._ynca, self._zone.inp) or "Unknown"
 
     @property
@@ -186,10 +190,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
+            assert self._ynca.sys is not None
+            assert isinstance(self._ynca.sys.modelname, str)
             modelinfo = ynca.YncaModelInfo.get(self._ynca.sys.modelname)
             device_sound_modes = [
                 sound_mode.value
-                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
+                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)  # type: ignore[attr-defined]
                 if sound_mode is not ynca.SoundPrg.UNKNOWN
             ]
             sound_modes.extend(device_sound_modes)
