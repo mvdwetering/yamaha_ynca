@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Type
+from typing import List, Optional
 
 import ynca
 
@@ -75,7 +75,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self,
         receiver_unique_id: str,
         ynca: ynca.YncaApi,
-        zone: Type[ynca.subunits.zone.ZoneBase],
+        zone: ynca.subunits.zone.ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
     ):
@@ -102,6 +102,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     async def async_added_to_hass(self):
         # Register to catch input renames on SYS
+        assert self._ynca.sys is not None
         self._ynca.sys.register_update_callback(self.update_callback)
         self._zone.register_update_callback(self.update_callback)
 
@@ -109,6 +110,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.register_update_callback(self.update_callback)
 
     async def async_will_remove_from_hass(self):
+        assert self._ynca.sys is not None
         self._ynca.sys.unregister_update_callback(self.update_callback)
         self._zone.unregister_update_callback(self.update_callback)
 
@@ -116,6 +118,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.unregister_update_callback(self.update_callback)
 
     def _get_input_subunit(self):
+        assert type(self._zone.inp) is ynca.Input
         return InputHelper.get_subunit_for_input(self._ynca, self._zone.inp)
 
     @property
@@ -157,6 +160,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source(self):
         """Return the current input source."""
+        assert type(self._zone.inp) is ynca.Input
         return InputHelper.get_name_of_input(self._ynca, self._zone.inp) or "Unknown"
 
     @property
@@ -186,10 +190,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
+            assert self._ynca.sys is not None
+            assert isinstance(self._ynca.sys.modelname, str)
             modelinfo = ynca.YncaModelInfo.get(self._ynca.sys.modelname)
             device_sound_modes = [
                 sound_mode.value
-                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
+                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)  # type: ignore[attr-defined]
                 if sound_mode is not ynca.SoundPrg.UNKNOWN
             ]
             sound_modes.extend(device_sound_modes)
@@ -328,7 +334,8 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def _is_radio_subunit(self, subunit: ynca.subunit.Subunit) -> bool:
         return (
-            subunit is self._ynca.netradio
+            subunit is self._ynca.dab
+            or subunit is self._ynca.netradio
             or subunit is self._ynca.tun
             or subunit is self._ynca.sirius
             or subunit is self._ynca.siriusir
@@ -350,7 +357,11 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_title(self) -> Optional[str]:
         """Title of current playing media."""
         if subunit := self._get_input_subunit():
-            return getattr(subunit, "song", None)
+            if song := getattr(subunit, "song", None):
+                return song
+            if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:
+                if subunit.dabdlslabel:
+                    return subunit.dabdlslabel
         return None
 
     @property
@@ -371,12 +382,26 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_channel(self) -> Optional[str]:
         """Channel currently playing."""
         if subunit := self._get_input_subunit():
-            # Tuner
-            if band := getattr(subunit, "band", None):
-                if band is ynca.BandTun.FM:
-                    return f"FM {subunit.fmfreq:.2f} MHz"
-                if band is ynca.BandTun.AM:
+            if subunit is self._ynca.tun:
+                # AM/FM Tuner
+                if subunit.band is ynca.BandTun.AM:
                     return f"AM {subunit.amfreq} kHz"
+                if subunit.band is ynca.BandTun.FM:
+                    return (
+                        subunit.rdsprgservice
+                        if subunit.rdsprgservice
+                        else f"FM {subunit.fmfreq:.2f} MHz"
+                    )
+            if subunit is self._ynca.dab:
+                 # DAB/FM Tuner
+                if subunit.band is ynca.BandDab.FM:
+                    return (
+                        subunit.fmrdsprgservice
+                        if subunit.fmrdsprgservice
+                        else f"FM {subunit.fmfreq:.2f} MHz"
+                    )
+                if subunit.band is ynca.BandDab.DAB:
+                    return subunit.dabservicelabel
 
             # Netradio
             if station := getattr(subunit, "station", None):

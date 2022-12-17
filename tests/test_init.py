@@ -54,6 +54,9 @@ async def test_async_setup_entry_fails_with_connection_error(hass):
     assert integration.entry.state is ConfigEntryState.SETUP_RETRY
     assert not hass.data.get(yamaha_ynca.DOMAIN)
 
+    # Unload to avoid errors about "Lingering timer" which was started to retry setup
+    await hass.config_entries.async_unload(integration.entry.entry_id)
+
 
 async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
     """Test a successful setup entry."""
@@ -70,6 +73,9 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
 
     assert integration.entry.state is ConfigEntryState.SETUP_RETRY
     assert not hass.data.get(yamaha_ynca.DOMAIN)
+
+    # Unload to avoid errors about "Lingering timer" which was started to retry setup
+    await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
 async def test_async_setup_entry_fails_unknown_reason(hass):

@@ -154,9 +154,10 @@ async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
 async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
 
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
-    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     # Select a rename-able source
     mp_entity.select_source("Input HDMI 4")
@@ -177,6 +178,10 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
     mock_zone.inp = ynca.Input.SIRIUS
     assert mp_entity.source == "Unknown"
 
+    # Hidden input is still shown when active input
+    mock_zone.inp = ynca.Input.TUNER
+    assert mp_entity.source == "TUNER"
+
 
 async def test_mediaplayer_entity_source_list(mock_zone, mock_ynca):
 
@@ -184,6 +189,7 @@ async def test_mediaplayer_entity_source_list(mock_zone, mock_ynca):
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
+    # Tuner is hidden
     mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     print(mp_entity.source_list)
@@ -240,6 +246,10 @@ async def test_mediaplayer_entity_hidden_sound_mode(mock_ynca, mock_zone):
 
     assert "Drama" in mp_entity.sound_mode_list
     assert "Mono movie" not in mp_entity.sound_mode_list
+
+    # Hidden soundmodes should still be shown if they are the current soundmode
+    mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE
+    assert mp_entity.sound_mode == "Mono Movie"
 
 
 async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_ynca):
@@ -346,27 +356,66 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.netradio.station = "StationName"
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "StationName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
-    # Tuner (analog radio) is a "channel"
-    # There is no station name, so name is built from band and frequency
+    # Tuner (AM/FM analog radio) is a "channel"
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    # AM has no station name, so name is built from band and frequency
+    mock_ynca.tun.band = ynca.BandTun.AM
+    mock_ynca.tun.amfreq = 1234
+    assert mp_entity.media_title is None
+    assert mp_entity.media_channel == "AM 1234 kHz"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # FM can have name from RDS info or falls back to band and frequency
     mock_ynca.tun.band = ynca.BandTun.FM
     mock_ynca.tun.fmfreq = 123.45
+    mock_ynca.tun.rdsprgservice = None
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
-    mock_ynca.tun.band = ynca.BandTun.AM
-    mock_ynca.tun.amfreq = 1234
-    assert mp_entity.media_channel == "AM 1234 kHz"
+    mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
+    assert mp_entity.media_title is None
+    assert mp_entity.media_channel == "RDS PRG SERVICE"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # Tuner (DAB/FM radio) is a "channel"
+    mock_zone.inp = ynca.Input.TUNER
+    mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
+    mock_ynca.tun = None  # Unit has either tun or dab, not both
+
+    # DAB FM can have name from RDS info or falls back to band and frequency
+    mock_ynca.dab.band = ynca.BandDab.FM
+    mock_ynca.dab.fmfreq = 123.45
+    mock_ynca.dab.fmrdsprgservice = None
+    assert mp_entity.media_title is None
+    assert mp_entity.media_channel == "FM 123.45 MHz"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
+    assert mp_entity.media_title is None
+    assert mp_entity.media_channel == "FM RDS PRG SERVICE"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # DAB (digital) gets name from servicelabel
+    mock_ynca.dab.band = ynca.BandDab.DAB
+    mock_ynca.dab.dabservicelabel = "DAB SERVICE LABEL"
+    mock_ynca.dab.dabdlslabel = "DAB DLS LABEL"
+    assert mp_entity.media_title == "DAB DLS LABEL"
+    assert mp_entity.media_channel == "DAB SERVICE LABEL"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
     # Sirius subunits expose name by the "chname" attribute
     mock_zone.inp = ynca.Input.SIRIUS_IR
     mock_ynca.siriusir = create_autospec(ynca.subunits.sirius.SiriusIr)
     mock_ynca.siriusir.chname = "ChannelName"
+    mock_ynca.siriusir.song = "SiriusIrSongName"
+    assert mp_entity.media_title == "SiriusIrSongName"
     assert mp_entity.media_channel == "ChannelName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
