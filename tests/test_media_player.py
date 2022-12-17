@@ -356,6 +356,7 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.netradio.station = "StationName"
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "StationName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
@@ -366,6 +367,7 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     # AM has no station name, so name is built from band and frequency
     mock_ynca.tun.band = ynca.BandTun.AM
     mock_ynca.tun.amfreq = 1234
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "AM 1234 kHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
@@ -373,10 +375,12 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     mock_ynca.tun.band = ynca.BandTun.FM
     mock_ynca.tun.fmfreq = 123.45
     mock_ynca.tun.rdsprgservice = None
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
     mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "RDS PRG SERVICE"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
@@ -389,16 +393,20 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     mock_ynca.dab.band = ynca.BandDab.FM
     mock_ynca.dab.fmfreq = 123.45
     mock_ynca.dab.fmrdsprgservice = None
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
     mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
+    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM RDS PRG SERVICE"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
-    # DAB (digital) gets name from label
+    # DAB (digital) gets name from servicelabel
     mock_ynca.dab.band = ynca.BandDab.DAB
     mock_ynca.dab.dabservicelabel = "DAB SERVICE LABEL"
+    mock_ynca.dab.dabdlslabel = "DAB DLS LABEL"
+    assert mp_entity.media_title == "DAB DLS LABEL"
     assert mp_entity.media_channel == "DAB SERVICE LABEL"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
@@ -406,6 +414,8 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     mock_zone.inp = ynca.Input.SIRIUS_IR
     mock_ynca.siriusir = create_autospec(ynca.subunits.sirius.SiriusIr)
     mock_ynca.siriusir.chname = "ChannelName"
+    mock_ynca.siriusir.song = "SiriusIrSongName"
+    assert mp_entity.media_title == "SiriusIrSongName"
     assert mp_entity.media_channel == "ChannelName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 

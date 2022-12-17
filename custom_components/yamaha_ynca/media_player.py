@@ -357,7 +357,11 @@ class YamahaYncaZone(MediaPlayerEntity):
     def media_title(self) -> Optional[str]:
         """Title of current playing media."""
         if subunit := self._get_input_subunit():
-            return getattr(subunit, "song", None)
+            if song := getattr(subunit, "song", None):
+                return song
+            if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:
+                if subunit.dabdlslabel:
+                    return subunit.dabdlslabel
         return None
 
     @property
