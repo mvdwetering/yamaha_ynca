@@ -154,9 +154,10 @@ async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
 async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
 
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
-    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     # Select a rename-able source
     mp_entity.select_source("Input HDMI 4")
@@ -177,6 +178,10 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
     mock_zone.inp = ynca.Input.SIRIUS
     assert mp_entity.source == "Unknown"
 
+    # Hidden input is still shown when active input
+    mock_zone.inp = ynca.Input.TUNER
+    assert mp_entity.source == "TUNER"
+
 
 async def test_mediaplayer_entity_source_list(mock_zone, mock_ynca):
 
@@ -184,6 +189,7 @@ async def test_mediaplayer_entity_source_list(mock_zone, mock_ynca):
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
+    # Tuner is hidden
     mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     print(mp_entity.source_list)
@@ -240,6 +246,10 @@ async def test_mediaplayer_entity_hidden_sound_mode(mock_ynca, mock_zone):
 
     assert "Drama" in mp_entity.sound_mode_list
     assert "Mono movie" not in mp_entity.sound_mode_list
+
+    # Hidden soundmodes should still be shown if they are the current soundmode
+    mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE
+    assert mp_entity.sound_mode == "Mono Movie"
 
 
 async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_ynca):
