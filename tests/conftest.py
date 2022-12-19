@@ -20,6 +20,7 @@ import ynca
 INPUT_SUBUNITS = [
     "airplay",
     "bt",
+    "dab",
     "ipod",
     "ipodusb",
     "napster",
@@ -62,6 +63,7 @@ def mock_ynca(hass):
 
     mock_sys = Mock(spec=ynca.subunits.system.System)
     mock_ynca.sys = mock_sys
+    mock_ynca.sys.modelname = "Model name"
 
     # Clear external input names
     for attribute in dir(mock_sys):
