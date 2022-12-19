@@ -133,6 +133,10 @@ async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
     assert mock_zone.mute is ynca.Mute.OFF
     assert mp_entity.is_volume_muted == False
 
+    # No mute support
+    mock_zone.mute = None
+    assert mp_entity.is_volume_muted == None
+
 
 async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
 
@@ -149,6 +153,10 @@ async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
 
     mp_entity.volume_down()
     assert mock_zone.vol_down.call_count == 1
+
+    # No vol support
+    mock_zone.vol = None
+    assert mp_entity.volume_level == None
 
 
 async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
@@ -181,6 +189,10 @@ async def test_mediaplayer_entity_source(mock_zone, mock_ynca):
     # Hidden input is still shown when active input
     mock_zone.inp = ynca.Input.TUNER
     assert mp_entity.source == "TUNER"
+
+    # Zone does not support input selection (just for robustness, not seen in the wild)
+    mock_zone.inp = None
+    assert mp_entity.source is None
 
 
 async def test_mediaplayer_entity_source_list(mock_zone, mock_ynca):
@@ -254,16 +266,32 @@ async def test_mediaplayer_entity_hidden_sound_mode(mock_ynca, mock_zone):
 
 async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_ynca):
 
-    expected_supported_features = (
-        MediaPlayerEntityFeature.VOLUME_SET
-        | MediaPlayerEntityFeature.VOLUME_MUTE
-        | MediaPlayerEntityFeature.VOLUME_STEP
-        | MediaPlayerEntityFeature.TURN_ON
-        | MediaPlayerEntityFeature.TURN_OFF
-        | MediaPlayerEntityFeature.SELECT_SOURCE
-    )
+    expected_supported_features = 0
 
+    # Nothing supported
+    mock_zone.pwr = None
+    mock_zone.vol = None
+    mock_zone.mute = None
+    mock_zone.inp = None
     mock_zone.soundprg = None
+    assert mp_entity.supported_features == expected_supported_features
+
+    mock_zone.pwr = ynca.Pwr.STANDBY
+    expected_supported_features |= MediaPlayerEntityFeature.TURN_ON
+    expected_supported_features |= MediaPlayerEntityFeature.TURN_OFF
+    assert mp_entity.supported_features == expected_supported_features
+
+    mock_zone.vol = 12
+    expected_supported_features |= MediaPlayerEntityFeature.VOLUME_SET
+    expected_supported_features |= MediaPlayerEntityFeature.VOLUME_STEP
+    assert mp_entity.supported_features == expected_supported_features
+
+    mock_zone.mute = ynca.Mute.ATT_MINUS_20
+    expected_supported_features |= MediaPlayerEntityFeature.VOLUME_MUTE
+    assert mp_entity.supported_features == expected_supported_features
+
+    mock_zone.inp = ynca.Input.MULTICH
+    expected_supported_features |= MediaPlayerEntityFeature.SELECT_SOURCE
     assert mp_entity.supported_features == expected_supported_features
 
     mock_zone.soundprg = ynca.SoundPrg.ACTION_GAME
