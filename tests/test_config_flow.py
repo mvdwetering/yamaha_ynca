@@ -148,8 +148,8 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "unknown"}
 
 
-async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
-    """Test optionsflow."""
+async def test_options_flow_ok(hass: HomeAssistant, mock_ynca) -> None:
+    """Test optionsflow"""
 
     mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
     mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
@@ -167,7 +167,7 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
     assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "init"
+    assert result["step_id"] == "main"
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
@@ -187,3 +187,14 @@ async def test_options_flow(hass: HomeAssistant, mock_ynca) -> None:
         yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
     }
+
+
+async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
+    """Test optionsflow when there is no connection"""
+
+    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    hass.data[yamaha_ynca.DOMAIN] = None  # Pretend connection failed
+
+    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
+
+    assert result["type"] == FlowResultType.ABORT
