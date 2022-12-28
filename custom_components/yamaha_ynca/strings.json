@@ -44,7 +44,7 @@
   },
   "options": {
     "step": {
-      "init": {
+      "main": {
         "data": {
           "hidden_inputs_MAIN": "Hidden inputs for main zone",
           "hidden_inputs_ZONE2": "Hidden inputs for zone 2",
@@ -53,6 +53,9 @@
           "hidden_sound_modes": "Hidden sound modes"
         }
       }
+    },
+    "abort": {
+      "connection_required": "An active connection with the receiver is required to configure the integration."
     }
   }
 }

@@ -57,8 +57,8 @@ def get_network_schema(user_input):
 
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Validate the user input allows us to connect.
-
+    """
+    Validate if the user input allows us to connect.
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
@@ -165,19 +165,32 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
+        """Basic sanity checks before configuring options."""
+
+        self.api = None
+        if self.hass.data.get(DOMAIN, None) and (
+            domain_entry_data := (
+                self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
+            )
+        ):
+            self.api = domain_entry_data.api
+            return await self.async_step_main()
+
+        return self.async_abort(reason="connection_required")
+
+    async def async_step_main(self, user_input=None):
         """Manage the options."""
+
+        assert self.api.sys is not None
+        assert isinstance(self.api.sys.modelname, str)
+
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(
+                title=self.api.sys.modelname, data=user_input
+            )
 
         schema = {}
-
-        domain_entry_data: DomainEntryData = self.hass.data[DOMAIN].get(
-            self.config_entry.entry_id, None
-        )
-        api = domain_entry_data.api
-        assert api.sys is not None
-        assert isinstance(api.sys.modelname, str)
-        modelinfo = ynca.YncaModelInfo.get(api.sys.modelname)
+        modelinfo = ynca.YncaModelInfo.get(self.api.sys.modelname)
 
         # Hiding sound modes
         sound_modes = []
@@ -206,7 +219,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Hiding inputs per zone
         inputs = {}
-        for input, name in InputHelper.get_source_mapping(api).items():
+        for input, name in InputHelper.get_source_mapping(self.api).items():
             inputs[input.value] = (
                 f"{input.value} ({name})"
                 if input.value.lower() != name.strip().lower()
@@ -217,7 +230,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         inputs = dict(sorted(inputs.items(), key=lambda item: item[1]))
 
         for zone_attr_name in ZONE_SUBUNITS:
-            if getattr(api, zone_attr_name, None):
+            if getattr(self.api, zone_attr_name, None):
                 schema[
                     vol.Required(
                         CONF_HIDDEN_INPUTS_FOR_ZONE(zone_attr_name.upper()),
@@ -227,4 +240,4 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     )
                 ] = cv.multi_select(inputs)
 
-        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))
+        return self.async_show_form(step_id="main", data_schema=vol.Schema(schema))
