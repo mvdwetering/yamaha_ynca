@@ -51,7 +51,9 @@ def get_network_schema(user_input):
     )
 
 
-async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
+async def validate_input(
+    hass: HomeAssistant, data: Dict[str, Any]
+) -> ynca.YncaConnectionCheckResult:
     """
     Validate if the user input allows us to connect.
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
@@ -60,12 +62,11 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     def validate_connection(serial_url):
         return ynca.YncaApi(serial_url).connection_check()
 
-    modelname = await hass.async_add_executor_job(
+    result = await hass.async_add_executor_job(
         validate_connection, data[CONF_SERIAL_URL]
     )
 
-    # Return info that you want to store in the config entry.
-    return {"title": modelname}
+    return result
 
 
 class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -97,7 +98,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         errors = {}
         try:
-            info = await validate_input(self.hass, user_input)
+            check_result = await validate_input(self.hass, user_input)
         except ynca.YncaConnectionError:
             errors["base"] = "connection_error"
         except ynca.YncaConnectionFailed:
@@ -106,7 +107,11 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             LOGGER.exception("Unhandled exception during connection.")
             errors["base"] = "unknown"
         else:
-            return self.async_create_entry(title=info["title"], data=user_input)
+            data = {}
+            data[CONF_SERIAL_URL] = user_input[CONF_SERIAL_URL]
+            data[DATA_MODELNAME] = check_result.modelname
+            data[DATA_ZONES] = check_result.zones
+            return self.async_create_entry(title=check_result.modelname, data=data)
 
         return self.async_show_form(
             step_id=step_id,

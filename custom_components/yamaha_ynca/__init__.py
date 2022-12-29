@@ -61,6 +61,24 @@ async def update_device_registry(
     )
 
 
+async def update_configentry(
+    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
+):
+    assert receiver.sys is not None
+
+    # Older configurations setup before 5.3.0+ will not have zones data filled
+    # So fill it when not set already
+    # If not set, options will not show for zones
+    if DATA_ZONES not in config_entry.data:
+        new_data = dict(config_entry.data)
+        zones = []
+        for zone_attr in ZONE_SUBUNITS:
+            if getattr(receiver, zone_attr, None):
+                zones.append(zone_attr.upper())
+        new_data[DATA_ZONES] = zones
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
+
+
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entry."""
     from_version = config_entry.version
@@ -256,8 +274,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
         # )
 
-    hass.config_entries.async_update_entry(entry, data=entry.data)
-
     ynca_receiver = ynca.YncaApi(
         entry.data[CONF_SERIAL_URL],
         on_disconnect,
@@ -267,6 +283,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if initialized:
         await update_device_registry(hass, entry, ynca_receiver)
+        await update_configentry(hass, entry, ynca_receiver)
+
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = DomainEntryData(
             api=ynca_receiver,
             initialization_events=ynca_receiver.get_communication_log_items(),
