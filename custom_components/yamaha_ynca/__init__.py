@@ -17,11 +17,16 @@ from homeassistant.helpers.service import ServiceCall, async_extract_config_entr
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
+    CONF_GENERAL_OPTIONS,
+    CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
+    DATA_MODELNAME,
+    DATA_ZONES,
     DOMAIN,
     LOGGER,
     MANUFACTURER_NAME,
+    ZONE_SUBUNITS,
 )
 from .helpers import DomainEntryData
 
@@ -73,6 +78,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 4:
         migrate_v4(hass, config_entry)
 
+    if config_entry.version == 5:
+        migrate_v5(hass, config_entry)
+
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
 
@@ -83,6 +91,34 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
     return True
+
+
+def migrate_v5(hass: HomeAssistant, config_entry: ConfigEntry):
+    # Migrate format of options from `hidden_inputs_<ZONE>`
+    # to having a dict per zone (and a dict for general)
+    # Add modelname explictly to data, copy from title
+
+    old_options = dict(config_entry.options)  # Convert to dict to be able to use .get
+    new_options = {}
+
+    if hidden_sound_modes := old_options.get("hidden_sound_modes", None):
+        general = {}
+        general["hidden_sound_modes"] = hidden_sound_modes
+        new_options["general"] = general
+
+    for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
+        if hidden_inputs := old_options.get(f"hidden_inputs_{zone_id}", None):
+            zone_settings = {}
+            zone_settings["hidden_inputs"] = hidden_inputs
+            new_options[zone_id] = zone_settings
+
+    new_data = {**config_entry.data}
+    new_data["modelname"] = config_entry.title
+
+    config_entry.version = 6
+    hass.config_entries.async_update_entry(
+        config_entry, data=new_data, options=new_options
+    )
 
 
 def migrate_v4(hass: HomeAssistant, config_entry: ConfigEntry):

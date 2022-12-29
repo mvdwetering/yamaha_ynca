@@ -6,23 +6,18 @@ from typing import Any, Dict
 import voluptuous as vol  # type: ignore
 
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.exceptions import HomeAssistantError
-import homeassistant.helpers.config_validation as cv
 
-from custom_components.yamaha_ynca.input_helpers import InputHelper
 
 from .const import (
-    CONF_HIDDEN_INPUTS_FOR_ZONE,
-    CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
     CONF_HOST,
     CONF_PORT,
+    DATA_MODELNAME,
+    DATA_ZONES,
     DOMAIN,
-    ZONE_SUBUNITS,
     LOGGER,
 )
 from .helpers import DomainEntryData
@@ -77,7 +72,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
     # When updating also update the one used in `setup_integration` for tests
-    VERSION = 5
+    VERSION = 6
 
     @staticmethod
     @callback
