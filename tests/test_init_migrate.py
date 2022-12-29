@@ -10,7 +10,6 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.yamaha_ynca.const import (
-    CONF_GENERAL_OPTIONS,
     CONF_HIDDEN_SOUND_MODES,
 )
 
@@ -243,7 +242,7 @@ async def test_async_migration_entry_version_5(hass: HomeAssistant):
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry.version == 6
     assert new_entry.data["modelname"] == "ModelName"
-    assert new_entry.options["general"]["hidden_sound_modes"] == ["Church in Royaumont"]
+    assert new_entry.options["hidden_sound_modes"] == ["Church in Royaumont"]
     assert (
         "MAIN" not in new_entry.options
     )  # Main was empty/falsey so does not get migrated

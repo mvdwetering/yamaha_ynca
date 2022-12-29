@@ -12,7 +12,6 @@ import homeassistant.helpers.config_validation as cv
 from custom_components.yamaha_ynca.input_helpers import InputHelper
 
 from .const import (
-    CONF_GENERAL_OPTIONS,
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     DATA_MODELNAME,
@@ -51,8 +50,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         print("async_step_general")
 
         if user_input is not None:
+            self.options[CONF_HIDDEN_SOUND_MODES] = user_input[CONF_HIDDEN_SOUND_MODES]
             if "MAIN" in self.config_entry.data[DATA_ZONES]:
-                self.options[CONF_GENERAL_OPTIONS] = user_input
                 return await self.async_step_main()
             return await self.async_step_done(user_input)
 
@@ -70,9 +69,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         sound_modes.sort(key=str.lower)
 
         # Protect against supported soundmode list updates
-        stored_sound_modes = self.options.get(CONF_GENERAL_OPTIONS, {}).get(
-            CONF_HIDDEN_SOUND_MODES, []
-        )
+        stored_sound_modes = self.options.get(CONF_HIDDEN_SOUND_MODES, [])
         stored_sound_modes = [
             stored_sound_mode
             for stored_sound_mode in stored_sound_modes

@@ -15,7 +15,6 @@ from homeassistant.components.media_player import (
 from homeassistant.config_entries import ConfigEntry
 
 from .const import (
-    CONF_GENERAL_OPTIONS,
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     DOMAIN,
@@ -41,9 +40,7 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
             hidden_inputs = config_entry.options.get(zone_subunit.id, {}).get(
                 CONF_HIDDEN_INPUTS, []
             )
-            hidden_sound_modes = config_entry.options.get(CONF_GENERAL_OPTIONS, {}).get(
-                CONF_HIDDEN_SOUND_MODES, []
-            )
+            hidden_sound_modes = config_entry.options.get(CONF_HIDDEN_SOUND_MODES, [])
 
             entities.append(
                 YamahaYncaZone(

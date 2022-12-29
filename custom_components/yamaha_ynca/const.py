@@ -27,6 +27,5 @@ ZONE_SUBUNITS = [
     "zone4",
 ]
 
-CONF_GENERAL_OPTIONS = "general"
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 CONF_HIDDEN_INPUTS = "hidden_inputs"
