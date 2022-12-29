@@ -30,7 +30,3 @@ ZONE_SUBUNITS = [
 CONF_GENERAL_OPTIONS = "general"
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 CONF_HIDDEN_INPUTS = "hidden_inputs"
-
-
-def CONF_HIDDEN_INPUTS_FOR_ZONE(zone: str):
-    return f"hidden_inputs_{zone}"
