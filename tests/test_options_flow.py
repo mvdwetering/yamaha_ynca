@@ -29,25 +29,57 @@ async def test_options_flow_ok(hass: HomeAssistant, mock_ynca) -> None:
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
     assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "main"
+    assert result["step_id"] == "general"
+    assert result["last_step"] is False
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
             yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
                 "Hall in Vienna",
             ],
         },
     )
 
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "main"
+    assert result["last_step"] is False
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "zone2"
+    assert result["last_step"] is False
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["NET RADIO"],
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "zone3"
+    assert result["last_step"] is True
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+        },
+    )
+
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
+        "MAIN": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"]},
+        "ZONE2": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["NET RADIO"]},
+        "ZONE3": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: []},
     }
 
 

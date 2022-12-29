@@ -93,11 +93,15 @@ async def setup_integration(
     modelname="ModelName",
 ):
     entry = MockConfigEntry(
-        version=5,
+        version=6,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title="ModelName",
-        data={yamaha_ynca.CONF_SERIAL_URL: serial_url},
+        data={
+            yamaha_ynca.CONF_SERIAL_URL: serial_url,
+            yamaha_ynca.DATA_MODELNAME: "ModelName",
+            yamaha_ynca.DATA_ZONES: ["MAIN", "ZONE2", "ZONE3"],
+        },
     )
     entry.add_to_hass(hass)
     on_disconnect = None

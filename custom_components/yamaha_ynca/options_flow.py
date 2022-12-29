@@ -92,8 +92,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_main(self, user_input=None):
         print("async_step_main")
         if user_input is not None:
+            self.options["MAIN"] = user_input
             if "ZONE2" in self.config_entry.data[DATA_ZONES]:
-                self.options["MAIN"] = user_input
                 return await self.async_step_zone2()
             return await self.async_step_done()
 
@@ -106,8 +106,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_zone2(self, user_input=None):
         print("async_step_zone2")
         if user_input is not None:
+            self.options["ZONE2"] = user_input
             if "ZONE3" in self.config_entry.data[DATA_ZONES]:
-                self.options["ZONE2"] = user_input
                 return await self.async_step_zone3()
             return await self.async_step_done()
 
@@ -120,8 +120,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_zone3(self, user_input=None):
         print("async_step_zone3")
         if user_input is not None:
+            self.options["ZONE3"] = user_input
             if "ZONE4" in self.config_entry.data[DATA_ZONES]:
-                self.options["ZONE3"] = user_input
                 return await self.async_step_zone4()
             return await self.async_step_done()
 
