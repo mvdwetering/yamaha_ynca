@@ -20,7 +20,7 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
-from .helpers import DomainEntryData
+from .options_flow import OptionsFlowHandler
 
 import ynca
 
@@ -157,87 +157,3 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_try_connect(
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
-
-
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None):
-        """Basic sanity checks before configuring options."""
-
-        self.api = None
-        if self.hass.data.get(DOMAIN, None) and (
-            domain_entry_data := (
-                self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
-            )
-        ):
-            self.api = domain_entry_data.api
-            return await self.async_step_main()
-
-        return self.async_abort(reason="connection_required")
-
-    async def async_step_main(self, user_input=None):
-        """Manage the options."""
-
-        assert self.api.sys is not None
-        assert isinstance(self.api.sys.modelname, str)
-
-        if user_input is not None:
-            return self.async_create_entry(
-                title=self.api.sys.modelname, data=user_input
-            )
-
-        schema = {}
-        modelinfo = ynca.YncaModelInfo.get(self.api.sys.modelname)
-
-        # Hiding sound modes
-        sound_modes = []
-        for sound_mode in ynca.SoundPrg:
-            if sound_mode is ynca.SoundPrg.UNKNOWN:
-                continue
-            if modelinfo and not sound_mode in modelinfo.soundprg:
-                continue  # Skip soundmodes not supported on the model
-            sound_modes.append(sound_mode.value)
-        sound_modes.sort(key=str.lower)
-
-        # Protect against supported soundmode list updates
-        stored_sound_modes = self.config_entry.options.get(CONF_HIDDEN_SOUND_MODES, [])
-        stored_sound_modes = [
-            stored_sound_mode
-            for stored_sound_mode in stored_sound_modes
-            if stored_sound_mode in sound_modes
-        ]
-
-        schema[
-            vol.Required(
-                CONF_HIDDEN_SOUND_MODES,
-                default=stored_sound_modes,
-            )
-        ] = cv.multi_select(sound_modes)
-
-        # Hiding inputs per zone
-        inputs = {}
-        for input, name in InputHelper.get_source_mapping(self.api).items():
-            inputs[input.value] = (
-                f"{input.value} ({name})"
-                if input.value.lower() != name.strip().lower()
-                else name
-            )
-
-        # Sorts the inputs (3.7+ dicts maintain insertion order)
-        inputs = dict(sorted(inputs.items(), key=lambda item: item[1]))
-
-        for zone_attr_name in ZONE_SUBUNITS:
-            if getattr(self.api, zone_attr_name, None):
-                schema[
-                    vol.Required(
-                        CONF_HIDDEN_INPUTS_FOR_ZONE(zone_attr_name.upper()),
-                        default=self.config_entry.options.get(
-                            CONF_HIDDEN_INPUTS_FOR_ZONE(zone_attr_name.upper()), []
-                        ),
-                    )
-                ] = cv.multi_select(inputs)
-
-        return self.async_show_form(step_id="main", data_schema=vol.Schema(schema))

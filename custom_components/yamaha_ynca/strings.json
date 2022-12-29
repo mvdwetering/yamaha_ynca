@@ -44,13 +44,34 @@
   },
   "options": {
     "step": {
-      "main": {
+      "general": {
+        "title": "General settings",
         "data": {
-          "hidden_inputs_MAIN": "Hidden inputs for main zone",
-          "hidden_inputs_ZONE2": "Hidden inputs for zone 2",
-          "hidden_inputs_ZONE3": "Hidden inputs for zone 3",
-          "hidden_inputs_ZONE4": "Hidden inputs for zone 4",
           "hidden_sound_modes": "Hidden sound modes"
+        }
+      },
+      "main": {
+        "title": "Main zone settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs"
+        }
+      },
+      "zone2": {
+        "title": "Zone 2 settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs"
+        }
+      },
+      "zone3": {
+        "title": "Zone 3 settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs"
+        }
+      },
+      "zone4": {
+        "title": "Zone 4 settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs"
         }
       }
     },
