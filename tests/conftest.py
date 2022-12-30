@@ -1,4 +1,6 @@
 """Fixtures for testing."""
+from __future__ import annotations
+
 from typing import Callable, NamedTuple, Type
 from unittest.mock import DEFAULT, Mock, create_autospec, patch
 
@@ -110,8 +112,8 @@ async def setup_integration(
         title=modelname,
         data={
             yamaha_ynca.CONF_SERIAL_URL: serial_url,
-            yamaha_ynca.DATA_MODELNAME: modelname,
-            yamaha_ynca.DATA_ZONES: zones,
+            yamaha_ynca.const.DATA_MODELNAME: modelname,
+            yamaha_ynca.const.DATA_ZONES: zones,
         },
     )
     entry.add_to_hass(hass)
