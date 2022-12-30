@@ -25,7 +25,7 @@ def mock_zone():
 
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
-async def test_async_setup_entry(
+async def test_async_setup_entry_autodetect_number_of_scenes(
     yamahayncascenebutton_mock,
     hass,
     mock_ynca,
@@ -40,9 +40,9 @@ async def test_async_setup_entry(
 
     mock_ynca.main.zonename = "_MAIN_"
     mock_ynca.main.scene1name = "SCENE_1"
-    mock_ynca.main.scene4name = "SCENE_4"
+    mock_ynca.main.scene2name = "SCENE_2"
     mock_ynca.zone2.zonename = "_ZONE2_"
-    mock_ynca.zone2.scene12name = "SCENE_12"
+    mock_ynca.zone2.scene1name = "SCENE_1"
 
     integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
     add_entities_mock = Mock()
@@ -52,14 +52,58 @@ async def test_async_setup_entry(
     yamahayncascenebutton_mock.assert_has_calls(
         [
             call("entry_id", mock_ynca.main, 1),
-            call("entry_id", mock_ynca.main, 4),
-            call("entry_id", mock_ynca.zone2, 12),
+            call("entry_id", mock_ynca.main, 2),
+            call("entry_id", mock_ynca.zone2, 1),
         ]
     )
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
     assert len(entities) == 3
+
+
+@patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
+async def test_async_setup_entry_configured_number_of_scenes(
+    yamahayncascenebutton_mock,
+    hass,
+    mock_ynca,
+):
+
+    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
+    mock_ynca.zone2.id = "ZONE2"
+
+    for scene_id in range(1, 12 + 1):
+        setattr(mock_ynca.zone2, f"scene{scene_id}name", None)
+
+    mock_ynca.zone2.zonename = "_ZONE2_"
+
+    integration = await setup_integration(hass, mock_ynca)
+    options = dict(integration.entry.options)
+    options["ZONE2"] = {yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 11}
+    integration.entry.options = options
+
+    add_entities_mock = Mock()
+    await async_setup_entry(hass, integration.entry, add_entities_mock)
+
+    yamahayncascenebutton_mock.assert_has_calls(
+        [
+            call("entry_id", mock_ynca.zone2, 1),
+            call("entry_id", mock_ynca.zone2, 2),
+            call("entry_id", mock_ynca.zone2, 3),
+            call("entry_id", mock_ynca.zone2, 4),
+            call("entry_id", mock_ynca.zone2, 5),
+            call("entry_id", mock_ynca.zone2, 6),
+            call("entry_id", mock_ynca.zone2, 7),
+            call("entry_id", mock_ynca.zone2, 8),
+            call("entry_id", mock_ynca.zone2, 9),
+            call("entry_id", mock_ynca.zone2, 10),
+            call("entry_id", mock_ynca.zone2, 11),
+        ]
+    )
+
+    add_entities_mock.assert_called_once()
+    entities = add_entities_mock.call_args.args[0]
+    assert len(entities) == 11
 
 
 async def test_button_entity(mock_zone):

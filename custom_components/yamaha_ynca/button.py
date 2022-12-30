@@ -2,7 +2,13 @@ from typing import Any
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, ZONE_SUBUNITS
+from .const import (
+    CONF_NUMBER_OF_SCENES,
+    DOMAIN,
+    MAX_NUMBER_OF_SCENES,
+    NUMBER_OF_SCENES_AUTODETECT,
+    ZONE_SUBUNITS,
+)
 from .helpers import DomainEntryData
 
 
@@ -13,13 +19,22 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     entities = []
     for zone_attr_name in ZONE_SUBUNITS:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
-            for scene_id in range(1, 12 + 1):
-                if getattr(zone_subunit, f"scene{scene_id}name"):
-                    entities.append(
-                        YamahaYncaSceneButton(
-                            config_entry.entry_id, zone_subunit, scene_id
-                        )
-                    )
+            number_of_scenes = config_entry.options.get(zone_subunit.id, {}).get(
+                CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
+            )
+
+            if number_of_scenes == NUMBER_OF_SCENES_AUTODETECT:
+                number_of_scenes = 0
+                for scene_id in range(1, 12 + 1):
+                    if getattr(zone_subunit, f"scene{scene_id}name"):
+                        number_of_scenes += 1
+
+            number_of_scenes = min(MAX_NUMBER_OF_SCENES, number_of_scenes)
+
+            for scene_id in range(1, number_of_scenes + 1):
+                entities.append(
+                    YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
+                )
 
     async_add_entities(entities)
 

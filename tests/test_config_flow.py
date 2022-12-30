@@ -47,9 +47,9 @@ async def test_network_connect(hass: HomeAssistant) -> None:
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
-        yamaha_ynca.CONF_SERIAL_URL: "socket://hostname_or_ipaddress:12345",
-        yamaha_ynca.DATA_ZONES: ["ZONE3"],
-        yamaha_ynca.DATA_MODELNAME: "ModelName",
+        yamaha_ynca.const.CONF_SERIAL_URL: "socket://hostname_or_ipaddress:12345",
+        yamaha_ynca.const.DATA_ZONES: ["ZONE3"],
+        yamaha_ynca.const.DATA_MODELNAME: "ModelName",
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
@@ -81,9 +81,9 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
-        yamaha_ynca.CONF_SERIAL_URL: "SerialUrl",
-        yamaha_ynca.DATA_ZONES: ["ZONE2"],
-        yamaha_ynca.DATA_MODELNAME: "ModelName",
+        yamaha_ynca.const.CONF_SERIAL_URL: "SerialUrl",
+        yamaha_ynca.const.DATA_ZONES: ["ZONE2"],
+        yamaha_ynca.const.DATA_MODELNAME: "ModelName",
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
