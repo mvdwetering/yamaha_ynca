@@ -3,10 +3,6 @@ from typing import TYPE_CHECKING, List, Optional
 
 import ynca
 
-if TYPE_CHECKING:  # pragma: no cover
-    from ynca.subunits.zone import ZoneBase
-
-
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
@@ -29,6 +25,9 @@ from .const import (
 )
 from .helpers import scale, DomainEntryData
 from .input_helpers import InputHelper
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunits.zone import ZoneBase
 
 
 STRAIGHT = "Straight"
