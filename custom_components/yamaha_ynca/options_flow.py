@@ -48,7 +48,7 @@ ZONE_STEPS = [
 ]
 
 
-def get_next_step_id(flow: config_entries.OptionsFlowHandler, current_step: str) -> str:
+def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
     index = STEP_SEQUENCE.index(current_step)
     next_step = STEP_SEQUENCE[index + 1]
 
