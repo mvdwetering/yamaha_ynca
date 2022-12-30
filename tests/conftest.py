@@ -61,14 +61,13 @@ def mock_ynca(hass):
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, None)
 
-    mock_sys = Mock(spec=ynca.subunits.system.System)
-    mock_ynca.sys = mock_sys
+    mock_ynca.sys = Mock(spec=ynca.subunits.system.System)
     mock_ynca.sys.modelname = "Model name"
 
     # Clear external input names
-    for attribute in dir(mock_sys):
+    for attribute in dir(mock_ynca.sys):
         if attribute.startswith("inpname"):
-            setattr(mock_sys, attribute, None)
+            setattr(mock_ynca.sys, attribute, None)
 
     return mock_ynca
 
@@ -87,20 +86,32 @@ class Integration(NamedTuple):
 
 async def setup_integration(
     hass,
-    mock_ynca=None,
+    mock_ynca: ynca.YncaApi | None = None,
     skip_setup=False,
     serial_url="SerialUrl",
     modelname="ModelName",
 ):
+    zones = ["MAIN", "ZONE2", "ZONE3"]
+    if mock_ynca:
+        zones = []
+        if mock_ynca.main:
+            zones.append("MAIN")
+        if mock_ynca.zone2:
+            zones.append("ZONE2")
+        if mock_ynca.zone3:
+            zones.append("ZONE3")
+        if mock_ynca.zone4:
+            zones.append("ZONE4")
+
     entry = MockConfigEntry(
         version=6,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
-        title="ModelName",
+        title=modelname,
         data={
             yamaha_ynca.CONF_SERIAL_URL: serial_url,
-            yamaha_ynca.DATA_MODELNAME: "ModelName",
-            yamaha_ynca.DATA_ZONES: ["MAIN", "ZONE2", "ZONE3"],
+            yamaha_ynca.DATA_MODELNAME: modelname,
+            yamaha_ynca.DATA_ZONES: zones,
         },
     )
     entry.add_to_hass(hass)

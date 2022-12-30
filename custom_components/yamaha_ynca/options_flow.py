@@ -66,6 +66,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize options flow."""
         self.config_entry = config_entry
 
+    async def do_next_step(self, current_step_id: str):
+        next_step_id = get_next_step_id(self, current_step_id)
+        return await getattr(self, f"async_step_{next_step_id}")()
+
     async def async_step_init(self, user_input=None):
         """Basic sanity checks before configuring options."""
 
@@ -82,15 +86,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_abort(reason="connection_required")
 
     async def async_step_general(self, user_input=None):
-        """Manage general device options"""
-
-        print("async_step_general")
-
+        """General device options"""
         if user_input is not None:
             self.options[CONF_HIDDEN_SOUND_MODES] = user_input[CONF_HIDDEN_SOUND_MODES]
-            if "MAIN" in self.config_entry.data[DATA_ZONES]:
-                return await self.async_step_main()
-            return await self.async_step_done(user_input)
+            return await self.do_next_step(STEP_ID_GENERAL)
 
         schema = {}
         modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
@@ -156,8 +155,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             self.options[zone_id] = user_input
-            next_step_id = get_next_step_id(self, step_id)
-            return await getattr(self, f"async_step_{next_step_id}")()
+            return await self.do_next_step(step_id)
 
         schema = {}
 
