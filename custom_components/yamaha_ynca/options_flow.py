@@ -22,6 +22,44 @@ from .const import (
 
 import ynca
 
+STEP_ID_INIT = "init"
+STEP_ID_GENERAL = "general"
+STEP_ID_MAIN = "main"
+STEP_ID_ZONE2 = "zone2"
+STEP_ID_ZONE3 = "zone3"
+STEP_ID_ZONE4 = "zone4"
+STEP_ID_DONE = "done"
+
+STEP_SEQUENCE = [
+    STEP_ID_INIT,
+    STEP_ID_GENERAL,
+    STEP_ID_MAIN,
+    STEP_ID_ZONE2,
+    STEP_ID_ZONE3,
+    STEP_ID_ZONE4,
+    STEP_ID_DONE,
+]
+
+ZONE_STEPS = [
+    STEP_ID_MAIN,
+    STEP_ID_ZONE2,
+    STEP_ID_ZONE3,
+    STEP_ID_ZONE4,
+]
+
+
+def get_next_step_id(flow: config_entries.OptionsFlowHandler, current_step: str) -> str:
+    index = STEP_SEQUENCE.index(current_step)
+    next_step = STEP_SEQUENCE[index + 1]
+
+    while next_step in ZONE_STEPS:
+        if next_step.upper() in flow.config_entry.data[DATA_ZONES]:
+            return next_step
+        index += 1
+        next_step = STEP_SEQUENCE[index + 1]
+
+    return next_step
+
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: ConfigEntry):
@@ -83,64 +121,43 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ] = cv.multi_select(sound_modes)
 
         return self.async_show_form(
-            step_id="general",
+            step_id=STEP_ID_GENERAL,
             data_schema=vol.Schema(schema),
-            last_step="MAIN" not in self.config_entry.data[DATA_ZONES],
+            last_step=get_next_step_id(self, STEP_ID_GENERAL) == STEP_ID_DONE,
         )
 
     async def async_step_main(self, user_input=None):
         print("async_step_main")
-        if user_input is not None:
-            self.options["MAIN"] = user_input
-            if "ZONE2" in self.config_entry.data[DATA_ZONES]:
-                return await self.async_step_zone2()
-            return await self.async_step_done()
-
         return await self.async_zone_settings_screen(
-            "MAIN",
-            "ZONE2" not in self.config_entry.data[DATA_ZONES],
-            user_input=user_input,
+            STEP_ID_MAIN, user_input=user_input
         )
 
     async def async_step_zone2(self, user_input=None):
         print("async_step_zone2")
-        if user_input is not None:
-            self.options["ZONE2"] = user_input
-            if "ZONE3" in self.config_entry.data[DATA_ZONES]:
-                return await self.async_step_zone3()
-            return await self.async_step_done()
-
         return await self.async_zone_settings_screen(
-            "ZONE2",
-            "ZONE3" not in self.config_entry.data[DATA_ZONES],
-            user_input=user_input,
+            STEP_ID_ZONE2, user_input=user_input
         )
 
     async def async_step_zone3(self, user_input=None):
         print("async_step_zone3")
-        if user_input is not None:
-            self.options["ZONE3"] = user_input
-            if "ZONE4" in self.config_entry.data[DATA_ZONES]:
-                return await self.async_step_zone4()
-            return await self.async_step_done()
-
         return await self.async_zone_settings_screen(
-            "ZONE3",
-            "ZONE4" not in self.config_entry.data[DATA_ZONES],
-            user_input=user_input,
+            STEP_ID_ZONE3, user_input=user_input
         )
 
     async def async_step_zone4(self, user_input=None):
-        print("async_step_zone4")
-        if user_input is not None:
-            self.options["ZONE4"] = user_input
-            return await self.async_step_done()
-
         return await self.async_zone_settings_screen(
-            "ZONE4", True, user_input=user_input
+            STEP_ID_ZONE4, user_input=user_input
         )
 
-    async def async_zone_settings_screen(self, zone_id, last_step, user_input=None):
+    async def async_zone_settings_screen(self, step_id, user_input=None):
+        print(step_id)
+
+        zone_id = step_id.upper()
+
+        if user_input is not None:
+            self.options[zone_id] = user_input
+            next_step_id = get_next_step_id(self, step_id)
+            return await getattr(self, f"async_step_{next_step_id}")()
 
         schema = {}
 
@@ -165,10 +182,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
         ] = cv.multi_select(inputs)
 
-        print(zone_id, self.cur_step, schema)
-
         return self.async_show_form(
-            step_id=zone_id.lower(), data_schema=vol.Schema(schema), last_step=last_step
+            step_id=step_id,
+            data_schema=vol.Schema(schema),
+            last_step=get_next_step_id(self, step_id) == STEP_ID_DONE,
         )
 
     async def async_step_done(self, user_input=None):
