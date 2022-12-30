@@ -31,14 +31,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         """Basic sanity checks before configuring options."""
 
-        self.api = None
-
-        if self.hass.data.get(DOMAIN, None) and (
-            domain_entry_data := (
-                self.hass.data[DOMAIN].get(self.config_entry.entry_id, None)
-            )
+        if (
+            DOMAIN in self.hass.data
+            and self.config_entry.entry_id in self.hass.data[DOMAIN]
         ):
-            self.api = domain_entry_data.api
+            self.api: ynca.YncaApi = self.hass.data[DOMAIN][
+                self.config_entry.entry_id
+            ].api
             self.options = dict(self.config_entry.options)
             return await self.async_step_general()
 

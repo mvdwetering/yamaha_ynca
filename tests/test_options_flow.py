@@ -24,6 +24,7 @@ async def test_options_flow_ok(hass: HomeAssistant, mock_ynca) -> None:
     options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
         "Obsolete",  # Test that obsolete values don't break the schema
     ]
+    options["ZONE3"] = {"hidden_inputs": ["AV5"]}
     integration.entry.options = options
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
@@ -87,7 +88,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
     """Test optionsflow when there is no connection"""
 
     integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
-    hass.data[yamaha_ynca.DOMAIN] = None  # Pretend connection failed
+    hass.data[yamaha_ynca.DOMAIN] = {}  # Pretend connection failed
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 

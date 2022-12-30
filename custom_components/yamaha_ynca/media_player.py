@@ -1,7 +1,11 @@
 from __future__ import annotations
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 import ynca
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunits.zone import ZoneBase
+
 
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
@@ -66,7 +70,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self,
         receiver_unique_id: str,
         ynca: ynca.YncaApi,
-        zone: ynca.subunits.zone.ZoneBase,
+        zone: ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
     ):
