@@ -126,19 +126,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_main(self, user_input=None):
-        print("async_step_main")
         return await self.async_zone_settings_screen(
             STEP_ID_MAIN, user_input=user_input
         )
 
     async def async_step_zone2(self, user_input=None):
-        print("async_step_zone2")
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE2, user_input=user_input
         )
 
     async def async_step_zone3(self, user_input=None):
-        print("async_step_zone3")
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE3, user_input=user_input
         )
@@ -149,8 +146,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_zone_settings_screen(self, step_id, user_input=None):
-        print(step_id)
-
         zone_id = step_id.upper()
 
         if user_input is not None:
