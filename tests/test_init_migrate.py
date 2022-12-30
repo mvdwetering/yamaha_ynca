@@ -9,7 +9,9 @@ from pytest_homeassistant_custom_component.common import (
     mock_registry,
 )
 
-from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES
+from custom_components.yamaha_ynca.const import (
+    CONF_HIDDEN_SOUND_MODES,
+)
 
 
 async def test_async_migration_entry(hass: HomeAssistant):
@@ -30,7 +32,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     assert migration_success == True
 
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
-    assert new_entry.version == 5
+    assert new_entry.version == 6
 
 
 async def test_async_migration_entry_version_1(hass: HomeAssistant):
@@ -214,3 +216,68 @@ async def test_async_migration_entry_version_4_is_not_ipaddress(
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry.version == 5
     assert new_entry.data["serial_url"] == "not an ip address"
+
+
+async def test_async_migration_entry_version_5(hass: HomeAssistant):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl"},
+        options={
+            "hidden_sound_modes": ["Church in Royaumont"],
+            "hidden_inputs_MAIN": [],
+            "hidden_inputs_ZONE3": ["V-AUX", "USB", "iPod (USB)", "AUDIO2", "AUDIO1"],
+        },
+        version=5,
+    )
+    old_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrate_v5(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # Entry is migrated to new structure
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 6
+    assert new_entry.data["modelname"] == "ModelName"
+    assert new_entry.options["hidden_sound_modes"] == ["Church in Royaumont"]
+    assert (
+        "MAIN" not in new_entry.options
+    )  # Main was empty/falsey so does not get migrated
+    assert "ZONE2" not in new_entry.options
+    assert "ZONE4" not in new_entry.options
+    assert new_entry.options["ZONE3"]["hidden_inputs"] == [
+        "V-AUX",
+        "USB",
+        "iPod (USB)",
+        "AUDIO2",
+        "AUDIO1",
+    ]
+
+
+async def test_async_migration_entry_version_5_no_data(hass: HomeAssistant):
+
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl"},
+        version=5,
+    )
+    old_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrate_v5(hass, old_entry)
+    await hass.async_block_till_done()
+
+    # Entry is migrated to new structure
+    new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
+    assert new_entry.version == 6
+    assert new_entry.data["modelname"] == "ModelName"
+    assert "general" not in new_entry.options
+    assert "MAIN" not in new_entry.options
+    assert "ZONE2" not in new_entry.options
+    assert "ZONE3" not in new_entry.options
+    assert "ZONE4" not in new_entry.options

@@ -1,5 +1,5 @@
 """Test the Yamaha (YNCA) config flow."""
-from unittest.mock import Mock, create_autospec, patch
+from unittest.mock import patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
@@ -30,7 +30,7 @@ async def test_network_connect(hass: HomeAssistant) -> None:
 
     with patch(
         "ynca.YncaApi.connection_check",
-        return_value="ModelName",
+        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
     ) as mock_setup, patch(
         "custom_components.yamaha_ynca.async_setup_entry",
         return_value=True,
@@ -48,6 +48,8 @@ async def test_network_connect(hass: HomeAssistant) -> None:
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
         yamaha_ynca.CONF_SERIAL_URL: "socket://hostname_or_ipaddress:12345",
+        yamaha_ynca.DATA_ZONES: ["ZONE3"],
+        yamaha_ynca.DATA_MODELNAME: "ModelName",
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
@@ -63,7 +65,7 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
 
     with patch(
         "ynca.YncaApi.connection_check",
-        return_value="ModelName",
+        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE2"]),
     ) as mock_setup, patch(
         "custom_components.yamaha_ynca.async_setup_entry",
         return_value=True,
@@ -80,6 +82,8 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert result2["title"] == "ModelName"
     assert result2["data"] == {
         yamaha_ynca.CONF_SERIAL_URL: "SerialUrl",
+        yamaha_ynca.DATA_ZONES: ["ZONE2"],
+        yamaha_ynca.DATA_MODELNAME: "ModelName",
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
@@ -146,55 +150,3 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "unknown"}
-
-
-async def test_options_flow_ok(hass: HomeAssistant, mock_ynca) -> None:
-    """Test optionsflow"""
-
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
-    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
-    mock_ynca.zone3 = Mock(spec=ynca.subunits.zone.Zone3)
-    mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
-    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
-
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
-    options = dict(integration.entry.options)
-    options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
-        "Obsolete",  # Test that obsolete values don't break the schema
-    ]
-    integration.entry.options = options
-
-    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
-
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "main"
-
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
-            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
-                "Hall in Vienna",
-            ],
-        },
-    )
-
-    assert result["type"] == "create_entry"
-    assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("MAIN"): ["HDMI4"],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE2"): ["NET RADIO"],
-        yamaha_ynca.const.CONF_HIDDEN_INPUTS_FOR_ZONE("ZONE3"): [],
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
-    }
-
-
-async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
-    """Test optionsflow when there is no connection"""
-
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
-    hass.data[yamaha_ynca.DOMAIN] = None  # Pretend connection failed
-
-    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
-
-    assert result["type"] == FlowResultType.ABORT

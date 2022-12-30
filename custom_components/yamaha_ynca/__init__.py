@@ -17,11 +17,15 @@ from homeassistant.helpers.service import ServiceCall, async_extract_config_entr
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
+    CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
+    DATA_MODELNAME,
+    DATA_ZONES,
     DOMAIN,
     LOGGER,
     MANUFACTURER_NAME,
+    ZONE_SUBUNITS,
 )
 from .helpers import DomainEntryData
 
@@ -56,6 +60,24 @@ async def update_device_registry(
     )
 
 
+async def update_configentry(
+    hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
+):
+    assert receiver.sys is not None
+
+    # Older configurations setup before 5.3.0+ will not have zones data filled
+    # So fill it when not set already
+    # If not set, options will not show for zones
+    if DATA_ZONES not in config_entry.data:
+        new_data = dict(config_entry.data)
+        zones = []
+        for zone_attr in ZONE_SUBUNITS:
+            if getattr(receiver, zone_attr, None):
+                zones.append(zone_attr.upper())
+        new_data[DATA_ZONES] = zones
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
+
+
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entry."""
     from_version = config_entry.version
@@ -73,8 +95,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 4:
         migrate_v4(hass, config_entry)
 
+    if config_entry.version == 5:
+        migrate_v5(hass, config_entry)
+
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
+    # and update the version in `setup_integration`
 
     LOGGER.info(
         "Migration of ConfigEntry from version %s to version %s successful",
@@ -83,6 +109,31 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
     return True
+
+
+def migrate_v5(hass: HomeAssistant, config_entry: ConfigEntry):
+    # Migrate format of options from `hidden_inputs_<ZONE>` to having a dict per zone
+    # Add modelname explictly to data, copy from title
+
+    old_options = dict(config_entry.options)  # Convert to dict to be able to use .get
+    new_options = {}
+
+    if hidden_sound_modes := old_options.get("hidden_sound_modes", None):
+        new_options["hidden_sound_modes"] = hidden_sound_modes
+
+    for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
+        if hidden_inputs := old_options.get(f"hidden_inputs_{zone_id}", None):
+            zone_settings = {}
+            zone_settings["hidden_inputs"] = hidden_inputs
+            new_options[zone_id] = zone_settings
+
+    new_data = {**config_entry.data}
+    new_data["modelname"] = config_entry.title
+
+    config_entry.version = 6
+    hass.config_entries.async_update_entry(
+        config_entry, data=new_data, options=new_options
+    )
 
 
 def migrate_v4(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -220,8 +271,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
         # )
 
-    hass.config_entries.async_update_entry(entry, data=entry.data)
-
     ynca_receiver = ynca.YncaApi(
         entry.data[CONF_SERIAL_URL],
         on_disconnect,
@@ -231,6 +280,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if initialized:
         await update_device_registry(hass, entry, ynca_receiver)
+        await update_configentry(hass, entry, ynca_receiver)
+
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = DomainEntryData(
             api=ynca_receiver,
             initialization_events=ynca_receiver.get_communication_log_items(),

@@ -11,6 +11,10 @@ CONF_SERIAL_URL = "serial_url"
 CONF_HOST = "host"
 CONF_PORT = "port"
 
+DATA_MODELNAME = "modelname"
+DATA_ZONES = "zones"
+
+
 MANUFACTURER_NAME = "Yamaha"
 
 ZONE_MAX_VOLUME = 16.5  # Seems to be 16.5 when MAXVOL function not implemented
@@ -24,7 +28,4 @@ ZONE_SUBUNITS = [
 ]
 
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
-
-
-def CONF_HIDDEN_INPUTS_FOR_ZONE(zone: str):
-    return f"hidden_inputs_{zone}"
+CONF_HIDDEN_INPUTS = "hidden_inputs"

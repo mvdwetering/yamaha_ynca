@@ -43,16 +43,18 @@ async def test_async_setup_entry(
     mock_ynca,
 ):
 
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
-    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
+    mock_ynca.main = Mock(autospec=ynca.subunits.zone.Main)
+    mock_ynca.zone2 = Mock(autospec=ynca.subunits.zone.Zone2)
 
+    mock_ynca.main.id = "MAIN"
     mock_ynca.main.zonename = "_MAIN_"
+    mock_ynca.zone2.id = "ZONE2"
     mock_ynca.zone2.zonename = "_ZONE2_"
 
     integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
     integration.entry.options = {
         "hidden_sound_modes": ["Adventure"],
-        "hidden_inputs_MAIN": ["Airplay"],
+        "MAIN": {"hidden_inputs": ["Airplay"]},
     }
     add_entities_mock = Mock()
 
