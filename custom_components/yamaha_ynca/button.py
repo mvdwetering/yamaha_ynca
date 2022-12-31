@@ -25,7 +25,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
             if number_of_scenes == NUMBER_OF_SCENES_AUTODETECT:
                 number_of_scenes = 0
-                for scene_id in range(1, 12 + 1):
+                for scene_id in range(1, MAX_NUMBER_OF_SCENES + 1):
                     if getattr(zone_subunit, f"scene{scene_id}name"):
                         number_of_scenes += 1
 
@@ -67,7 +67,7 @@ class YamahaYncaSceneButton(ButtonEntity):
 
     @property
     def name(self):
-        return f"{self._zone.zonename}: {getattr(self._zone, f'scene{self._scene_id}name', f'Scene {self._scene_id}')}"
+        return f"{self._zone.zonename or self._zone.id}: {getattr(self._zone, f'scene{self._scene_id}name') or f'Scene {self._scene_id}'}"
 
     def press(self) -> None:
         self._zone.scene(self._scene_id)

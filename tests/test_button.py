@@ -24,6 +24,20 @@ def mock_zone():
     return zone
 
 
+@pytest.fixture
+def mock_zone_no_names():
+    """Create a mocked Zone instance."""
+    zone = Mock(
+        spec=ynca.subunits.zone.ZoneBase,
+    )
+
+    zone.id = "ZoneNoNamesId"
+    zone.zonename = None
+    zone.scene1name = None
+
+    return zone
+
+
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_autodetect_number_of_scenes(
     yamahayncascenebutton_mock,
@@ -106,7 +120,7 @@ async def test_async_setup_entry_configured_number_of_scenes(
     assert len(entities) == 11
 
 
-async def test_button_entity(mock_zone):
+async def test_button_entity_with_names(mock_zone):
 
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
@@ -116,22 +130,42 @@ async def test_button_entity(mock_zone):
     }
     assert entity.name == "ZoneName: SceneName One"
 
+
+async def test_button_entity_no_names(mock_zone_no_names):
+
+    entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone_no_names, "1")
+
+    assert entity.unique_id == "ReceiverUniqueId_ZoneNoNamesId_scene_1"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId")
+    }
+    assert entity.name == "ZoneNoNamesId: Scene 1"
+
+
+async def test_button_entity_bahavior(mock_zone):
+
+    entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
+
+    # Pressing button sends message
     entity.press()
     mock_zone.scene.assert_called_once_with("1")
 
+    # Check handling of updtes from YNCA
     await entity.async_added_to_hass()
     mock_zone.register_update_callback.assert_called_once()
-
     callback = mock_zone.register_update_callback.call_args.args[0]
     entity.schedule_update_ha_state = Mock()
 
+    # Ignore unrelated updates
     callback("SCENE11NAME", None)
     entity.schedule_update_ha_state.assert_not_called()
 
+    # HA state is updated when related YNCA messages are handled
     callback("ZONENAME", None)
     assert entity.schedule_update_ha_state.call_count == 1
     callback("SCENE1NAME", None)
     assert entity.schedule_update_ha_state.call_count == 2
 
+    # Cleanup on exit
     await entity.async_will_remove_from_hass()
     mock_zone.unregister_update_callback.assert_called_once_with(callback)
