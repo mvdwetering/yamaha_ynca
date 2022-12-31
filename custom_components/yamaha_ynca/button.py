@@ -7,7 +7,7 @@ from .const import (
     DOMAIN,
     MAX_NUMBER_OF_SCENES,
     NUMBER_OF_SCENES_AUTODETECT,
-    ZONE_SUBUNITS,
+    ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import DomainEntryData
 
@@ -17,7 +17,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone_attr_name in ZONE_SUBUNITS:
+    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             number_of_scenes = config_entry.options.get(zone_subunit.id, {}).get(
                 CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT

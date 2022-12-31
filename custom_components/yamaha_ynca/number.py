@@ -8,7 +8,7 @@ from homeassistant.components.number import (
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 
-from .const import DOMAIN, ZONE_SUBUNITS
+from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData
 
 import ynca
@@ -52,7 +52,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone_attr_name in ZONE_SUBUNITS:
+    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             for entity_description in ENTITY_DESCRIPTIONS:
                 if getattr(zone_subunit, entity_description.key, None) is not None:

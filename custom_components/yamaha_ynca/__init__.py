@@ -23,7 +23,7 @@ from .const import (
     DOMAIN,
     LOGGER,
     MANUFACTURER_NAME,
-    ZONE_SUBUNITS,
+    ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import DomainEntryData
 
@@ -69,7 +69,7 @@ async def update_configentry(
     if DATA_ZONES not in config_entry.data:
         new_data = dict(config_entry.data)
         zones = []
-        for zone_attr in ZONE_SUBUNITS:
+        for zone_attr in ZONE_ATTRIBUTE_NAMES:
             if getattr(receiver, zone_attr, None):
                 zones.append(zone_attr.upper())
         new_data[DATA_ZONES] = zones

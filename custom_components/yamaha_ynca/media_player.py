@@ -21,7 +21,7 @@ from .const import (
     LOGGER,
     ZONE_MAX_VOLUME,
     ZONE_MIN_VOLUME,
-    ZONE_SUBUNITS,
+    ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import scale, DomainEntryData
 from .input_helpers import InputHelper
@@ -38,7 +38,7 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone_attr_name in ZONE_SUBUNITS:
+    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             hidden_inputs = config_entry.options.get(zone_subunit.id, {}).get(
                 CONF_HIDDEN_INPUTS, []

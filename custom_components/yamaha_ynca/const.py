@@ -20,7 +20,7 @@ MANUFACTURER_NAME = "Yamaha"
 ZONE_MAX_VOLUME = 16.5  # Seems to be 16.5 when MAXVOL function not implemented
 ZONE_MIN_VOLUME = -80.5
 
-ZONE_SUBUNITS = [
+ZONE_ATTRIBUTE_NAMES = [
     "main",
     "zone2",
     "zone3",
