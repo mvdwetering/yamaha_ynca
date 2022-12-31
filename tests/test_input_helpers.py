@@ -1,6 +1,8 @@
-from custom_components.yamaha_ynca.input_helpers import InputHelper
+from __future__ import annotations
 
 import ynca
+
+from custom_components.yamaha_ynca.input_helpers import InputHelper
 
 from tests.conftest import INPUT_SUBUNITS
 

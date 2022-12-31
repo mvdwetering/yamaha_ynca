@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from custom_components.yamaha_ynca.helpers import scale
 
 

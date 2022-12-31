@@ -1,17 +1,17 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List, Optional
 
 import ynca
 
 from homeassistant.components.media_player import (
+    MediaPlayerDeviceClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
-    MediaPlayerDeviceClass,
     MediaPlayerState,
     MediaType,
     RepeatMode,
 )
-
 from homeassistant.config_entries import ConfigEntry
 
 from .const import (
@@ -19,11 +19,11 @@ from .const import (
     CONF_HIDDEN_SOUND_MODES,
     DOMAIN,
     LOGGER,
+    ZONE_ATTRIBUTE_NAMES,
     ZONE_MAX_VOLUME,
     ZONE_MIN_VOLUME,
-    ZONE_SUBUNITS,
 )
-from .helpers import scale, DomainEntryData
+from .helpers import DomainEntryData, scale
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -38,7 +38,7 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone_attr_name in ZONE_SUBUNITS:
+    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             hidden_inputs = config_entry.options.get(zone_subunit.id, {}).get(
                 CONF_HIDDEN_INPUTS, []

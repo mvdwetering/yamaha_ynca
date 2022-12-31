@@ -1,7 +1,13 @@
 """Test the Yamaha (YNCA) config flow."""
+from __future__ import annotations
+
 from unittest.mock import Mock, call, create_autospec, patch
 
 import pytest
+import ynca
+
+import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components.yamaha_ynca.media_player import YamahaYncaZone, async_setup_entry
 from homeassistant.components.media_player import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -9,9 +15,6 @@ from homeassistant.components.media_player import (
     RepeatMode,
 )
 
-import ynca
-import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.media_player import YamahaYncaZone, async_setup_entry
 from tests.conftest import setup_integration
 
 

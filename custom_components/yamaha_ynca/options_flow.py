@@ -4,12 +4,12 @@ from __future__ import annotations
 from typing import Any, Dict
 
 import voluptuous as vol  # type: ignore
+import ynca
 
+from custom_components.yamaha_ynca.input_helpers import InputHelper
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 import homeassistant.helpers.config_validation as cv
-
-from custom_components.yamaha_ynca.input_helpers import InputHelper
 
 from .const import (
     CONF_HIDDEN_INPUTS,
@@ -22,8 +22,6 @@ from .const import (
     MAX_NUMBER_OF_SCENES,
     NUMBER_OF_SCENES_AUTODETECT,
 )
-
-import ynca
 
 STEP_ID_INIT = "init"
 STEP_ID_GENERAL = "general"

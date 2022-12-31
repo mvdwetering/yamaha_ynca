@@ -1,6 +1,8 @@
-from homeassistant.core import HomeAssistant
+from __future__ import annotations
 
 from custom_components.yamaha_ynca.diagnostics import async_get_config_entry_diagnostics
+from homeassistant.core import HomeAssistant
+
 from tests.conftest import setup_integration
 
 
