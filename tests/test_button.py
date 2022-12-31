@@ -142,7 +142,7 @@ async def test_button_entity_no_names(mock_zone_no_names):
     assert entity.name == "ZoneNoNamesId: Scene 1"
 
 
-async def test_button_entity_bahavior(mock_zone):
+async def test_button_entity_behavior(mock_zone):
 
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
@@ -150,7 +150,7 @@ async def test_button_entity_bahavior(mock_zone):
     entity.press()
     mock_zone.scene.assert_called_once_with("1")
 
-    # Check handling of updtes from YNCA
+    # Check handling of updates from YNCA
     await entity.async_added_to_hass()
     mock_zone.register_update_callback.assert_called_once()
     callback = mock_zone.register_update_callback.call_args.args[0]

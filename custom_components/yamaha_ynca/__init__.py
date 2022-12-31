@@ -27,7 +27,7 @@ from .const import (
 )
 from .helpers import DomainEntryData
 
-PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON]
+PLATFORMS: List[Platform] = [Platform.MEDIA_PLAYER, Platform.BUTTON, Platform.NUMBER]
 
 SERVICE_SEND_RAW_YNCA = "send_raw_ynca"
 
