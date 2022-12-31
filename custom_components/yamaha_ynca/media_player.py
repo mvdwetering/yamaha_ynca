@@ -143,7 +143,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.vol is not None:
             return scale(
                 self._zone.vol,
-                [ZONE_MIN_VOLUME, self._zone.maxvol or ZONE_MAX_VOLUME],
+                [
+                    ZONE_MIN_VOLUME,
+                    self._zone.maxvol
+                    if self._zone.maxvol is not None
+                    else ZONE_MAX_VOLUME,
+                ],
                 [0, 1],
             )
 
@@ -264,7 +269,12 @@ class YamahaYncaZone(MediaPlayerEntity):
     def set_volume_level(self, volume):
         """Set volume level, convert range from 0..1."""
         self._zone.vol = scale(
-            volume, [0, 1], [ZONE_MIN_VOLUME, self._zone.maxvol or ZONE_MAX_VOLUME]
+            volume,
+            [0, 1],
+            [
+                ZONE_MIN_VOLUME,
+                self._zone.maxvol if self._zone.maxvol is not None else ZONE_MAX_VOLUME,
+            ],
         )
 
     def volume_up(self):

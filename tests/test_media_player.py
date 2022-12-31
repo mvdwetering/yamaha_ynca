@@ -146,6 +146,18 @@ async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
     assert mock_zone.vol == 10
     assert mp_entity.volume_level == 1
 
+    # Check if scaling takes maxvol into account
+    mock_zone.maxvol = 0
+    mp_entity.set_volume_level(1)
+    assert mock_zone.vol == 0
+    assert mp_entity.volume_level == 1
+
+    # Check if scaling takes max when maxvol not available
+    mock_zone.maxvol = None
+    mp_entity.set_volume_level(1)
+    assert mock_zone.vol == 16.5
+    assert mp_entity.volume_level == 1
+
     mp_entity.set_volume_level(0)
     assert mock_zone.vol == -80.5
     assert mp_entity.volume_level == 0
