@@ -53,25 +53,29 @@
       "main": {
         "title": "Main zone settings",
         "data": {
-          "hidden_inputs": "Hidden inputs"
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
         }
       },
       "zone2": {
         "title": "Zone 2 settings",
         "data": {
-          "hidden_inputs": "Hidden inputs"
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
         }
       },
       "zone3": {
         "title": "Zone 3 settings",
         "data": {
-          "hidden_inputs": "Hidden inputs"
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
         }
       },
       "zone4": {
         "title": "Zone 4 settings",
         "data": {
-          "hidden_inputs": "Hidden inputs"
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
         }
       }
     },

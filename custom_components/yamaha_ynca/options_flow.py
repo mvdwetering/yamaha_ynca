@@ -14,10 +14,13 @@ from custom_components.yamaha_ynca.input_helpers import InputHelper
 from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
+    CONF_NUMBER_OF_SCENES,
     DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
     LOGGER,
+    MAX_NUMBER_OF_SCENES,
+    NUMBER_OF_SCENES_AUTODETECT,
 )
 
 import ynca
@@ -162,8 +165,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if input.value.lower() != name.strip().lower()
                 else name
             )
-
-        # Sorts the inputs (3.7+ dicts maintain insertion order)
         inputs = dict(sorted(inputs.items(), key=lambda item: item[1]))
 
         schema[
@@ -174,6 +175,21 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ),
             )
         ] = cv.multi_select(inputs)
+
+        # Number of scenes for zone
+        # Use a select so we can have nice distinct values presented with Autodetect and 0-12
+        number_of_scenes_list = {NUMBER_OF_SCENES_AUTODETECT: "Auto detect"}
+        for id in range(0, MAX_NUMBER_OF_SCENES + 1):
+            number_of_scenes_list[id] = str(id)
+
+        schema[
+            vol.Required(
+                CONF_NUMBER_OF_SCENES,
+                default=self.config_entry.options.get(zone_id, {}).get(
+                    CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
+                ),
+            )
+        ] = vol.In(number_of_scenes_list)
 
         return self.async_show_form(
             step_id=step_id,
