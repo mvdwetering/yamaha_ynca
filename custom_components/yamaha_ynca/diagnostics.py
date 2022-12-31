@@ -1,13 +1,12 @@
 """Diagnostics support for Yamaha (YNCA)."""
 from __future__ import annotations
-from telnetlib import DO
 
 from typing import Any
 
+import ynca
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-
-import ynca
 
 from .const import DOMAIN
 from .helpers import DomainEntryData

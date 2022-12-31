@@ -1,17 +1,19 @@
+from __future__ import annotations
+
 from typing import Any
 
+import ynca
+
 from homeassistant.components.number import (
+    NumberDeviceClass,
     NumberEntity,
     NumberEntityDescription,
-    NumberDeviceClass,
 )
-from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData
-
-import ynca
 
 ENTITY_DESCRIPTIONS = [
     NumberEntityDescription(

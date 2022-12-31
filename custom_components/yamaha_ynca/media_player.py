@@ -1,17 +1,17 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, List, Optional
 
 import ynca
 
 from homeassistant.components.media_player import (
+    MediaPlayerDeviceClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
-    MediaPlayerDeviceClass,
     MediaPlayerState,
     MediaType,
     RepeatMode,
 )
-
 from homeassistant.config_entries import ConfigEntry
 
 from .const import (
@@ -19,11 +19,11 @@ from .const import (
     CONF_HIDDEN_SOUND_MODES,
     DOMAIN,
     LOGGER,
+    ZONE_ATTRIBUTE_NAMES,
     ZONE_MAX_VOLUME,
     ZONE_MIN_VOLUME,
-    ZONE_ATTRIBUTE_NAMES,
 )
-from .helpers import scale, DomainEntryData
+from .helpers import DomainEntryData, scale
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:  # pragma: no cover
