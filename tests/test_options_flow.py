@@ -1,12 +1,13 @@
 """Test the Yamaha (YNCA) config flow."""
-from unittest.mock import Mock, create_autospec, patch
+from __future__ import annotations
 
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
+from unittest.mock import Mock, create_autospec
+
+import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
-import ynca
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
 
 from .conftest import setup_integration
 

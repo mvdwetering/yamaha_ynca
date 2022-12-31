@@ -1,17 +1,14 @@
 """Test the Yamaha (YNCA) config flow migration."""
+from __future__ import annotations
 
 from unittest.mock import patch
-import custom_components.yamaha_ynca as yamaha_ynca
-from homeassistant.core import HomeAssistant
-from homeassistant.const import Platform
-from pytest_homeassistant_custom_component.common import (
-    MockConfigEntry,
-    mock_registry,
-)
 
-from custom_components.yamaha_ynca.const import (
-    CONF_HIDDEN_SOUND_MODES,
-)
+from pytest_homeassistant_custom_component.common import MockConfigEntry, mock_registry
+
+import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 
 
 async def test_async_migration_entry(hass: HomeAssistant):
