@@ -38,7 +38,11 @@ async def test_options_flow_navigate_all_screens(
     assert result["last_step"] is False
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={yamaha_ynca.const.CONF_HIDDEN_INPUTS: []}
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
     )
 
     assert result["type"] == FlowResultType.FORM
@@ -46,7 +50,11 @@ async def test_options_flow_navigate_all_screens(
     assert result["last_step"] is False
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={yamaha_ynca.const.CONF_HIDDEN_INPUTS: []}
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
     )
 
     assert result["type"] == FlowResultType.FORM
@@ -54,7 +62,11 @@ async def test_options_flow_navigate_all_screens(
     assert result["last_step"] is False
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={yamaha_ynca.const.CONF_HIDDEN_INPUTS: []}
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
     )
 
     assert result["type"] == FlowResultType.FORM
@@ -62,16 +74,32 @@ async def test_options_flow_navigate_all_screens(
     assert result["last_step"] is True
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={yamaha_ynca.const.CONF_HIDDEN_INPUTS: []}
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"] == {
         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
-        "MAIN": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: []},
-        "ZONE2": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: []},
-        "ZONE3": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: []},
-        "ZONE4": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: []},
+        "MAIN": {
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
+        "ZONE2": {
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
+        "ZONE3": {
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
+        "ZONE4": {
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
     }
 
 
@@ -142,11 +170,56 @@ async def test_options_flow_zone_inputs(hass: HomeAssistant, mock_ynca) -> None:
         result["flow_id"],
         user_input={
             yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
-        "MAIN": {yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"]},
+        "MAIN": {
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
+    }
+
+
+async def test_options_flow_configure_nof_scenes(
+    hass: HomeAssistant, mock_ynca
+) -> None:
+
+    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+
+    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    options = dict(integration.entry.options)
+    options["MAIN"] = {"number_of_scenes": 5}
+    integration.entry.options = options
+
+    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
+    assert result["step_id"] == "general"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: []},
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "main"
+    assert result["last_step"] is True
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
+        },
+    )
+
+    assert result["type"] == "create_entry"
+    assert result["data"] == {
+        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        "MAIN": {
+            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
+        },
     }

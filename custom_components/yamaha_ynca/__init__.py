@@ -17,10 +17,8 @@ from homeassistant.helpers.service import ServiceCall, async_extract_config_entr
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
-    CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
-    DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
     LOGGER,
