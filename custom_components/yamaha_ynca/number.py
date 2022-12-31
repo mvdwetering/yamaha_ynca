@@ -16,35 +16,37 @@ from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData
 
 ENTITY_DESCRIPTIONS = [
-    NumberEntityDescription(
+    # Suppess following mypy message, which seems to be not an issue as other values have defaults:
+    # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
+    NumberEntityDescription(  # type: ignore
         key="maxvol",
-        entity_category=EntityCategory.CONFIG,
-        native_min_value=-30,
-        native_max_value=16.5,
-        native_step=0.5,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
-        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
-        name="Max volume",
-    ),
-    NumberEntityDescription(
-        key="spbass",
         entity_category=EntityCategory.CONFIG,
+        name="Max volume",
+        native_max_value=16.5,
+        native_min_value=-30,
+        native_step=0.5,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+    ),
+    NumberEntityDescription(  # type: ignore
+        key="spbass",
+        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
+        entity_category=EntityCategory.CONFIG,
+        name="Bass",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
-        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
-        name="Bass",
     ),
-    NumberEntityDescription(
+    NumberEntityDescription(  # type: ignore
         key="sptreble",
         entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
+        name="Treble",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
-        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
-        name="Treble",
     ),
 ]
 
