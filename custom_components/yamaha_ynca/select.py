@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
-from typing import Type
+from typing import List, Type
 
 import ynca
 
@@ -21,6 +21,10 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     function_name: str | None = None
 
 
+def build_enum_options_list(enum: Enum) -> List[str]:
+    return [e.value for e in enum if e.name != "UNKNOWN"]
+
+
 ENTITY_DESCRIPTIONS = [
     # Suppress following mypy message, which seems to be not an issue as other values have defaults:
     # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
@@ -30,7 +34,7 @@ ENTITY_DESCRIPTIONS = [
         enum=ynca.HdmiOut,
         icon="mdi:hdmi-port",
         name="HDMI Out",
-        options=[e.value for e in ynca.HdmiOut],
+        options=build_enum_options_list(ynca.HdmiOut),
     ),
     YncaSelectEntityDescription(  # type: ignore
         key="sleep",
@@ -38,7 +42,7 @@ ENTITY_DESCRIPTIONS = [
         enum=ynca.Sleep,
         icon="mdi:timer-outline",
         name="Sleep timer",
-        options=[e.value for e in ynca.Sleep],
+        options=build_enum_options_list(ynca.Sleep),
     ),
 ]
 

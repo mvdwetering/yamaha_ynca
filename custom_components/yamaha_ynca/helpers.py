@@ -40,7 +40,7 @@ class YamahaYncaSettingEntityMixin:
 
     def __init__(self, receiver_unique_id, zone, description: EntityDescription):
         self.entity_description = description
-        self.translation_key = description.key
+        self._attr_translation_key = description.key
         self._zone = zone
         self._relevant_updates = [
             "PWR",
