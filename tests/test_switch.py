@@ -33,8 +33,8 @@ TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",
     entity_category=EntityCategory.CONFIG,
     name="Enhancer",
-    on=ynca.OnOff.ON,
-    off=ynca.OnOff.OFF,
+    on=ynca.Enhancer.ON,
+    off=ynca.Enhancer.OFF,
 )
 
 
@@ -46,7 +46,7 @@ async def test_async_setup_entry(
 ):
 
     mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
-    mock_ynca.main.enhancer = ynca.OnOff.OFF
+    mock_ynca.main.enhancer = ynca.Enhancer.OFF
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -77,12 +77,12 @@ async def test_switch_entity_fields(mock_zone):
 
     # Setting value
     entity.turn_on()
-    assert mock_zone.enhancer is ynca.OnOff.ON
+    assert mock_zone.enhancer is ynca.Enhancer.ON
     entity.turn_off()
-    assert mock_zone.enhancer is ynca.OnOff.OFF
+    assert mock_zone.enhancer is ynca.Enhancer.OFF
 
     # Reading state
-    mock_zone.enhancer = ynca.OnOff.ON
+    mock_zone.enhancer = ynca.Enhancer.ON
     assert entity.is_on == True
-    mock_zone.enhancer = ynca.OnOff.OFF
+    mock_zone.enhancer = ynca.Enhancer.OFF
     assert entity.is_on == False
