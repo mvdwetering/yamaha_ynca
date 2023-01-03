@@ -21,7 +21,7 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     function_name: str | None = None
 
 
-def build_enum_options_list(enum: Enum) -> List[str]:
+def build_enum_options_list(enum: Type[Enum]) -> List[str]:
     return [e.value for e in enum if e.name != "UNKNOWN"]
 
 
