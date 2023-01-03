@@ -82,5 +82,26 @@
     "abort": {
       "connection_required": "An active connection with the receiver is required to configure the integration."
     }
+  },
+  "entity": {
+    "select": {
+      "hdmiout": {
+        "state": {
+          "Off": "Off",
+          "OUT1": "HDMI OUT 1",
+          "OUT2": "HDMI OUT 2",
+          "OUT1 + 2": "Both"
+        }
+      },
+      "sleep": {
+        "state": {
+          "Off": "Off",
+          "30 min": "30 Minutes",
+          "60 min": "60 Minutes",
+          "90 min": "90 Minutes",
+          "120 min": "120 Minutes"
+        }
+      }
+    }
   }
 }
