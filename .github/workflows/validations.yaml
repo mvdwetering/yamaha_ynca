@@ -26,6 +26,9 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
+      - name: Check typing
+        run: |
+          mypy custom_components  --check-untyped-defs
       - name: Hassfest validation
         uses: "home-assistant/actions/hassfest@master"
       - name: HACS validation
