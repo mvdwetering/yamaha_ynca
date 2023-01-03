@@ -6,6 +6,9 @@ from typing import List
 
 import ynca
 
+from custom_components.yamaha_ynca.const import DOMAIN
+from homeassistant.helpers.entity import EntityDescription
+
 
 @dataclass
 class DomainEntryData:
@@ -25,3 +28,48 @@ def scale(input_value, input_range, output_range):
     value_scaled = float(input_value - input_min) / float(input_spread)
 
     return output_min + (value_scaled * output_spread)
+
+
+class YamahaYncaSettingEntityMixin:
+    """
+    Common code for YamahaYnca settings entities.
+    Entities derived from this also need to derive from the standard HA entities.
+    """
+
+    _attr_has_entity_name = True
+
+    def __init__(self, receiver_unique_id, zone, description: EntityDescription):
+        self.entity_description = description
+        self.translation_key = description.key
+        self._zone = zone
+        self._relevant_updates = [
+            "PWR",
+            getattr(
+                self.entity_description,
+                "function_name",
+                self.entity_description.key.upper(),
+            ),
+        ]
+
+        self._attr_unique_id = (
+            f"{receiver_unique_id}_{self._zone.id}_{self.entity_description.key}"
+        )
+        self._attr_device_info = {"identifiers": {(DOMAIN, receiver_unique_id)}}
+
+    def update_callback(self, function, value):
+        if function in self._relevant_updates:
+            self.schedule_update_ha_state()  # type: ignore
+
+    async def async_added_to_hass(self):
+        self._zone.register_update_callback(self.update_callback)
+
+    async def async_will_remove_from_hass(self):
+        self._zone.unregister_update_callback(self.update_callback)
+
+    @property
+    def available(self):
+        return self._zone.pwr is ynca.Pwr.ON
+
+    @property
+    def name(self):
+        return f"{self._zone.zonename or self._zone.id}: {self.entity_description.name}"

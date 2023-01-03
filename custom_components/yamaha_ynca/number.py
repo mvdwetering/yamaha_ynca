@@ -13,15 +13,16 @@ from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
-from .helpers import DomainEntryData
+from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
 
 ENTITY_DESCRIPTIONS = [
-    # Suppess following mypy message, which seems to be not an issue as other values have defaults:
+    # Suppress following mypy message, which seems to be not an issue as other values have defaults:
     # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
     NumberEntityDescription(  # type: ignore
         key="maxvol",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
+        icon="mdi:volume-high",
         name="Max volume",
         native_max_value=16.5,
         native_min_value=-30,
@@ -32,7 +33,8 @@ ENTITY_DESCRIPTIONS = [
         key="spbass",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
-        name="Bass",
+        icon="mdi:speaker",
+        name="Tone: Bass",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
@@ -42,11 +44,36 @@ ENTITY_DESCRIPTIONS = [
         key="sptreble",
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
-        name="Treble",
+        icon="mdi:speaker",
+        name="Tone: Treble",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+    ),
+    NumberEntityDescription(  # type: ignore
+        key="hpbass",
+        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
+        entity_category=EntityCategory.CONFIG,
+        icon="mdi:headphones",
+        name="Tone: Bass",
+        native_min_value=-6,
+        native_max_value=6,
+        native_step=0.5,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
+    ),
+    NumberEntityDescription(  # type: ignore
+        key="hptreble",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
+        icon="mdi:headphones",
+        name="Tone: Treble",
+        native_min_value=-6,
+        native_max_value=6,
+        native_step=0.5,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
     ),
 ]
 
@@ -69,40 +96,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(entities)
 
 
-class YamahaYncaNumber(NumberEntity):
+class YamahaYncaNumber(YamahaYncaSettingEntityMixin, NumberEntity):
     """Representation of a number on a Yamaha Ynca device."""
 
-    _attr_has_entity_name = True
-
-    def __init__(self, receiver_unique_id, zone, description: NumberEntityDescription):
-        self._zone = zone
-        self._relevant_updates = ["PWR", description.key.upper()]
-        self.entity_description = description
-
-        self._attr_unique_id = (
-            f"{receiver_unique_id}_{self._zone.id}_number_{self.entity_description.key}"
-        )
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, receiver_unique_id)},
-        }
-
-    def update_callback(self, function, value):
-        if function in self._relevant_updates:
-            self.schedule_update_ha_state()
-
-    async def async_added_to_hass(self):
-        self._zone.register_update_callback(self.update_callback)
-
-    async def async_will_remove_from_hass(self):
-        self._zone.unregister_update_callback(self.update_callback)
-
-    @property
-    def available(self):
-        return self._zone.pwr is ynca.Pwr.ON
-
-    @property
-    def name(self):
-        return f"{self._zone.zonename}: {self.entity_description.name}"
+    entity_description: NumberEntityDescription
 
     @property
     def native_value(self) -> float | None:
