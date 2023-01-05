@@ -106,7 +106,7 @@ async def setup_integration(
             zones.append("ZONE4")
 
     entry = MockConfigEntry(
-        version=6,
+        version=7,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title=modelname,

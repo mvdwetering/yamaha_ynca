@@ -102,6 +102,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 5:
         migrate_v5(hass, config_entry)
 
+    if config_entry.version == 6:
+        migrate_v6(hass, config_entry)
+
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
     # and update the version in `setup_integration`
@@ -113,6 +116,22 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
     return True
+
+
+def migrate_v6(hass: HomeAssistant, config_entry: ConfigEntry):
+    # Migrate the current single device (is whole receiver)
+    # to the device for MAIN zone to keep device automations working
+    # Device automations for Zone2, Zone3 or Zone4 parts will break unfortunately
+
+    old_identifiers = {(DOMAIN, f"{config_entry.entry_id}")}
+    new_identifiers = {(DOMAIN, f"{config_entry.entry_id}_MAIN")}
+
+    registry = device_registry.async_get(hass)
+    if device_entry := registry.async_get_device(identifiers=old_identifiers):
+        registry.async_update_device(device_entry.id, new_identifiers=new_identifiers)
+
+    config_entry.version = 7
+    hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
 
 
 def migrate_v5(hass: HomeAssistant, config_entry: ConfigEntry):

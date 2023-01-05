@@ -2,13 +2,24 @@
 from __future__ import annotations
 
 from unittest.mock import patch
+import pytest
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry, mock_registry
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    mock_registry,
+    mock_device_registry,
+)
 
 import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES
+from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES, DOMAIN
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+
+
+@pytest.fixture
+def device_reg(hass):
+    """Return an empty, loaded, registry."""
+    return mock_device_registry(hass)
 
 
 async def test_async_migration_entry(hass: HomeAssistant):
@@ -29,7 +40,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     assert migration_success == True
 
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
-    assert new_entry.version == 6
+    assert new_entry.version == 7
 
 
 async def test_async_migration_entry_version_1(hass: HomeAssistant):
@@ -278,3 +289,37 @@ async def test_async_migration_entry_version_5_no_data(hass: HomeAssistant):
     assert "ZONE2" not in new_entry.options
     assert "ZONE3" not in new_entry.options
     assert "ZONE4" not in new_entry.options
+
+
+async def test_async_migration_entry_version_6(device_reg, hass: HomeAssistant):
+
+    config_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl"},
+        version=2,
+    )
+    config_entry.add_to_hass(hass)
+
+    device_entry_before = device_reg.async_get_or_create(
+        config_entry_id=config_entry.entry_id,
+        identifiers={(DOMAIN, "entry_id")},
+    )
+    assert len(device_reg.devices) == 1  # Sanitycheck that setup was ok
+
+    # Migrate
+    with patch(
+        "homeassistant.helpers.device_registry.async_get",
+        return_value=device_reg,
+    ):
+        yamaha_ynca.migrate_v6(hass, config_entry)
+        await hass.async_block_till_done()
+
+    assert len(device_reg.devices) == 1  # Still only 1 device
+    device_entry_after = device_reg.async_get_device({(DOMAIN, "entry_id_MAIN")})
+    assert device_entry_after is not None
+    assert device_entry_after.config_entries == device_entry_before.config_entries
+
+    new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
+    assert new_entry.version == 7
