@@ -10,8 +10,6 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-from .conftest import setup_integration
-
 
 async def test_menu_form(hass: HomeAssistant) -> None:
     """Test we get the menu form when initialized by user."""

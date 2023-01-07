@@ -80,7 +80,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         self._attr_unique_id = f"{receiver_unique_id}_{self._zone.id}"
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, receiver_unique_id)},
+            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
         }
 
     def update_callback(self, function, value):
@@ -114,11 +114,6 @@ class YamahaYncaZone(MediaPlayerEntity):
     def _get_input_subunit(self):
         if self._zone.inp is not None:
             return InputHelper.get_subunit_for_input(self._ynca, self._zone.inp)
-
-    @property
-    def name(self):
-        """Return the name of the entity."""
-        return self._zone.zonename or self._zone.id
 
     @property
     def state(self):

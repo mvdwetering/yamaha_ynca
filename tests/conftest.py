@@ -18,6 +18,7 @@ import custom_components.yamaha_ynca as yamaha_ynca
 
 import ynca
 
+MODELNAME = "ModelName"
 
 INPUT_SUBUNITS = [
     "airplay",
@@ -47,6 +48,77 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 
 @pytest.fixture
+def mock_zone():
+    return create_mock_zone()
+
+
+@pytest.fixture
+def mock_zone_main():
+    return create_mock_zone(ynca.subunits.zone.Main)
+
+
+@pytest.fixture
+def mock_zone_zone2():
+    return create_mock_zone(ynca.subunits.zone.Zone2)
+
+
+@pytest.fixture
+def mock_zone_zone3():
+    return create_mock_zone(ynca.subunits.zone.Zone3)
+
+
+@pytest.fixture
+def mock_zone_zone4():
+    return create_mock_zone(ynca.subunits.zone.Zone4)
+
+
+def create_mock_zone(spec=None):
+    """Create a mocked Zone instance."""
+    zone = Mock(
+        spec=spec or ynca.subunits.zone.ZoneBase,
+    )
+
+    zone.id = spec.id if spec else "ZoneId"
+
+    # Disable all features (is there an easier way with less maintenance?)
+    zone.adaptivedrc = None
+    zone.enhancer = None
+    zone.hdmiout = None
+    zone.hpbass = None
+    zone.hptreble = None
+    zone.initvollvl = None
+    zone.initvolmode = None
+    zone.inp = None
+    zone.maxvol = None
+    zone.mute = None
+    zone.puredirmode = None
+    zone.pwr = None
+    zone.scene1name = None
+    zone.scene2name = None
+    zone.scene3name = None
+    zone.scene4name = None
+    zone.scene5name = None
+    zone.scene6name = None
+    zone.scene7name = None
+    zone.scene8name = None
+    zone.scene9name = None
+    zone.scene10name = None
+    zone.scene11name = None
+    zone.scene12name = None
+    zone.sleep = None
+    zone.soundprg = None
+    zone.spbass = None
+    zone.sptreble = None
+    zone.straight = None
+    zone.threedcinema = None
+    zone.twochdecoder = None
+    zone.vol = None
+    zone.zonename = None
+
+    return zone
+
+
+@pytest.fixture
 def mock_ynca(hass):
     """Create a mocked YNCA instance without any inputs or subunits."""
     mock_ynca = Mock(
@@ -63,10 +135,11 @@ def mock_ynca(hass):
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, None)
 
+    # Setup minimal SYS subunit with no inputs
     mock_ynca.sys = Mock(spec=ynca.subunits.system.System)
-    mock_ynca.sys.modelname = "Model name"
+    mock_ynca.sys.modelname = MODELNAME
+    mock_ynca.sys.version = "Version"
 
-    # Clear external input names
     for attribute in dir(mock_ynca.sys):
         if attribute.startswith("inpname"):
             setattr(mock_ynca.sys, attribute, None)
@@ -88,31 +161,28 @@ class Integration(NamedTuple):
 
 async def setup_integration(
     hass,
-    mock_ynca: ynca.YncaApi | None = None,
+    mock_ynca: ynca.YncaApi,
     skip_setup=False,
     serial_url="SerialUrl",
-    modelname="ModelName",
 ):
-    zones = ["MAIN", "ZONE2", "ZONE3"]
-    if mock_ynca:
-        zones = []
-        if mock_ynca.main:
-            zones.append("MAIN")
-        if mock_ynca.zone2:
-            zones.append("ZONE2")
-        if mock_ynca.zone3:
-            zones.append("ZONE3")
-        if mock_ynca.zone4:
-            zones.append("ZONE4")
+    zones = []
+    if mock_ynca.main:
+        zones.append("MAIN")
+    if mock_ynca.zone2:
+        zones.append("ZONE2")
+    if mock_ynca.zone3:
+        zones.append("ZONE3")
+    if mock_ynca.zone4:
+        zones.append("ZONE4")
 
     entry = MockConfigEntry(
-        version=6,
+        version=7,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
-        title=modelname,
+        title=MODELNAME,
         data={
             yamaha_ynca.CONF_SERIAL_URL: serial_url,
-            yamaha_ynca.const.DATA_MODELNAME: modelname,
+            yamaha_ynca.const.DATA_MODELNAME: mock_ynca.sys.modelname,
             yamaha_ynca.const.DATA_ZONES: zones,
         },
     )
@@ -125,11 +195,6 @@ async def setup_integration(
             nonlocal on_disconnect
             on_disconnect = args[1]
             return DEFAULT
-
-        mock_ynca = mock_ynca or create_autospec(ynca.YncaApi)
-
-        mock_ynca.sys.modelname = modelname
-        mock_ynca.sys.version = "Version"
 
         with patch("ynca.YncaApi", return_value=mock_ynca, side_effect=side_effect):
             await hass.config_entries.async_setup(entry.entry_id)

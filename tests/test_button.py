@@ -14,55 +14,20 @@ from custom_components.yamaha_ynca.button import (
 from tests.conftest import setup_integration
 
 
-@pytest.fixture
-def mock_zone():
-    """Create a mocked Zone instance."""
-    zone = Mock(
-        spec=ynca.subunits.zone.ZoneBase,
-    )
-
-    zone.id = "ZoneId"
-    zone.zonename = "ZoneName"
-    zone.scene1name = "SceneName One"
-
-    return zone
-
-
-@pytest.fixture
-def mock_zone_no_names():
-    """Create a mocked Zone instance."""
-    zone = Mock(
-        spec=ynca.subunits.zone.ZoneBase,
-    )
-
-    zone.id = "ZoneNoNamesId"
-    zone.zonename = None
-    zone.scene1name = None
-
-    return zone
-
-
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_autodetect_number_of_scenes(
-    yamahayncascenebutton_mock,
-    hass,
-    mock_ynca,
+    yamahayncascenebutton_mock, hass, mock_ynca, mock_zone_main, mock_zone_zone2
 ):
-
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
-    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
-
-    for scene_id in range(1, 12 + 1):
-        setattr(mock_ynca.main, f"scene{scene_id}name", None)
-        setattr(mock_ynca.zone2, f"scene{scene_id}name", None)
-
+    mock_ynca.main = mock_zone_main
     mock_ynca.main.zonename = "_MAIN_"
     mock_ynca.main.scene1name = "SCENE_1"
     mock_ynca.main.scene2name = "SCENE_2"
+
+    mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone2.zonename = "_ZONE2_"
     mock_ynca.zone2.scene1name = "SCENE_1"
 
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
 
     await async_setup_entry(hass, integration.entry, add_entities_mock)
@@ -82,17 +47,10 @@ async def test_async_setup_entry_autodetect_number_of_scenes(
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_configured_number_of_scenes(
-    yamahayncascenebutton_mock,
-    hass,
-    mock_ynca,
+    yamahayncascenebutton_mock, hass, mock_ynca, mock_zone_zone2
 ):
 
-    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
-    mock_ynca.zone2.id = "ZONE2"
-
-    for scene_id in range(1, 12 + 1):
-        setattr(mock_ynca.zone2, f"scene{scene_id}name", None)
-
+    mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone2.zonename = "_ZONE2_"
 
     integration = await setup_integration(hass, mock_ynca)
@@ -125,25 +83,27 @@ async def test_async_setup_entry_configured_number_of_scenes(
 
 
 async def test_button_entity_with_names(mock_zone):
+    mock_zone.zonename = "ZoneName"
+    mock_zone.scene1name = "SceneName One"
 
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_scene_1"
     assert entity.device_info["identifiers"] == {
-        (yamaha_ynca.DOMAIN, "ReceiverUniqueId")
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
     }
-    assert entity.name == "ZoneName: SceneName One"
+    assert entity.name == "SceneName One"
 
 
-async def test_button_entity_no_names(mock_zone_no_names):
+async def test_button_entity_no_names(mock_zone):
 
-    entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone_no_names, "1")
+    entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
-    assert entity.unique_id == "ReceiverUniqueId_ZoneNoNamesId_scene_1"
+    assert entity.unique_id == "ReceiverUniqueId_ZoneId_scene_1"
     assert entity.device_info["identifiers"] == {
-        (yamaha_ynca.DOMAIN, "ReceiverUniqueId")
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
     }
-    assert entity.name == "ZoneNoNamesId: Scene 1"
+    assert entity.name == "Scene 1"
 
 
 async def test_button_entity_behavior(mock_zone):

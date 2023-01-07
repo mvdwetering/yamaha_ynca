@@ -11,19 +11,6 @@ def test_scale(hass):
     assert scale(1, [1, 10], [2, 11]) == 2
 
 
-@pytest.fixture
-def mock_zone():
-    """Create a mocked Zone instance."""
-    zone = Mock(
-        spec=ynca.subunits.zone.ZoneBase,
-    )
-
-    zone.id = "ZoneId"
-    zone.zonename = None
-
-    return zone
-
-
 TEST_ENTITY_DESCRIPTION = EntityDescription(
     key="function_name",
     name="EntityName",

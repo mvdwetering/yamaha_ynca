@@ -16,19 +16,6 @@ from homeassistant.helpers.entity import EntityCategory
 from tests.conftest import setup_integration
 
 
-@pytest.fixture
-def mock_zone():
-    """Create a mocked Zone instance."""
-    zone = Mock(
-        spec=ynca.subunits.zone.ZoneBase,
-    )
-
-    zone.id = "ZoneId"
-    zone.zonename = None
-
-    return zone
-
-
 TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
     key="hdmiout",
     entity_category=EntityCategory.CONFIG,
@@ -41,13 +28,11 @@ TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
 
 @patch("custom_components.yamaha_ynca.select.YamahaYncaSelect", autospec=True)
 async def test_async_setup_entry(
-    yamahayncaselect_mock,
-    hass,
-    mock_ynca,
+    yamahayncaselect_mock, hass, mock_ynca, mock_zone_main
 ):
-
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
+    mock_ynca.main.sleep = ynca.Sleep.THIRTY_MIN
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -72,8 +57,11 @@ async def test_select_entity_fields(mock_zone):
 
     entity = YamahaYncaSelect("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
-    assert entity.name == "ZoneId: HDMI Out"
+    assert entity.name == "HDMI Out"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_hdmiout"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
+    }
 
     # Setting value
     entity.select_option("Off")

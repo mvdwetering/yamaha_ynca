@@ -73,7 +73,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
     # When updating also update the one used in `setup_integration` for tests
-    VERSION = 6
+    VERSION = 7
 
     @staticmethod
     @callback

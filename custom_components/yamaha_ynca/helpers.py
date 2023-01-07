@@ -40,7 +40,6 @@ class YamahaYncaSettingEntityMixin:
 
     def __init__(self, receiver_unique_id, zone, description: EntityDescription):
         self.entity_description = description
-        self._attr_translation_key = description.key
         self._zone = zone
         self._relevant_updates = [
             "PWR",
@@ -51,10 +50,14 @@ class YamahaYncaSettingEntityMixin:
             ),
         ]
 
+        self._attr_device_info = {
+            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
+        }
+        self._attr_name = self.entity_description.name
+        self._attr_translation_key = self.entity_description.key
         self._attr_unique_id = (
             f"{receiver_unique_id}_{self._zone.id}_{self.entity_description.key}"
         )
-        self._attr_device_info = {"identifiers": {(DOMAIN, receiver_unique_id)}}
 
     def update_callback(self, function, value):
         if function in self._relevant_updates:
@@ -69,7 +72,3 @@ class YamahaYncaSettingEntityMixin:
     @property
     def available(self):
         return self._zone.pwr is ynca.Pwr.ON
-
-    @property
-    def name(self):
-        return f"{self._zone.zonename or self._zone.id}: {self.entity_description.name}"

@@ -1,52 +1,83 @@
 """Test the Yamaha (YNCA) config flow."""
 from __future__ import annotations
 
-from unittest.mock import create_autospec, patch
+from unittest.mock import Mock, create_autospec, patch
 
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
 
-from .conftest import setup_integration
+from .conftest import (
+    mock_ynca,
+    setup_integration,
+    mock_zone_main,
+    mock_zone_zone2,
+    mock_zone_zone3,
+    mock_zone_zone4,
+)
 
 
-async def test_async_setup_entry(hass, device_reg):
+async def test_async_setup_entry(
+    hass,
+    device_reg,
+    mock_ynca,
+    mock_zone_main,
+    mock_zone_zone2,
+    mock_zone_zone3,
+    mock_zone_zone4,
+):
     """Test a successful setup entry."""
-    integration = await setup_integration(hass)
+    mock_ynca.main = mock_zone_main
+    mock_ynca.zone2 = mock_zone_zone2
+    mock_ynca.zone3 = mock_zone_zone3
+    mock_ynca.zone4 = mock_zone_zone4
+
+    integration = await setup_integration(hass, mock_ynca)
 
     assert len(hass.config_entries.async_entries(yamaha_ynca.DOMAIN)) == 1
     assert integration.entry.state is ConfigEntryState.LOADED
 
-    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
     assert len(mock_ynca.initialize.mock_calls) == 1
-
-    assert len(device_reg.devices.keys()) == 1
-    device = device_reg.async_get_device(
-        identifiers={(yamaha_ynca.DOMAIN, integration.entry.entry_id)}
+    assert (
+        mock_ynca is hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
     )
-    assert device.manufacturer == "Yamaha"
-    assert device.model == "ModelName"
-    assert device.sw_version == "Version"
-    assert device.name == "Yamaha ModelName"
-    assert device.configuration_url is None
+
+    assert len(device_reg.devices.keys()) == 4
+
+    for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
+        device = device_reg.async_get_device(
+            identifiers={
+                (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_{zone_id}")
+            }
+        )
+        assert device.manufacturer == "Yamaha"
+        assert device.model == "ModelName"
+        assert device.sw_version == "Version"
+        assert device.name == f"ModelName {zone_id}"
+        assert device.configuration_url is None
 
 
-async def test_async_setup_entry_socket_has_configuration_url(hass, device_reg):
+async def test_async_setup_entry_socket_has_configuration_url(
+    hass, device_reg, mock_ynca, mock_zone_main
+):
     """Test a successful setup entry."""
-    integration = await setup_integration(hass, serial_url="socket://1.2.3.4:4321")
+    mock_ynca.main = mock_zone_main
+
+    integration = await setup_integration(
+        hass, mock_ynca, serial_url="socket://1.2.3.4:4321"
+    )
 
     device = device_reg.async_get_device(
-        identifiers={(yamaha_ynca.DOMAIN, integration.entry.entry_id)}
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_MAIN")}
     )
     assert device.configuration_url == "http://1.2.3.4"
 
 
-async def test_async_setup_entry_fails_with_connection_error(hass):
+async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
     """Test a successful setup entry."""
-    integration = await setup_integration(hass, skip_setup=True)
+    integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
-    mock_ynca = create_autospec(ynca.YncaApi)
     mock_ynca.initialize.side_effect = ynca.YncaConnectionError("Connection error")
 
     with patch("ynca.YncaApi", return_value=mock_ynca):
@@ -60,11 +91,12 @@ async def test_async_setup_entry_fails_with_connection_error(hass):
     await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
-async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
+async def test_async_setup_entry_fails_with_initialization_failed_error(
+    hass, mock_ynca
+):
     """Test a successful setup entry."""
-    integration = await setup_integration(hass, skip_setup=True)
+    integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
-    mock_ynca = create_autospec(ynca.YncaApi)
     mock_ynca.initialize.side_effect = ynca.YncaInitializationFailedException(
         "Initialize failed"
     )
@@ -80,11 +112,10 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(hass):
     await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
-async def test_async_setup_entry_fails_unknown_reason(hass):
+async def test_async_setup_entry_fails_unknown_reason(hass, mock_ynca):
     """Test a successful setup entry."""
-    integration = await setup_integration(hass, skip_setup=True)
+    integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
-    mock_ynca = create_autospec(ynca.YncaApi)
     mock_ynca.initialize.side_effect = Exception("Unexpected exception")
 
     with patch("ynca.YncaApi", return_value=mock_ynca):
@@ -95,10 +126,10 @@ async def test_async_setup_entry_fails_unknown_reason(hass):
     assert not hass.data.get(yamaha_ynca.DOMAIN)
 
 
-async def test_async_unload_entry(hass):
+async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
     """Test successful unload of entry."""
-    integration = await setup_integration(hass)
-    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
+    mock_ynca.main = mock_zone_main
+    integration = await setup_integration(hass, mock_ynca)
 
     assert await hass.config_entries.async_unload(integration.entry.entry_id)
     await hass.async_block_till_done()
@@ -108,11 +139,10 @@ async def test_async_unload_entry(hass):
     assert not hass.data.get(yamaha_ynca.DOMAIN)
 
 
-async def test_reload_on_disconnect(hass):
+async def test_reload_on_disconnect(hass, mock_ynca, mock_zone_main):
     """Test successful unload of entry."""
-    integration = await setup_integration(hass)
-
-    mock_ynca = hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
+    mock_ynca.main = mock_zone_main
+    integration = await setup_integration(hass, mock_ynca)
 
     # This should work (it works in real environment) but it locks up the test completely :(
     # Don't know what is going on.
