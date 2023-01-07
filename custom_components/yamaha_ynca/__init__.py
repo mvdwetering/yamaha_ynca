@@ -53,15 +53,27 @@ async def update_device_registry(
 
     # Add device explicitly to registry so other entities just have to report the identifier to link up
     registry = device_registry.async_get(hass)
-    registry.async_get_or_create(
-        config_entry_id=config_entry.entry_id,
-        identifiers={(DOMAIN, config_entry.entry_id)},
-        manufacturer=MANUFACTURER_NAME,
-        name=f"{MANUFACTURER_NAME} {receiver.sys.modelname}",
-        model=receiver.sys.modelname,
-        sw_version=receiver.sys.version,
-        configuration_url=configuration_url,
-    )
+
+    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
+        if zone_subunit := getattr(receiver, zone_attr_name):
+
+            devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
+            if (
+                zone_subunit.zonename
+                and zone_subunit.zonename.lower() != zone_subunit.id.lower()
+            ):
+                # Prefer user defined name over "MODEL ZONE" naming
+                devicename = zone_subunit.zonename
+
+            registry.async_get_or_create(
+                config_entry_id=config_entry.entry_id,
+                identifiers={(DOMAIN, f"{config_entry.entry_id}_{zone_subunit.id}")},
+                manufacturer=MANUFACTURER_NAME,
+                name=devicename,
+                model=receiver.sys.modelname,
+                sw_version=receiver.sys.version,
+                configuration_url=configuration_url,
+            )
 
 
 async def update_configentry(

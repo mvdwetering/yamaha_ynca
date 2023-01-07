@@ -54,7 +54,7 @@ class YamahaYncaSceneButton(ButtonEntity):
             f"{receiver_unique_id}_{self._zone.id}_scene_{self._scene_id}"
         )
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, receiver_unique_id)},
+            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")},
         }
 
     def update_callback(self, function, value):
@@ -69,7 +69,10 @@ class YamahaYncaSceneButton(ButtonEntity):
 
     @property
     def name(self):
-        return f"{self._zone.zonename or self._zone.id}: {getattr(self._zone, f'scene{self._scene_id}name') or f'Scene {self._scene_id}'}"
+        return (
+            getattr(self._zone, f"scene{self._scene_id}name")
+            or f"Scene {self._scene_id}"
+        )
 
     def press(self) -> None:
         self._zone.scene(self._scene_id)
