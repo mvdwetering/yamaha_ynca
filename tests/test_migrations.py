@@ -69,7 +69,7 @@ async def test_async_migration_entry_version_1(hass: HomeAssistant):
         "homeassistant.helpers.entity_registry.async_get",
         return_value=mock_entity_registry,
     ):
-        yamaha_ynca.migrate_v1(hass, old_entry)
+        yamaha_ynca.migrations.migrate_v1(hass, old_entry)
     await hass.async_block_till_done()
 
     # Button entities removed
@@ -107,7 +107,7 @@ async def test_async_migration_entry_version_2(hass: HomeAssistant):
         "homeassistant.helpers.entity_registry.async_get",
         return_value=mock_entity_registry,
     ):
-        yamaha_ynca.migrate_v2(hass, old_entry)
+        yamaha_ynca.migrations.migrate_v2(hass, old_entry)
     await hass.async_block_till_done()
 
     # Scene entities removed
@@ -130,7 +130,7 @@ async def test_async_migration_entry_version_3_hidden_soundmodes(hass: HomeAssis
     old_entry.add_to_hass(hass)
 
     # Migrate
-    yamaha_ynca.migrate_v3(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v3(hass, old_entry)
     await hass.async_block_till_done()
 
     # Hidden soundmodes are translated from enum name to value
@@ -153,7 +153,7 @@ async def test_async_migration_entry_version_3_no_hidden_soundmodes(
     old_entry.add_to_hass(hass)
 
     # Migrate
-    yamaha_ynca.migrate_v3(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v3(hass, old_entry)
     await hass.async_block_till_done()
 
     # Hidden soundmodes are translated from enum name to value
@@ -173,7 +173,7 @@ async def test_async_migration_entry_version_4_is_ipaddress(hass: HomeAssistant)
     )
     old_entry.add_to_hass(hass)
 
-    yamaha_ynca.migrate_v4(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v4(hass, old_entry)
     await hass.async_block_till_done()
 
     # IP address converted to socket:// url
@@ -195,7 +195,7 @@ async def test_async_migration_entry_version_4_is_ipaddress_and_port(
     )
     old_entry.add_to_hass(hass)
 
-    yamaha_ynca.migrate_v4(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v4(hass, old_entry)
     await hass.async_block_till_done()
 
     # IP address converted to socket:// url
@@ -217,7 +217,7 @@ async def test_async_migration_entry_version_4_is_not_ipaddress(
     )
     old_entry.add_to_hass(hass)
 
-    yamaha_ynca.migrate_v4(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v4(hass, old_entry)
     await hass.async_block_till_done()
 
     # IP address converted to socket:// url
@@ -243,7 +243,7 @@ async def test_async_migration_entry_version_5(hass: HomeAssistant):
     old_entry.add_to_hass(hass)
 
     # Migrate
-    yamaha_ynca.migrate_v5(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v5(hass, old_entry)
     await hass.async_block_till_done()
 
     # Entry is migrated to new structure
@@ -277,7 +277,7 @@ async def test_async_migration_entry_version_5_no_data(hass: HomeAssistant):
     old_entry.add_to_hass(hass)
 
     # Migrate
-    yamaha_ynca.migrate_v5(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v5(hass, old_entry)
     await hass.async_block_till_done()
 
     # Entry is migrated to new structure
@@ -313,7 +313,7 @@ async def test_async_migration_entry_version_6(device_reg, hass: HomeAssistant):
         "homeassistant.helpers.device_registry.async_get",
         return_value=device_reg,
     ):
-        yamaha_ynca.migrate_v6(hass, config_entry)
+        yamaha_ynca.migrations.migrate_v6(hass, config_entry)
         await hass.async_block_till_done()
 
     assert len(device_reg.devices) == 1  # Still only 1 device
