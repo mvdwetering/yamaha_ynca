@@ -1,14 +1,11 @@
-"""The Yamaha (YNCA) integration."""
+"""The Yamaha (YNCA) integration migrations."""
 from __future__ import annotations
-
-from enum import unique
-from typing import List
 
 import ynca
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry, entity_registry
 
 from .const import (
@@ -17,16 +14,6 @@ from .const import (
     LOGGER,
 )
 
-PLATFORMS: List[Platform] = [
-    Platform.MEDIA_PLAYER,
-    Platform.BUTTON,
-    Platform.NUMBER,
-    Platform.SELECT,
-    Platform.SWITCH,
-]
-
-SERVICE_SEND_RAW_YNCA = "send_raw_ynca"
-
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entry."""
@@ -34,22 +21,22 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     LOGGER.debug("Migrating from version %s", from_version)
 
     if config_entry.version == 1:
-        migrate_v1(hass, config_entry)
+        migrate_v1_to_v2(hass, config_entry)
 
     if config_entry.version == 2:
-        migrate_v2(hass, config_entry)
+        migrate_v2_to_v3(hass, config_entry)
 
     if config_entry.version == 3:
-        migrate_v3(hass, config_entry)
+        migrate_v3_to_v4(hass, config_entry)
 
     if config_entry.version == 4:
-        migrate_v4(hass, config_entry)
+        migrate_v4_to_v5(hass, config_entry)
 
     if config_entry.version == 5:
-        migrate_v5(hass, config_entry)
+        migrate_v5_to_v6(hass, config_entry)
 
     if config_entry.version == 6:
-        migrate_v6(hass, config_entry)
+        migrate_v6_to_v7(hass, config_entry)
 
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
@@ -64,7 +51,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     return True
 
 
-def migrate_v6(hass: HomeAssistant, config_entry: ConfigEntry):
+def migrate_v6_to_v7(hass: HomeAssistant, config_entry: ConfigEntry):
     # Migrate the current single device (is whole receiver)
     # to the device for MAIN zone to keep device automations working
     # Device automations for Zone2, Zone3 or Zone4 parts will break unfortunately
@@ -80,7 +67,7 @@ def migrate_v6(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
 
 
-def migrate_v5(hass: HomeAssistant, config_entry: ConfigEntry):
+def migrate_v5_to_v6(hass: HomeAssistant, config_entry: ConfigEntry):
     # Migrate format of options from `hidden_inputs_<ZONE>` to having a dict per zone
     # Add modelname explictly to data, copy from title
 
@@ -105,7 +92,7 @@ def migrate_v5(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
 
-def migrate_v4(hass: HomeAssistant, config_entry: ConfigEntry):
+def migrate_v4_to_v5(hass: HomeAssistant, config_entry: ConfigEntry):
     # For "network" type the IP address or host is stored as a socket:// url directly
     # Convert serial urls using the old "network" format
     # Re-uses the old `serial_url_from_user_input` helper function
@@ -132,7 +119,7 @@ def migrate_v4(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.config_entries.async_update_entry(config_entry, data=new)
 
 
-def migrate_v3(hass: HomeAssistant, config_entry: ConfigEntry):
+def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry):
     # Changed how hidden soundmodes are stored
     # Used to be the enum name, now it is the value
 
@@ -152,7 +139,7 @@ def migrate_v3(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
 
-def migrate_v2(hass: HomeAssistant, config_entry: ConfigEntry):
+def migrate_v2_to_v3(hass: HomeAssistant, config_entry: ConfigEntry):
     # Scene entities are replaced by Button entities
     # (scenes limited to a single devics seem a bit weird)
     # cleanup the scene entities so the user does not have to
@@ -168,7 +155,7 @@ def migrate_v2(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
 
 
-def migrate_v1(hass: HomeAssistant, config_entry: ConfigEntry):
+def migrate_v1_to_v2(hass: HomeAssistant, config_entry: ConfigEntry):
     # Button entities are replaced by scene entities
     # cleanup the button entities so the user does not have to
     registry = entity_registry.async_get(hass)
