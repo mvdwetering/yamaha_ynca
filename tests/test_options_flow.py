@@ -9,19 +9,24 @@ import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-from .conftest import setup_integration
+from tests.conftest import setup_integration
 
 
 async def test_options_flow_navigate_all_screens(
-    hass: HomeAssistant, mock_ynca
+    hass: HomeAssistant,
+    mock_ynca,
+    mock_zone_main,
+    mock_zone_zone2,
+    mock_zone_zone3,
+    mock_zone_zone4,
 ) -> None:
 
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
-    mock_ynca.zone2 = Mock(spec=ynca.subunits.zone.Zone2)
-    mock_ynca.zone3 = Mock(spec=ynca.subunits.zone.Zone3)
-    mock_ynca.zone4 = Mock(spec=ynca.subunits.zone.Zone4)
+    mock_ynca.main = mock_zone_main
+    mock_ynca.zone2 = mock_zone_zone2
+    mock_ynca.zone3 = mock_zone_zone3
+    mock_ynca.zone4 = mock_zone_zone4
 
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    integration = await setup_integration(hass, mock_ynca)
     integration.entry.options = dict(integration.entry.options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
@@ -107,7 +112,7 @@ async def test_options_flow_navigate_all_screens(
 async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
     """Test optionsflow when there is no connection"""
 
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    integration = await setup_integration(hass, mock_ynca)
     hass.data[yamaha_ynca.DOMAIN] = {}  # Pretend connection failed
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
@@ -117,7 +122,11 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
 
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
 
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    # Set a modelname that is in the modelinfo, but does not support all SoundPrg values
+    mock_ynca.sys.modelname = "RX-A810"
+
+    integration = await setup_integration(hass, mock_ynca)
+
     options = dict(integration.entry.options)
     options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
         "Obsolete",  # Obsolete values should not break the schema
@@ -144,13 +153,15 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     }
 
 
-async def test_options_flow_zone_inputs(hass: HomeAssistant, mock_ynca) -> None:
+async def test_options_flow_zone_inputs(
+    hass: HomeAssistant, mock_ynca, mock_zone_main
+) -> None:
 
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.main = mock_zone_main
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
 
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"hidden_inputs": ["AV5"]}
     integration.entry.options = options
@@ -186,12 +197,12 @@ async def test_options_flow_zone_inputs(hass: HomeAssistant, mock_ynca) -> None:
 
 
 async def test_options_flow_configure_nof_scenes(
-    hass: HomeAssistant, mock_ynca
+    hass: HomeAssistant, mock_ynca, mock_zone_main
 ) -> None:
 
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.main = mock_zone_main
 
-    integration = await setup_integration(hass, mock_ynca, modelname="RX-A810")
+    integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"number_of_scenes": 5}
     integration.entry.options = options

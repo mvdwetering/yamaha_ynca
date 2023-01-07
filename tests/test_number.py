@@ -14,19 +14,6 @@ from homeassistant.helpers.entity import EntityCategory
 from tests.conftest import setup_integration
 
 
-@pytest.fixture
-def mock_zone():
-    """Create a mocked Zone instance."""
-    zone = Mock(
-        spec=ynca.subunits.zone.ZoneBase,
-    )
-
-    zone.id = "ZoneId"
-    zone.zonename = None
-
-    return zone
-
-
 TEST_ENTITY_DESCRIPTION = NumberEntityDescription(
     key="spbass",
     entity_category=EntityCategory.CONFIG,
@@ -41,12 +28,9 @@ TEST_ENTITY_DESCRIPTION = NumberEntityDescription(
 
 @patch("custom_components.yamaha_ynca.number.YamahaYncaNumber", autospec=True)
 async def test_async_setup_entry(
-    yamahayncanumber_mock,
-    hass,
-    mock_ynca,
+    yamahayncanumber_mock, hass, mock_ynca, mock_zone_main
 ):
-
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.main = mock_zone_main
     mock_ynca.main.maxvol = 0
     mock_ynca.main.spbass = -1
     mock_ynca.main.sptreble = 1
@@ -77,7 +61,7 @@ async def test_number_entity_fields(mock_zone):
 
     entity = YamahaYncaNumber("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
-    assert entity.name == "ZoneId: Name"
+    assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_spbass"
 
     # Setting value

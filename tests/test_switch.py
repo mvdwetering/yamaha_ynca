@@ -16,23 +16,10 @@ from homeassistant.helpers.entity import EntityCategory
 from tests.conftest import setup_integration
 
 
-@pytest.fixture
-def mock_zone():
-    """Create a mocked Zone instance."""
-    zone = Mock(
-        spec=ynca.subunits.zone.ZoneBase,
-    )
-
-    zone.id = "ZoneId"
-    zone.zonename = None
-
-    return zone
-
-
 TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",
     entity_category=EntityCategory.CONFIG,
-    name="Enhancer",
+    name="Name",
     on=ynca.Enhancer.ON,
     off=ynca.Enhancer.OFF,
 )
@@ -40,13 +27,12 @@ TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
 
 @patch("custom_components.yamaha_ynca.switch.YamahaYncaSwitch", autospec=True)
 async def test_async_setup_entry(
-    yamahayncaswitch_mock,
-    hass,
-    mock_ynca,
+    yamahayncaswitch_mock, hass, mock_ynca, mock_zone_main
 ):
-
-    mock_ynca.main = Mock(spec=ynca.subunits.zone.Main)
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.adaptivedrc = ynca.AdaptiveDrc.OFF
     mock_ynca.main.enhancer = ynca.Enhancer.OFF
+    mock_ynca.main.threedcinema = ynca.ThreeDeeCinema.AUTO
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -72,7 +58,7 @@ async def test_switch_entity_fields(mock_zone):
 
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
-    assert entity.name == "ZoneId: Enhancer"
+    assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
 
     # Setting value
