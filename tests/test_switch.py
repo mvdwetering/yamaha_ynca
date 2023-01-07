@@ -60,6 +60,9 @@ async def test_switch_entity_fields(mock_zone):
 
     assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
+    }
 
     # Setting value
     entity.turn_on()

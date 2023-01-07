@@ -50,9 +50,9 @@ class YamahaYncaSettingEntityMixin:
             ),
         ]
 
-        self._attr_device_info = (
-            {"identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}},
-        )
+        self._attr_device_info = {
+            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
+        }
         self._attr_name = self.entity_description.name
         self._attr_translation_key = self.entity_description.key
         self._attr_unique_id = (

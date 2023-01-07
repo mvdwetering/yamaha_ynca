@@ -59,6 +59,9 @@ async def test_select_entity_fields(mock_zone):
 
     assert entity.name == "HDMI Out"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_hdmiout"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
+    }
 
     # Setting value
     entity.select_option("Off")

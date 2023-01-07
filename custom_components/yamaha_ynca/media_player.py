@@ -115,11 +115,6 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.inp is not None:
             return InputHelper.get_subunit_for_input(self._ynca, self._zone.inp)
 
-    # @property
-    # def name(self):
-    #     """Return the name of the entity."""
-    #     return self._zone.zonename or self._zone.id
-
     @property
     def state(self):
         """Return the state of the entity."""

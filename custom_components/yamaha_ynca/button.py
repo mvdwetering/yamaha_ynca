@@ -54,7 +54,7 @@ class YamahaYncaSceneButton(ButtonEntity):
             f"{receiver_unique_id}_{self._zone.id}_scene_{self._scene_id}"
         )
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")},
+            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
         }
 
     def update_callback(self, function, value):

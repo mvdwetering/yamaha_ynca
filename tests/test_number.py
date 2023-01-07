@@ -63,6 +63,9 @@ async def test_number_entity_fields(mock_zone):
 
     assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_spbass"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
+    }
 
     # Setting value
     entity.set_native_value(-4.5)
