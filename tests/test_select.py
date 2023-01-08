@@ -10,6 +10,7 @@ from custom_components.yamaha_ynca.select import (
     YamahaYncaSelect,
     YncaSelectEntityDescription,
     async_setup_entry,
+    build_enum_options_list,
 )
 from homeassistant.helpers.entity import EntityCategory
 
@@ -22,7 +23,7 @@ TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
     enum=ynca.HdmiOut,
     icon="mdi:hdmi-port",
     name="HDMI Out",
-    options=[e.value for e in ynca.HdmiOut],
+    options=build_enum_options_list(ynca.HdmiOut),
 )
 
 
@@ -64,13 +65,13 @@ async def test_select_entity_fields(mock_zone):
     }
 
     # Setting value
-    entity.select_option("Off")
+    entity.select_option("off")
     assert mock_zone.hdmiout is ynca.HdmiOut.OFF
-    entity.select_option("OUT1 + 2")
+    entity.select_option("out1_2")
     assert mock_zone.hdmiout is ynca.HdmiOut.OUT1_PLUS_2
 
     # Reading state
     mock_zone.hdmiout = ynca.HdmiOut.OUT1
-    assert entity.current_option == "OUT1"
+    assert entity.current_option == "out1"
     mock_zone.hdmiout = ynca.HdmiOut.OUT2
-    assert entity.current_option == "OUT2"
+    assert entity.current_option == "out2"

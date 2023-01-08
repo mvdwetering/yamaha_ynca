@@ -87,19 +87,19 @@
     "select": {
       "hdmiout": {
         "state": {
-          "Off": "Off",
-          "OUT1": "HDMI OUT 1",
-          "OUT2": "HDMI OUT 2",
-          "OUT1 + 2": "Both"
+          "off": "Off",
+          "out1": "HDMI OUT 1",
+          "out2": "HDMI OUT 2",
+          "out1_2": "HDMI OUT 1 + 2"
         }
       },
       "sleep": {
         "state": {
-          "Off": "Off",
-          "30 min": "30 Minutes",
-          "60 min": "60 Minutes",
-          "90 min": "90 Minutes",
-          "120 min": "120 Minutes"
+          "off": "Off",
+          "30_min": "30 Minutes",
+          "60_min": "60 Minutes",
+          "90_min": "90 Minutes",
+          "120_min": "120 Minutes"
         }
       }
     }
