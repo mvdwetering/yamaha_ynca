@@ -19,12 +19,18 @@ from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
 @dataclass
 class YncaSelectEntityDescription(SelectEntityDescription):
     enum: Type[Enum] | None = None
-    function_name: str | None = None
-    """Function name which indicates updates for this entity. Only needed when it does not match `key.upper()`"""
+    function_names: List[str] | None = None
+    """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
 
 
 def build_enum_options_list(enum: Type[Enum]) -> List[str]:
     return [slugify(e.value) for e in enum if e.name != "UNKNOWN"]
+
+
+class PowerOnVolumeMode(str, Enum):
+    CONFIGURED_VOLUME = "configured_volume"
+    LAST_VALUE = "last_value"
+    MUTE = "mute"
 
 
 ENTITY_DESCRIPTIONS = [
@@ -48,6 +54,15 @@ ENTITY_DESCRIPTIONS = [
     ),
 ]
 
+PowerOnVolumeModeEntityDescription = YncaSelectEntityDescription(  # type: ignore
+    key="power_on_volume_mode",
+    entity_category=EntityCategory.CONFIG,
+    enum=PowerOnVolumeMode,
+    name="Power on volume mode",
+    options=build_enum_options_list(PowerOnVolumeMode),
+    function_names=["INITVOLMODE", "INITVOLLVL"],
+)
+
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
@@ -63,6 +78,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             config_entry.entry_id, zone_subunit, entity_description
                         )
                     )
+
+            if zone_subunit.initvollvl is not None:
+                entities.append(
+                    YamahaYncaSelectPowerOnVolume(
+                        config_entry.entry_id,
+                        zone_subunit,
+                        PowerOnVolumeModeEntityDescription,
+                    )
+                )
 
     async_add_entities(entities)
 
@@ -92,3 +116,52 @@ class YamahaYncaSelect(YamahaYncaSettingEntityMixin, SelectEntity):
                     self.entity_description.key,
                     self.entity_description.enum(value[0]),
                 )
+
+
+class YamahaYncaSelectPowerOnVolume(YamahaYncaSelect):
+    """
+    Representation of a select entity on a Yamaha Ynca device specifically for Power On Volume.
+    Power On Volume is special as it dependes on 2 attributes (INITVOLLVL and/or INITVOLMODE)
+    """
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the selected entity option to represent the entity state."""
+        if self._zone.initvolmode is ynca.InitVolMode.OFF:
+            return PowerOnVolumeMode.LAST_VALUE.value
+        # Some (newer?) receivers dont have separate mode
+        # and report Off in INITVOLLVL
+        if self._zone.initvollvl is ynca.InitVolLvl.OFF:
+            return PowerOnVolumeMode.LAST_VALUE.value
+        if self._zone.initvollvl is ynca.InitVolLvl.MUTE:
+            return PowerOnVolumeMode.MUTE.value
+
+        return PowerOnVolumeMode.CONFIGURED_VOLUME.value
+
+    def select_option(self, option: str) -> None:
+        """Change the selected option."""
+        value = PowerOnVolumeMode(option)
+
+        if value is PowerOnVolumeMode.MUTE:
+            self._zone.initvollvl = ynca.InitVolLvl.MUTE
+            if self._zone.initvolmode is not None:
+                self._zone.initvolmode = ynca.InitVolMode.ON
+            return
+
+        if value is PowerOnVolumeMode.LAST_VALUE:
+            if self._zone.initvolmode is not None:
+                self._zone.initvolmode = ynca.InitVolMode.OFF
+            else:
+                self._zone.initvollvl = ynca.InitVolLvl.OFF
+            return
+
+        if (
+            isinstance(self._zone.initvollvl, ynca.InitVolLvl)
+            and self._zone.initvollvl in ynca.InitVolLvl
+        ):
+            # Was Off or Mute, need to fill in some value
+            # Since value is also stored in here there is no previous value
+            # Lets just take current volume?
+            self._zone.initvollvl = self._zone.vol
+        if self._zone.initvolmode is not None:
+            self._zone.initvolmode = ynca.InitVolMode.ON

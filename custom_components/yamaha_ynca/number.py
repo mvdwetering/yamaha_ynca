@@ -1,6 +1,7 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
-from typing import Any
+from typing import Any, List
 
 import ynca
 
@@ -12,24 +13,31 @@ from homeassistant.components.number import (
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.helpers.entity import EntityCategory
 
-from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
+from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME
 from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
+
+
+@dataclass
+class YncaNumberEntityDescription(NumberEntityDescription):
+    function_names: List[str] | None = None
+    """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
+
 
 ENTITY_DESCRIPTIONS = [
     # Suppress following mypy message, which seems to be not an issue as other values have defaults:
     # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
-    NumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(  # type: ignore
         key="maxvol",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
         icon="mdi:volume-high",
         name="Max volume",
-        native_max_value=16.5,
         native_min_value=-30,
+        native_max_value=ZONE_MAX_VOLUME,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
     ),
-    NumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(  # type: ignore
         key="spbass",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
@@ -40,7 +48,7 @@ ENTITY_DESCRIPTIONS = [
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
     ),
-    NumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(  # type: ignore
         key="sptreble",
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
@@ -51,7 +59,7 @@ ENTITY_DESCRIPTIONS = [
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
     ),
-    NumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(  # type: ignore
         key="hpbass",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
@@ -63,7 +71,7 @@ ENTITY_DESCRIPTIONS = [
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
         entity_registry_enabled_default=False,
     ),
-    NumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(  # type: ignore
         key="hptreble",
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
@@ -76,6 +84,19 @@ ENTITY_DESCRIPTIONS = [
         entity_registry_enabled_default=False,
     ),
 ]
+
+PowerOnVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: ignore
+    key="initvollvl",
+    entity_category=EntityCategory.CONFIG,
+    device_class=NumberDeviceClass.SIGNAL_STRENGTH,
+    icon="mdi:knob",
+    name="Power on volume value",
+    native_min_value=-80.0,
+    native_max_value=ZONE_MAX_VOLUME,
+    native_step=0.5,
+    native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+    function_names=["INITVOLLVL", "INITVOLMODE"],
+)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -93,13 +114,22 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         )
                     )
 
+            if zone_subunit.initvollvl is not None:
+                entities.append(
+                    YamahaYncaNumberPowerOnVolume(
+                        config_entry.entry_id,
+                        zone_subunit,
+                        PowerOnVolumeValueEntityDescription,
+                    )
+                )
+
     async_add_entities(entities)
 
 
 class YamahaYncaNumber(YamahaYncaSettingEntityMixin, NumberEntity):
     """Representation of a number on a Yamaha Ynca device."""
 
-    entity_description: NumberEntityDescription
+    entity_description: YncaNumberEntityDescription
 
     @property
     def native_value(self) -> float | None:
@@ -108,3 +138,18 @@ class YamahaYncaNumber(YamahaYncaSettingEntityMixin, NumberEntity):
 
     def set_native_value(self, value: float) -> None:
         setattr(self._zone, self.entity_description.key, value)
+
+
+class YamahaYncaNumberPowerOnVolume(YamahaYncaNumber):
+    """
+    Representation Power on volume level.
+    This is special as it is not always a number and can depend on InitLvlMode
+    """
+
+    @property
+    def available(self):
+        return (
+            super().available
+            and isinstance(self._zone.initvollvl, float)
+            and self._zone.initvolmode is not ynca.InitVolMode.OFF
+        )
