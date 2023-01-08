@@ -20,6 +20,7 @@ class YncaSwitchEntityDescription(SwitchEntityDescription):
     on: Enum | None = None
     off: Enum | None = None
     function_name: str | None = None
+    """Function name which indicates updates for this entity. Only needed when it does not match `key.upper()`"""
 
 
 ENTITY_DESCRIPTIONS = [
