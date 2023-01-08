@@ -41,13 +41,11 @@ class YamahaYncaSettingEntityMixin:
     def __init__(self, receiver_unique_id, zone, description: EntityDescription):
         self.entity_description = description
         self._zone = zone
+
+        function_name = getattr(self.entity_description, "function_name", None)
         self._relevant_updates = [
             "PWR",
-            getattr(
-                self.entity_description,
-                "function_name",
-                self.entity_description.key.upper(),
-            ),
+            function_name or self.entity_description.key.upper(),
         ]
 
         self._attr_device_info = {

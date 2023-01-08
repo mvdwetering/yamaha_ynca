@@ -20,6 +20,7 @@ from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
 class YncaSelectEntityDescription(SelectEntityDescription):
     enum: Type[Enum] | None = None
     function_name: str | None = None
+    """Function name which indicates updates for this entity. Only needed when it does not match `key.upper()`"""
 
 
 def build_enum_options_list(enum: Type[Enum]) -> List[str]:
