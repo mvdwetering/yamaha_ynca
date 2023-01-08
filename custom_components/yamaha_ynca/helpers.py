@@ -42,11 +42,11 @@ class YamahaYncaSettingEntityMixin:
         self.entity_description = description
         self._zone = zone
 
-        function_name = getattr(self.entity_description, "function_name", None)
-        self._relevant_updates = [
-            "PWR",
-            function_name or self.entity_description.key.upper(),
-        ]
+        function_names = getattr(self.entity_description, "function_names", None)
+        self._relevant_updates = ["PWR"]
+        self._relevant_updates.extend(
+            function_names or [self.entity_description.key.upper()]
+        )
 
         self._attr_device_info = {
             "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}

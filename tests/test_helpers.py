@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import List
 
 from unittest.mock import Mock
 
@@ -21,13 +22,13 @@ TEST_ENTITY_DESCRIPTION = EntityDescription(
 
 @dataclass
 class TestYncaEntityDescription(EntityDescription):
-    function_name: str | None = None
+    function_names: List[str] | None = None
 
 
 TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME = TestYncaEntityDescription(
     key="key",
     name="EntityName",
-    function_name="FUNCTION_NAME",
+    function_names=["FUNCTION_NAME"],
 )
 
 

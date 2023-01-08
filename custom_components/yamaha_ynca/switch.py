@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, List
 
 import ynca
 
@@ -19,8 +19,8 @@ from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
 class YncaSwitchEntityDescription(SwitchEntityDescription):
     on: Enum | None = None
     off: Enum | None = None
-    function_name: str | None = None
-    """Function name which indicates updates for this entity. Only needed when it does not match `key.upper()`"""
+    function_names: List[str] | None = None
+    """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
 
 
 ENTITY_DESCRIPTIONS = [
@@ -43,7 +43,7 @@ ENTITY_DESCRIPTIONS = [
     YncaSwitchEntityDescription(  # type: ignore
         key="threedcinema",
         entity_category=EntityCategory.CONFIG,
-        function_name="3DCINEMA",
+        function_names=["3DCINEMA"],
         name="3D Cinema",
         on=ynca.ThreeDeeCinema.AUTO,
         off=ynca.ThreeDeeCinema.OFF,
