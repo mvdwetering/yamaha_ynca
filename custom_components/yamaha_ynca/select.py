@@ -10,6 +10,7 @@ from homeassistant.components.select import (
     SelectEntityDescription,
 )
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.util import slugify
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
@@ -22,7 +23,7 @@ class YncaSelectEntityDescription(SelectEntityDescription):
 
 
 def build_enum_options_list(enum: Type[Enum]) -> List[str]:
-    return [e.value for e in enum if e.name != "UNKNOWN"]
+    return [slugify(e.value) for e in enum if e.name != "UNKNOWN"]
 
 
 ENTITY_DESCRIPTIONS = [
@@ -73,13 +74,20 @@ class YamahaYncaSelect(YamahaYncaSettingEntityMixin, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return getattr(self._zone, self.entity_description.key).value
+        return slugify(getattr(self._zone, self.entity_description.key).value)
 
     def select_option(self, option: str) -> None:
         """Change the selected option."""
         if self.entity_description.enum is not None:
-            setattr(
-                self._zone,
-                self.entity_description.key,
-                self.entity_description.enum(option),
-            )
+            value = [
+                e.value
+                for e in self.entity_description.enum
+                if slugify(e.value) == option
+            ]
+
+            if len(value) == 1:
+                setattr(
+                    self._zone,
+                    self.entity_description.key,
+                    self.entity_description.enum(value[0]),
+                )
