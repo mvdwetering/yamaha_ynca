@@ -3,19 +3,15 @@ from __future__ import annotations
 
 from unittest.mock import Mock, create_autospec, patch
 
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers.service import ServiceCall
+from homeassistant.setup import async_setup_component
 
-from .conftest import (
-    mock_ynca,
-    setup_integration,
-    mock_zone_main,
-    mock_zone_zone2,
-    mock_zone_zone3,
-    mock_zone_zone4,
-)
+from .conftest import setup_integration
 
 
 async def test_async_setup_entry(
@@ -79,6 +75,23 @@ async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
     mock_ynca.initialize.side_effect = ynca.YncaConnectionError("Connection error")
+
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        await hass.config_entries.async_setup(integration.entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert integration.entry.state is ConfigEntryState.SETUP_RETRY
+    assert not hass.data.get(yamaha_ynca.DOMAIN)
+
+    # Unload to avoid errors about "Lingering timer" which was started to retry setup
+    await hass.config_entries.async_unload(integration.entry.entry_id)
+
+
+async def test_async_setup_entry_fails_with_connection_failed(hass, mock_ynca):
+    """Test a successful setup entry."""
+    integration = await setup_integration(hass, mock_ynca, skip_setup=True)
+
+    mock_ynca.initialize.side_effect = ynca.YncaConnectionFailed("Connection failed")
 
     with patch("ynca.YncaApi", return_value=mock_ynca):
         await hass.config_entries.async_setup(integration.entry.entry_id)

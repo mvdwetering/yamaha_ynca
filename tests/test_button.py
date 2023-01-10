@@ -11,7 +11,7 @@ from custom_components.yamaha_ynca.button import (
     async_setup_entry,
 )
 
-from tests.conftest import setup_integration
+from .conftest import setup_integration
 
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
