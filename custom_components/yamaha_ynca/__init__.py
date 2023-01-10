@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-from enum import unique
 import re
 from typing import List
 
@@ -10,14 +9,13 @@ import ynca
 
 from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
 from homeassistant.const import Platform
-from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.helpers import device_registry
 from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
-    CONF_HIDDEN_SOUND_MODES,
     CONF_SERIAL_URL,
     DATA_ZONES,
     DOMAIN,
@@ -122,11 +120,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             return True
         except ynca.YncaConnectionError as e:
             raise ConfigEntryNotReady(
-                "Connection to YNCA receiver %s failed" % entry.title
+                "Could not connect to YNCA receiver %s" % entry.title
+            ) from e
+        except ynca.YncaConnectionFailed as e:
+            raise ConfigEntryNotReady(
+                "Could not setup connection to YNCA receiver %s" % entry.title
             ) from e
         except ynca.YncaInitializationFailedException as e:
             raise ConfigEntryNotReady(
-                "Initialization of YNCA receiver %s failed" % entry.title
+                "Could not initialize YNCA receiver %s" % entry.title
             ) from e
         except Exception:
             LOGGER.exception(
@@ -137,21 +139,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def on_disconnect():
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
-
-        # The unittest hangs on this it seems.
-        # Same for the alternative approach below.
         try:
             asyncio.run_coroutine_threadsafe(
                 hass.config_entries.async_reload(entry.entry_id), hass.loop
             ).result()
-        except OperationNotAllowed:
+        except OperationNotAllowed:  # pragma: no cover
             # Can not reload when during setup
             # Which is fine, so just let it go
             pass
-
-        # hass.services.call(
-        #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
-        # )
 
     ynca_receiver = ynca.YncaApi(
         entry.data[CONF_SERIAL_URL],

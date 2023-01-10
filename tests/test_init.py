@@ -3,19 +3,15 @@ from __future__ import annotations
 
 from unittest.mock import Mock, create_autospec, patch
 
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers.service import ServiceCall
+from homeassistant.setup import async_setup_component
 
-from .conftest import (
-    mock_ynca,
-    setup_integration,
-    mock_zone_main,
-    mock_zone_zone2,
-    mock_zone_zone3,
-    mock_zone_zone4,
-)
+from .conftest import setup_integration
 
 
 async def test_async_setup_entry(
@@ -91,6 +87,23 @@ async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
     await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
+async def test_async_setup_entry_fails_with_connection_failed(hass, mock_ynca):
+    """Test a successful setup entry."""
+    integration = await setup_integration(hass, mock_ynca, skip_setup=True)
+
+    mock_ynca.initialize.side_effect = ynca.YncaConnectionFailed("Connection failed")
+
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        await hass.config_entries.async_setup(integration.entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert integration.entry.state is ConfigEntryState.SETUP_RETRY
+    assert not hass.data.get(yamaha_ynca.DOMAIN)
+
+    # Unload to avoid errors about "Lingering timer" which was started to retry setup
+    await hass.config_entries.async_unload(integration.entry.entry_id)
+
+
 async def test_async_setup_entry_fails_with_initialization_failed_error(
     hass, mock_ynca
 ):
@@ -144,10 +157,95 @@ async def test_reload_on_disconnect(hass, mock_ynca, mock_zone_main):
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
 
-    # This should work (it works in real environment) but it locks up the test completely :(
-    # Don't know what is going on.
+    # on_disconnect gets called from a normal thread
+    # also do that in the test otherwise it will hang
+    await hass.async_add_executor_job(integration.on_disconnect)
+    await hass.async_block_till_done()
 
-    # integration.on_disconnect()
+    assert len(mock_ynca.close.mock_calls) == 1
 
-    # assert len(mock_ynca.close.mock_calls) == 1
-    # assert len(mock_ynca.initialize.mock_calls) == 2
+
+async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zone3):
+    """Test successful unload of entry."""
+
+    mock_ynca.main = mock_zone_main
+    mock_ynca.zone3 = mock_zone_zone3
+
+    entry = MockConfigEntry(
+        version=7,
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="MODELNAME",
+        data={
+            yamaha_ynca.CONF_SERIAL_URL: "serial_url",
+            yamaha_ynca.const.DATA_MODELNAME: "modelname",
+            # no zones, will be added by function under test: yamaha_ynca.const.DATA_ZONES: zones,
+        },
+    )
+
+    await yamaha_ynca.update_configentry(hass, entry, mock_ynca)
+
+    assert "zones" in entry.data
+    assert "MAIN" in entry.data["zones"]
+    assert "ZONE2" not in entry.data["zones"]
+    assert "ZONE3" in entry.data["zones"]
+    assert "ZONE4" not in entry.data["zones"]
+
+
+# Can't figure out how to patch `async_extract_config_entry_ids`
+#
+# @patch("homeassistant.helpers.service.async_extract_config_entry_ids")
+# async def test_service_raw_ynca_command_handler(
+#     async_extract_config_entry_ids_mock, hass, mock_ynca
+# ):
+#     """Test sending raw YNCA command."""
+#     integration = await setup_integration(hass, mock_ynca)
+
+#     call = ServiceCall(
+#         yamaha_ynca.DOMAIN,
+#         yamaha_ynca.SERVICE_SEND_RAW_YNCA,
+#         {
+#             "device_id": f"{integration.entry.entry_id}_MAIN",
+#             "raw_data": "COMMAND_TO_SEND",
+#             # "entity_id": "media_player.main",
+#         },
+#     )
+
+#     async_extract_config_entry_ids_mock.return_value = {integration.entry.entry_id}
+#     await yamaha_ynca.async_handle_send_raw_ynca(hass, call)
+#     mock_ynca.send_raw.assert_called_once_with("COMMAND_TO_SEND")
+
+
+@patch("custom_components.yamaha_ynca.async_handle_send_raw_ynca")
+async def test_service_raw_ynca_command(
+    async_handle_send_raw_ynca_mock, hass, mock_ynca, mock_zone_main
+):
+    """Test sending raw YNCA command."""
+    mock_ynca.main = mock_zone_main
+    integration = await setup_integration(hass, mock_ynca)
+
+    # Service call is done, but odes not work due to no configentries found
+    await hass.services.async_call(
+        yamaha_ynca.DOMAIN,
+        yamaha_ynca.SERVICE_SEND_RAW_YNCA,
+        {
+            "device_id": f"{integration.entry.entry_id}_MAIN",
+            "raw_data": "COMMAND_TO_SEND",
+        },
+        blocking=True,
+    )
+    await hass.async_block_till_done()
+
+    # Check
+    async_handle_send_raw_ynca_mock.assert_called_once()
+    assert len(async_handle_send_raw_ynca_mock.call_args.args) == 2
+
+    assert async_handle_send_raw_ynca_mock.call_args.args[0] == hass
+
+    service_call = async_handle_send_raw_ynca_mock.call_args.args[1]
+    assert service_call.domain == yamaha_ynca.DOMAIN
+    assert service_call.service == yamaha_ynca.SERVICE_SEND_RAW_YNCA
+    assert service_call.data == {
+        "device_id": f"{integration.entry.entry_id}_MAIN",
+        "raw_data": "COMMAND_TO_SEND",
+    }
