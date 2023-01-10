@@ -139,21 +139,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def on_disconnect():
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
-
-        # The unittest hangs on this it seems.
-        # Same for the alternative approach below.
         try:
             asyncio.run_coroutine_threadsafe(
                 hass.config_entries.async_reload(entry.entry_id), hass.loop
             ).result()
-        except OperationNotAllowed:
+        except OperationNotAllowed:  # pragma: no cover
             # Can not reload when during setup
             # Which is fine, so just let it go
             pass
-
-        # hass.services.call(
-        #     HA_DOMAIN, SERVICE_RELOAD_CONFIG_ENTRY, {"entry_id": entry.entry_id}
-        # )
 
     ynca_receiver = ynca.YncaApi(
         entry.data[CONF_SERIAL_URL],
