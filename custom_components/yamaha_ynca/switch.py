@@ -29,7 +29,7 @@ ENTITY_DESCRIPTIONS = [
     YncaSwitchEntityDescription(  # type: ignore
         key="enhancer",
         entity_category=EntityCategory.CONFIG,
-        name="Enhancer",
+        name="Compressed Music Enhancer",
         on=ynca.Enhancer.ON,
         off=ynca.Enhancer.OFF,
     ),
@@ -44,7 +44,7 @@ ENTITY_DESCRIPTIONS = [
         key="threedcinema",
         entity_category=EntityCategory.CONFIG,
         function_names=["3DCINEMA"],
-        name="3D Cinema",
+        name="CINEMA DSP 3D Mode",
         on=ynca.ThreeDeeCinema.AUTO,
         off=ynca.ThreeDeeCinema.OFF,
     ),

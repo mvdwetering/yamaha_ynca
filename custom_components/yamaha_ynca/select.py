@@ -27,8 +27,8 @@ def build_enum_options_list(enum: Type[Enum]) -> List[str]:
     return [slugify(e.value) for e in enum if e.name != "UNKNOWN"]
 
 
-class PowerOnVolumeMode(str, Enum):
-    CONFIGURED_VOLUME = "configured_volume"
+class InitialVolumeMode(str, Enum):
+    CONFIGURED_INITIAL_VOLUME = "configured_initial_volume"
     LAST_VALUE = "last_value"
     MUTE = "mute"
 
@@ -54,12 +54,12 @@ ENTITY_DESCRIPTIONS = [
     ),
 ]
 
-PowerOnVolumeModeEntityDescription = YncaSelectEntityDescription(  # type: ignore
-    key="power_on_volume_mode",
+InitialVolumeModeEntityDescription = YncaSelectEntityDescription(  # type: ignore
+    key="initial_volume_mode",
     entity_category=EntityCategory.CONFIG,
-    enum=PowerOnVolumeMode,
-    name="Power on volume mode",
-    options=build_enum_options_list(PowerOnVolumeMode),
+    enum=InitialVolumeMode,
+    name="Initial Volume Mode",
+    options=build_enum_options_list(InitialVolumeMode),
     function_names=["INITVOLMODE", "INITVOLLVL"],
 )
 
@@ -81,10 +81,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
             if zone_subunit.initvollvl is not None:
                 entities.append(
-                    YamahaYncaSelectPowerOnVolume(
+                    YamahaYncaSelectInitialVolumeMode(
                         config_entry.entry_id,
                         zone_subunit,
-                        PowerOnVolumeModeEntityDescription,
+                        InitialVolumeModeEntityDescription,
                     )
                 )
 
@@ -118,37 +118,37 @@ class YamahaYncaSelect(YamahaYncaSettingEntityMixin, SelectEntity):
                 )
 
 
-class YamahaYncaSelectPowerOnVolume(YamahaYncaSelect):
+class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
     """
-    Representation of a select entity on a Yamaha Ynca device specifically for Power On Volume.
-    Power On Volume is special as it dependes on 2 attributes (INITVOLLVL and/or INITVOLMODE)
+    Representation of a select entity on a Yamaha Ynca device specifically for Initial Volume.
+    Initial Volume is special as it dependes on 2 attributes (INITVOLLVL and/or INITVOLMODE)
     """
 
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
         if self._zone.initvolmode is ynca.InitVolMode.OFF:
-            return PowerOnVolumeMode.LAST_VALUE.value
+            return InitialVolumeMode.LAST_VALUE.value
         # Some (newer?) receivers dont have separate mode
         # and report Off in INITVOLLVL
         if self._zone.initvollvl is ynca.InitVolLvl.OFF:
-            return PowerOnVolumeMode.LAST_VALUE.value
+            return InitialVolumeMode.LAST_VALUE.value
         if self._zone.initvollvl is ynca.InitVolLvl.MUTE:
-            return PowerOnVolumeMode.MUTE.value
+            return InitialVolumeMode.MUTE.value
 
-        return PowerOnVolumeMode.CONFIGURED_VOLUME.value
+        return InitialVolumeMode.CONFIGURED_INITIAL_VOLUME.value
 
     def select_option(self, option: str) -> None:
         """Change the selected option."""
-        value = PowerOnVolumeMode(option)
+        value = InitialVolumeMode(option)
 
-        if value is PowerOnVolumeMode.MUTE:
+        if value is InitialVolumeMode.MUTE:
             self._zone.initvollvl = ynca.InitVolLvl.MUTE
             if self._zone.initvolmode is not None:
                 self._zone.initvolmode = ynca.InitVolMode.ON
             return
 
-        if value is PowerOnVolumeMode.LAST_VALUE:
+        if value is InitialVolumeMode.LAST_VALUE:
             if self._zone.initvolmode is not None:
                 self._zone.initvolmode = ynca.InitVolMode.OFF
             else:

@@ -7,9 +7,9 @@ import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from custom_components.yamaha_ynca.select import (
-    PowerOnVolumeModeEntityDescription,
+    InitialVolumeModeEntityDescription,
     YamahaYncaSelect,
-    YamahaYncaSelectPowerOnVolume,
+    YamahaYncaSelectInitialVolumeMode,
     YncaSelectEntityDescription,
     async_setup_entry,
     build_enum_options_list,
@@ -31,10 +31,11 @@ TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
 
 @patch("custom_components.yamaha_ynca.select.YamahaYncaSelect", autospec=True)
 @patch(
-    "custom_components.yamaha_ynca.select.YamahaYncaSelectPowerOnVolume", autospec=True
+    "custom_components.yamaha_ynca.select.YamahaYncaSelectInitialVolumeMode",
+    autospec=True,
 )
 async def test_async_setup_entry(
-    yamahayncaselectpoweronvolume_mock,
+    yamahayncaselectinitialvolumemode_mock,
     yamahayncaselect_mock,
     hass,
     mock_ynca,
@@ -58,7 +59,7 @@ async def test_async_setup_entry(
             call("entry_id", mock_ynca.main, ANY),
         ]
     )
-    yamahayncaselectpoweronvolume_mock.assert_has_calls(
+    yamahayncaselectinitialvolumemode_mock.assert_has_calls(
         [
             # TODO: improve checks to see if expected entity descriptions are used
             #       but just want to check for key, not the whole (internal) configuration
@@ -94,14 +95,14 @@ async def test_select_entity_fields(mock_zone):
     assert entity.current_option == "out2"
 
 
-async def test_select_power_on_volume_entity_select_option(mock_zone):
+async def test_select_initial_volume_mode_entity_select_option(mock_zone):
 
-    entity = YamahaYncaSelectPowerOnVolume(
-        "ReceiverUniqueId", mock_zone, PowerOnVolumeModeEntityDescription
+    entity = YamahaYncaSelectInitialVolumeMode(
+        "ReceiverUniqueId", mock_zone, InitialVolumeModeEntityDescription
     )
 
-    assert entity.name == "Power on volume mode"
-    assert entity.unique_id == "ReceiverUniqueId_ZoneId_power_on_volume_mode"
+    assert entity.name == "Initial Volume Mode"
+    assert entity.unique_id == "ReceiverUniqueId_ZoneId_initial_volume_mode"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
     }
@@ -118,7 +119,7 @@ async def test_select_power_on_volume_entity_select_option(mock_zone):
     assert mock_zone.initvolmode is None
     assert mock_zone.initvollvl is ynca.InitVolLvl.MUTE
 
-    entity.select_option("configured_volume")
+    entity.select_option("configured_initial_volume")
     assert mock_zone.initvolmode is None
     assert mock_zone.initvollvl == mock_zone.vol
 
@@ -130,7 +131,7 @@ async def test_select_power_on_volume_entity_select_option(mock_zone):
     assert mock_zone.initvolmode is ynca.InitVolMode.OFF
     assert mock_zone.initvollvl == 1.5  # Value did not change
 
-    entity.select_option("configured_volume")
+    entity.select_option("configured_initial_volume")
     assert mock_zone.initvolmode is ynca.InitVolMode.ON
     assert mock_zone.initvollvl == 1.5
 
@@ -138,21 +139,21 @@ async def test_select_power_on_volume_entity_select_option(mock_zone):
     assert mock_zone.initvolmode is ynca.InitVolMode.ON
     assert mock_zone.initvollvl is ynca.InitVolLvl.MUTE
 
-    entity.select_option("configured_volume")
+    entity.select_option("configured_initial_volume")
     assert mock_zone.initvolmode is ynca.InitVolMode.ON
     assert (
         mock_zone.initvollvl == -1.5
     )  # Copied value from vol as there was no previous value
 
 
-async def test_select_power_on_volume_entity_current_option(mock_zone):
+async def test_select_initial_volume_mode_entity_current_option(mock_zone):
 
-    entity = YamahaYncaSelectPowerOnVolume(
-        "ReceiverUniqueId", mock_zone, PowerOnVolumeModeEntityDescription
+    entity = YamahaYncaSelectInitialVolumeMode(
+        "ReceiverUniqueId", mock_zone, InitialVolumeModeEntityDescription
     )
 
-    assert entity.name == "Power on volume mode"
-    assert entity.unique_id == "ReceiverUniqueId_ZoneId_power_on_volume_mode"
+    assert entity.name == "Initial Volume Mode"
+    assert entity.unique_id == "ReceiverUniqueId_ZoneId_initial_volume_mode"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
     }
@@ -160,7 +161,7 @@ async def test_select_power_on_volume_entity_current_option(mock_zone):
     # Current value, receiver without initvolmode
     mock_zone.initvolmode = None
     mock_zone.initvollvl = -12.0
-    assert entity.current_option == "configured_volume"
+    assert entity.current_option == "configured_initial_volume"
 
     mock_zone.initvollvl = ynca.InitVolLvl.OFF
     assert entity.current_option == "last_value"
@@ -176,4 +177,4 @@ async def test_select_power_on_volume_entity_current_option(mock_zone):
     assert entity.current_option == "mute"  # Lvl value was still mute
 
     mock_zone.initvollvl = -12.0
-    assert entity.current_option == "configured_volume"
+    assert entity.current_option == "configured_initial_volume"
