@@ -2,7 +2,7 @@
 
 Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and IP).
 
-According to reports of users and info found on the internet the following AV receivers should be supported (not all tested), there might be more. If your receiver works and is not in the list please let us know!
+According to reports of users and info found on the internet the following AV receivers should be supported (not all tested), there might be more. If your receiver works and is not in the list please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions).
 
 > RX-A700, RX-A710, RX-A720, RX-A800, RX-A810, RX-A820, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A3000, RX-A3010, RX-A3020, RX-V475, RX-V671, RX-V673, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700
 
@@ -22,27 +22,50 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Activate scenes
 * Hide unused inputs per zone
 * Hide soundmodes
+* Several controllable settings (if supported by receiver):
+  * CINEMA DSP 3D mode
+  * Adaptive DRC
+  * Compressed Music Enhancer
+  * HDMI Out selection (off, HDMI1, HDMI2 or Both)
+  * Initial volume
+  * Max volume
+  * Sleep timer
+  * Speaker bass/treable
+  * Headphone bass/treble (default disabled)
 
 
 ## Limitations
 
-It is not possible to autodetect all features of a receiver. However there are some things you can do yourself to solve/workaround this.
+This section lists some limitations of the integration and possbile solutions.
+
+### Config entities unavailable when receiver in standby
+
+The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable.
+
+### Scenes not detected
+
+On newer receivers the autodetection of the amount of Scenes supported per zone does not work anymore, so no Scenes are detected.
+
+*Solution:* Override the autodetect and manually configure the amount of Scenes supported per zone in the integration configuration.
 
 ### Scene buttons not working
 
-For some receivers (e.g. RX-V475) the command to activate the scenes does not work even though scenes are supported by the receiver. As a workaround, hide the scene button entities in Home Assistant
+For the RX-V475 with firmware 1.34/2.06 the command to activate the scenes does not work even though scenes are supported by the receiver. As a workaround, disable the Scene button entities in Home Assistant.
 
-### Inputs do not match zone
+### Sources list does not match receiver zone capabilities
 
-For most receivers the inputs available on the receiver can be detected, but it is not possible to detect which of those inputs are available per zone.
+For most receivers the total amount/type of inputs available on the receiver can be detected, but it is not possible to detect which of those inputs are available per zone.
 
-You can select the inputs per zone in the integration configuration which can be accessed by pressing the "Configure" button on the integration card in the "Devices & Services" section of the Home Assistant settings.
+*Solution:* Manually hide the sources that are not supported per zone in the integration configuration.
 
 ### Soundmodes do not match receiver
 
-The list of soundmodes can not be detected, so by default the whole list of known soundmodes is shown.
+The list of soundmodes can not be detected, for some models the list is know, for the rest the whole list of known soundmodes is shown.
 
-You can select the soundmodes applicable the specific receiver in the integration configuration which can be accessed by pressing the "Configure" button on the integration card in the "Devices & Services" section of the Home Assistant settings.
+*Solution:* Manually hide Soundmodes that are not supported in the integration configuration.
+
+If you want your receiver added to the list of models with known soundmodes start a [discussion](https://github.com/mvdwetering/yamaha_ynca/discussions) or [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues)
+
 
 ## Installation
 

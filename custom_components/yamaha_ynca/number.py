@@ -31,7 +31,7 @@ ENTITY_DESCRIPTIONS = [
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
         icon="mdi:volume-high",
-        name="Max volume",
+        name="Max Volume",
         native_min_value=-30,
         native_max_value=ZONE_MAX_VOLUME,
         native_step=0.5,
@@ -85,12 +85,12 @@ ENTITY_DESCRIPTIONS = [
     ),
 ]
 
-PowerOnVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: ignore
+InitialVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: ignore
     key="initvollvl",
     entity_category=EntityCategory.CONFIG,
     device_class=NumberDeviceClass.SIGNAL_STRENGTH,
     icon="mdi:knob",
-    name="Power on volume value",
+    name="Initial Volume",
     native_min_value=-80.0,
     native_max_value=ZONE_MAX_VOLUME,
     native_step=0.5,
@@ -116,10 +116,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
             if zone_subunit.initvollvl is not None:
                 entities.append(
-                    YamahaYncaNumberPowerOnVolume(
+                    YamahaYncaNumberInitialVolume(
                         config_entry.entry_id,
                         zone_subunit,
-                        PowerOnVolumeValueEntityDescription,
+                        InitialVolumeValueEntityDescription,
                     )
                 )
 
@@ -140,9 +140,9 @@ class YamahaYncaNumber(YamahaYncaSettingEntityMixin, NumberEntity):
         setattr(self._zone, self.entity_description.key, value)
 
 
-class YamahaYncaNumberPowerOnVolume(YamahaYncaNumber):
+class YamahaYncaNumberInitialVolume(YamahaYncaNumber):
     """
-    Representation Power on volume level.
+    Representation Initial Volume level.
     This is special as it is not always a number and can depend on InitLvlMode
     """
 

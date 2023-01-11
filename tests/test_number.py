@@ -7,9 +7,9 @@ import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from custom_components.yamaha_ynca.number import (
-    PowerOnVolumeValueEntityDescription,
+    InitialVolumeValueEntityDescription,
     YamahaYncaNumber,
-    YamahaYncaNumberPowerOnVolume,
+    YamahaYncaNumberInitialVolume,
     async_setup_entry,
 )
 from homeassistant.components.number import NumberDeviceClass, NumberEntityDescription
@@ -33,10 +33,10 @@ TEST_ENTITY_DESCRIPTION = NumberEntityDescription(
 
 @patch("custom_components.yamaha_ynca.number.YamahaYncaNumber", autospec=True)
 @patch(
-    "custom_components.yamaha_ynca.number.YamahaYncaNumberPowerOnVolume", autospec=True
+    "custom_components.yamaha_ynca.number.YamahaYncaNumberInitialVolume", autospec=True
 )
 async def test_async_setup_entry(
-    yamahayncanumberpoweronvolume_mock,
+    yamahayncanumberinitialvolume_mock,
     yamahayncanumber_mock,
     hass,
     mock_ynca,
@@ -64,7 +64,7 @@ async def test_async_setup_entry(
             call("entry_id", mock_ynca.main, ANY),
         ]
     )
-    yamahayncanumberpoweronvolume_mock.assert_has_calls(
+    yamahayncanumberinitialvolume_mock.assert_has_calls(
         [
             # TODO: improve checks to see if expected entity descriptions are used
             #       but just want to check for key, not the whole (internal) configuration
@@ -96,10 +96,10 @@ async def test_number_entity_fields(mock_zone):
     assert entity.state == 5
 
 
-async def test_power_on_volume_number_entity(mock_zone):
+async def test_initial_volume_number_entity(mock_zone):
 
-    entity = YamahaYncaNumberPowerOnVolume(
-        "ReceiverUniqueId", mock_zone, PowerOnVolumeValueEntityDescription
+    entity = YamahaYncaNumberInitialVolume(
+        "ReceiverUniqueId", mock_zone, InitialVolumeValueEntityDescription
     )
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_initvollvl"
