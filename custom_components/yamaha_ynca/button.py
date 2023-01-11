@@ -1,8 +1,16 @@
+from __future__ import annotations
+
 from typing import Any
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, ZONE_SUBUNITS
+from .const import (
+    CONF_NUMBER_OF_SCENES,
+    DOMAIN,
+    MAX_NUMBER_OF_SCENES,
+    NUMBER_OF_SCENES_AUTODETECT,
+    ZONE_ATTRIBUTE_NAMES,
+)
 from .helpers import DomainEntryData
 
 
@@ -11,15 +19,24 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
-    for zone_attr_name in ZONE_SUBUNITS:
+    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
-            for scene_id in range(1, 12 + 1):
-                if getattr(zone_subunit, f"scene{scene_id}name"):
-                    entities.append(
-                        YamahaYncaSceneButton(
-                            config_entry.entry_id, zone_subunit, scene_id
-                        )
-                    )
+            number_of_scenes = config_entry.options.get(zone_subunit.id, {}).get(
+                CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
+            )
+
+            if number_of_scenes == NUMBER_OF_SCENES_AUTODETECT:
+                number_of_scenes = 0
+                for scene_id in range(1, MAX_NUMBER_OF_SCENES + 1):
+                    if getattr(zone_subunit, f"scene{scene_id}name"):
+                        number_of_scenes += 1
+
+            number_of_scenes = min(MAX_NUMBER_OF_SCENES, number_of_scenes)
+
+            for scene_id in range(1, number_of_scenes + 1):
+                entities.append(
+                    YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
+                )
 
     async_add_entities(entities)
 
@@ -37,7 +54,7 @@ class YamahaYncaSceneButton(ButtonEntity):
             f"{receiver_unique_id}_{self._zone.id}_scene_{self._scene_id}"
         )
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, receiver_unique_id)},
+            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
         }
 
     def update_callback(self, function, value):
@@ -52,7 +69,10 @@ class YamahaYncaSceneButton(ButtonEntity):
 
     @property
     def name(self):
-        return f"{self._zone.zonename}: {getattr(self._zone, f'scene{self._scene_id}name', f'Scene {self._scene_id}')}"
+        return (
+            getattr(self._zone, f"scene{self._scene_id}name")
+            or f"Scene {self._scene_id}"
+        )
 
     def press(self) -> None:
         self._zone.scene(self._scene_id)

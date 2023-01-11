@@ -44,13 +44,69 @@
   },
   "options": {
     "step": {
-      "init": {
+      "general": {
+        "title": "General settings",
         "data": {
-          "hidden_inputs_MAIN": "Hidden inputs for main zone",
-          "hidden_inputs_ZONE2": "Hidden inputs for zone 2",
-          "hidden_inputs_ZONE3": "Hidden inputs for zone 3",
-          "hidden_inputs_ZONE4": "Hidden inputs for zone 4",
           "hidden_sound_modes": "Hidden sound modes"
+        }
+      },
+      "main": {
+        "title": "Main zone settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
+        }
+      },
+      "zone2": {
+        "title": "Zone 2 settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
+        }
+      },
+      "zone3": {
+        "title": "Zone 3 settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
+        }
+      },
+      "zone4": {
+        "title": "Zone 4 settings",
+        "data": {
+          "hidden_inputs": "Hidden inputs",
+          "number_of_scenes": "Number of scenes"
+        }
+      }
+    },
+    "abort": {
+      "connection_required": "An active connection with the receiver is required to configure the integration."
+    }
+  },
+  "entity": {
+    "select": {
+      "hdmiout": {
+        "state": {
+          "off": "Off",
+          "out1": "HDMI OUT 1",
+          "out2": "HDMI OUT 2",
+          "out1_2": "HDMI OUT 1 + 2"
+        }
+      },
+      "initial_volume_mode": {
+        "state": {
+          "last_value": "Last value",
+          "mute": "Mute",
+          "configured_initial_volume": "Configured initial volume"
+        }
+      },
+      "sleep": {
+        "state": {
+          "off": "Off",
+          "30_min": "30 Minutes",
+          "60_min": "60 Minutes",
+          "90_min": "90 Minutes",
+          "120_min": "120 Minutes"
         }
       }
     }
