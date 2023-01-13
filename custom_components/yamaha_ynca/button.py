@@ -49,6 +49,7 @@ class YamahaYncaSceneButton(ButtonEntity):
     def __init__(self, receiver_unique_id, zone, scene_id):
         self._zone = zone
         self._scene_id = scene_id
+        self._update_functioname = f"SCENE{scene_id}NAME"
 
         self._attr_unique_id = (
             f"{receiver_unique_id}_{self._zone.id}_scene_{self._scene_id}"
@@ -58,7 +59,7 @@ class YamahaYncaSceneButton(ButtonEntity):
         }
 
     def update_callback(self, function, value):
-        if function in ["ZONENAME", f"SCENE{self._scene_id}NAME"]:
+        if function == self._update_functioname:
             self.schedule_update_ha_state()
 
     async def async_added_to_hass(self):
