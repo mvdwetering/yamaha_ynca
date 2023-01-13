@@ -55,15 +55,7 @@ async def update_device_registry(
 
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(receiver, zone_attr_name):
-
-            devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
-            if (
-                zone_subunit.zonename
-                and zone_subunit.zonename.lower() != zone_subunit.id.lower()
-            ):
-                # Prefer user defined name over "MODEL ZONE" naming
-                devicename = zone_subunit.zonename
-
+            devicename = build_devicename(receiver, zone_subunit)
             registry.async_get_or_create(
                 config_entry_id=config_entry.entry_id,
                 identifiers={(DOMAIN, f"{config_entry.entry_id}_{zone_subunit.id}")},
@@ -73,6 +65,17 @@ async def update_device_registry(
                 sw_version=receiver.sys.version,
                 configuration_url=configuration_url,
             )
+
+
+def build_devicename(receiver, zone_subunit):
+    devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
+    if (
+        zone_subunit.zonename
+        and zone_subunit.zonename.lower() != zone_subunit.id.lower()
+    ):
+        # Prefer user defined name over "MODEL ZONE" naming
+        devicename = zone_subunit.zonename
+    return devicename
 
 
 async def update_configentry(

@@ -26,11 +26,11 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * CINEMA DSP 3D mode
   * Adaptive DRC
   * Compressed Music Enhancer
-  * HDMI Out selection (off, HDMI1, HDMI2 or Both)
+  * HDMI Out selection (Off, HDMI1, HDMI2 or Both)
   * Initial volume
   * Max volume
   * Sleep timer
-  * Speaker bass/treable
+  * Speaker bass/treble
   * Headphone bass/treble (default disabled)
 
 
