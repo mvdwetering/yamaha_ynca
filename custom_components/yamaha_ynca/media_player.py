@@ -13,7 +13,10 @@ from homeassistant.components.media_player import (
     RepeatMode,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry
 
+from . import build_devicename
 from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
@@ -47,6 +50,7 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
 
             entities.append(
                 YamahaYncaZone(
+                    hass,
                     config_entry.entry_id,
                     domain_entry_data.api,
                     zone_subunit,
@@ -67,12 +71,14 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def __init__(
         self,
+        hass: HomeAssistant,
         receiver_unique_id: str,
         ynca: ynca.YncaApi,
         zone: ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
     ):
+        self._hass = hass
         self._ynca = ynca
         self._zone = zone
         self._hidden_inputs = hidden_inputs
@@ -84,6 +90,15 @@ class YamahaYncaZone(MediaPlayerEntity):
         }
 
     def update_callback(self, function, value):
+        if function == "ZONENAME":
+            # Note that the mediaplayer does not have a name since it uses the devicename
+            # So update the device name when the zonename changes to keep names as expected
+            registry = device_registry.async_get(self._hass)
+            device = registry.async_get_device({(DOMAIN, self._attr_unique_id)})
+
+            devicename = build_devicename(self._ynca, self._zone)
+            registry.async_update_device(device.id, name=devicename)
+
         self.schedule_update_ha_state()
 
     def _get_input_subunits(self):
