@@ -1,14 +1,12 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, List, Type
+from typing import TYPE_CHECKING, Callable, List, Type
 
 import ynca
 
-from homeassistant.components.select import (
-    SelectEntity,
-    SelectEntityDescription,
-)
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import slugify
 
@@ -19,52 +17,11 @@ if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
 
 
-@dataclass
-class YncaSelectEntityDescription(SelectEntityDescription):
-    enum: Type[Enum] | None = None
-    function_names: List[str] | None = None
-    """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
-
-
-def build_enum_options_list(enum: Type[Enum]) -> List[str]:
-    return [slugify(e.value) for e in enum if e.name != "UNKNOWN"]
-
-
 class InitialVolumeMode(str, Enum):
     CONFIGURED_INITIAL_VOLUME = "configured_initial_volume"
     LAST_VALUE = "last_value"
     MUTE = "mute"
 
-
-ENTITY_DESCRIPTIONS = [
-    # Suppress following mypy message, which seems to be not an issue as other values have defaults:
-    # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
-    YncaSelectEntityDescription(  # type: ignore
-        key="hdmiout",
-        entity_category=EntityCategory.CONFIG,
-        enum=ynca.HdmiOut,
-        icon="mdi:hdmi-port",
-        name="HDMI Out",
-        options=build_enum_options_list(ynca.HdmiOut),
-    ),
-    YncaSelectEntityDescription(  # type: ignore
-        key="sleep",
-        entity_category=EntityCategory.CONFIG,
-        enum=ynca.Sleep,
-        icon="mdi:timer-outline",
-        name="Sleep timer",
-        options=build_enum_options_list(ynca.Sleep),
-    ),
-]
-
-InitialVolumeModeEntityDescription = YncaSelectEntityDescription(  # type: ignore
-    key="initial_volume_mode",
-    entity_category=EntityCategory.CONFIG,
-    enum=InitialVolumeMode,
-    name="Initial Volume Mode",
-    options=build_enum_options_list(InitialVolumeMode),
-    function_names=["INITVOLMODE", "INITVOLLVL"],
-)
 
 SurroundDecoderOptions = [
     ynca.TwoChDecoder.DolbyPl,
@@ -81,24 +38,6 @@ SurroundDecoderOptionsPl2xMap = {
     ynca.TwoChDecoder.DolbyPl2xMusic: ynca.TwoChDecoder.DolbyPl2Music,
 }
 
-SurroundDecoderEntityDescription = YncaSelectEntityDescription(  # type: ignore
-    key="twochdecoder",
-    entity_category=EntityCategory.CONFIG,
-    enum=ynca.TwoChDecoder,
-    icon="mdi:surround-sound",
-    name="Surround Decoder",
-    options=build_enum_options_list(SurroundDecoderOptions),
-    function_names=["2CHDECODER"],
-)
-
-
-def surround_decoder_supported(zone_subunit: ZoneBase) -> bool:
-    """Only support older receivers with Dolby Prologic and DTS:Neo presets"""
-    return (
-        zone_subunit.twochdecoder in SurroundDecoderOptions
-        or zone_subunit.twochdecoder in SurroundDecoderOptionsPl2xMap.keys()
-    )
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
@@ -108,30 +47,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             for entity_description in ENTITY_DESCRIPTIONS:
-                if getattr(zone_subunit, entity_description.key, None) is not None:
+                if entity_description.is_supported(zone_subunit):
                     entities.append(
-                        YamahaYncaSelect(
+                        entity_description.entity_class(
                             config_entry.entry_id, zone_subunit, entity_description
                         )
                     )
-
-            if zone_subunit.initvollvl is not None:
-                entities.append(
-                    YamahaYncaSelectInitialVolumeMode(
-                        config_entry.entry_id,
-                        zone_subunit,
-                        InitialVolumeModeEntityDescription,
-                    )
-                )
-
-            if surround_decoder_supported(zone_subunit):
-                entities.append(
-                    YamahaYncaSelectSurroundDecoder(
-                        config_entry.entry_id,
-                        zone_subunit,
-                        SurroundDecoderEntityDescription,
-                    )
-                )
 
     async_add_entities(entities)
 
@@ -224,6 +145,9 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
+        if self._zone.twochdecoder is None:
+            return None
+
         current_option = self._zone.twochdecoder
         # Map any PLLx options back as if it was the normal version
         current_option = SurroundDecoderOptionsPl2xMap.get(
@@ -231,3 +155,78 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
         )
 
         return slugify(current_option.value)
+
+
+def build_enum_options_list(enum: Type[Enum]) -> List[str]:
+    return [slugify(e.value) for e in enum if e.name != "UNKNOWN"]
+
+
+@dataclass
+class YncaSelectEntityDescription(SelectEntityDescription):
+    enum: Type[Enum] | None = None
+    """Enum is used to map and generate options (if not specified) for the select entity."""
+
+    function_names: List[str] | None = None
+    """Override which function names indicate updates for this entity. Default is `key.upper()`"""
+
+    entity_class: Type[YamahaYncaSelect] = YamahaYncaSelect
+    """YamahaYncaSelect class to instantiate for this entity_description"""
+
+    supported_check: Callable[[YncaSelectEntityDescription, ZoneBase], bool] = (
+        lambda entity_description, zone_subunit: getattr(
+            zone_subunit, entity_description.key, None
+        )
+        is not None
+    )
+    """Callable to check support for this entity on the zone, default checks if attribute `key` is not None."""
+
+    def __post_init__(self):
+        if self.options is None and self.enum is not None:
+            self.options = build_enum_options_list(self.enum)
+
+    def is_supported(self, zone_subunit: ZoneBase):
+        return self.supported_check(self, zone_subunit)
+
+
+ENTITY_DESCRIPTIONS = [
+    # Suppress following mypy message, which seems to be not an issue as other values have defaults:
+    # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
+    YncaSelectEntityDescription(  # type: ignore
+        key="hdmiout",
+        entity_category=EntityCategory.CONFIG,
+        enum=ynca.HdmiOut,
+        icon="mdi:hdmi-port",
+        name="HDMI Out",
+    ),
+    YncaSelectEntityDescription(  # type: ignore
+        key="sleep",
+        entity_category=EntityCategory.CONFIG,
+        enum=ynca.Sleep,
+        icon="mdi:timer-outline",
+        name="Sleep timer",
+    ),
+    YncaSelectEntityDescription(  # type: ignore
+        entity_class=YamahaYncaSelectInitialVolumeMode,
+        key="initial_volume_mode",
+        entity_category=EntityCategory.CONFIG,
+        enum=InitialVolumeMode,
+        name="Initial Volume Mode",
+        function_names=["INITVOLMODE", "INITVOLLVL"],
+        supported_check=lambda _, zone_subunit: zone_subunit.initvollvl is not None,
+    ),
+    YncaSelectEntityDescription(  # type: ignore
+        entity_class=YamahaYncaSelectSurroundDecoder,
+        key="twochdecoder",
+        entity_category=EntityCategory.CONFIG,
+        enum=ynca.TwoChDecoder,
+        icon="mdi:surround-sound",
+        name="Surround Decoder",
+        options=[slugify(sdo) for sdo in SurroundDecoderOptions],
+        function_names=["2CHDECODER"],
+        # Only support receivers with Dolby Prologic and DTS:Neo presets,
+        # newer ones seem to have other values
+        supported_check=lambda _, zone_subunit: zone_subunit.twochdecoder
+        in SurroundDecoderOptions
+        or zone_subunit.twochdecoder in SurroundDecoderOptionsPl2xMap.keys(),
+    ),
+]
