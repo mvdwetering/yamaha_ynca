@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Type
+from typing import TYPE_CHECKING, List, Type
 
 import ynca
 
@@ -14,6 +14,9 @@ from homeassistant.util import slugify
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunits.zone import ZoneBase
 
 
 @dataclass
@@ -63,6 +66,39 @@ InitialVolumeModeEntityDescription = YncaSelectEntityDescription(  # type: ignor
     function_names=["INITVOLMODE", "INITVOLLVL"],
 )
 
+SurroundDecoderOptions = [
+    ynca.TwoChDecoder.DolbyPl,
+    ynca.TwoChDecoder.DolbyPl2Game,
+    ynca.TwoChDecoder.DolbyPl2Movie,
+    ynca.TwoChDecoder.DolbyPl2Music,
+    ynca.TwoChDecoder.DtsNeo6Cinema,
+    ynca.TwoChDecoder.DtsNeo6Music,
+]
+
+SurroundDecoderOptionsPl2xMap = {
+    ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,
+    ynca.TwoChDecoder.DolbyPl2xMovie: ynca.TwoChDecoder.DolbyPl2Movie,
+    ynca.TwoChDecoder.DolbyPl2xMusic: ynca.TwoChDecoder.DolbyPl2Music,
+}
+
+SurroundDecoderEntityDescription = YncaSelectEntityDescription(  # type: ignore
+    key="twochdecoder",
+    entity_category=EntityCategory.CONFIG,
+    enum=ynca.TwoChDecoder,
+    icon="mdi:surround-sound",
+    name="Surround Decoder",
+    options=build_enum_options_list(SurroundDecoderOptions),
+    function_names=["2CHDECODER"],
+)
+
+
+def surround_decoder_supported(zone_subunit: ZoneBase) -> bool:
+    """Only support older receivers with Dolby Prologic and DTS:Neo presets"""
+    return (
+        zone_subunit.twochdecoder in SurroundDecoderOptions
+        or zone_subunit.twochdecoder in SurroundDecoderOptionsPl2xMap.keys()
+    )
+
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
@@ -85,6 +121,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         config_entry.entry_id,
                         zone_subunit,
                         InitialVolumeModeEntityDescription,
+                    )
+                )
+
+            if surround_decoder_supported(zone_subunit):
+                entities.append(
+                    YamahaYncaSelectSurroundDecoder(
+                        config_entry.entry_id,
+                        zone_subunit,
+                        SurroundDecoderEntityDescription,
                     )
                 )
 
@@ -165,3 +210,24 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
             self._zone.initvollvl = self._zone.vol
         if self._zone.initvolmode is not None:
             self._zone.initvolmode = ynca.InitVolMode.ON
+
+
+class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
+    """
+    Representation of a select entity on a Yamaha Ynca device specifically for SurroundDecoder.
+    Surround Decoder is special in that the receiver transparently translates the
+    PLII/PLIIx settings to match receiver configuration.
+    E.g. setting DolbyPLIIx on a receiver without presence speakers will fallback to DolbyPLII.
+    Solution is to map PLII and PLIIx to same values in HA (as receiver will translate anyway this should work)
+    """
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the selected entity option to represent the entity state."""
+        current_option = self._zone.twochdecoder
+        # Map any PLLx options back as if it was the normal version
+        current_option = SurroundDecoderOptionsPl2xMap.get(
+            current_option, current_option
+        )
+
+        return slugify(current_option.value)
