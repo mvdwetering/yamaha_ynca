@@ -157,10 +157,6 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
         return slugify(current_option.value)
 
 
-def build_enum_options_list(enum: Type[Enum]) -> List[str]:
-    return [slugify(e.value) for e in enum if e.name != "UNKNOWN"]
-
-
 @dataclass
 class YncaSelectEntityDescription(SelectEntityDescription):
     enum: Type[Enum] | None = None
@@ -182,7 +178,7 @@ class YncaSelectEntityDescription(SelectEntityDescription):
 
     def __post_init__(self):
         if self.options is None and self.enum is not None:
-            self.options = build_enum_options_list(self.enum)
+            self.options = [slugify(e.value) for e in self.enum if e.name != "UNKNOWN"]
 
     def is_supported(self, zone_subunit: ZoneBase):
         return self.supported_check(self, zone_subunit)

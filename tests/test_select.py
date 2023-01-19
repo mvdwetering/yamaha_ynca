@@ -13,7 +13,6 @@ from custom_components.yamaha_ynca.select import (
     YamahaYncaSelectSurroundDecoder,
     YncaSelectEntityDescription,
     async_setup_entry,
-    build_enum_options_list,
 )
 from homeassistant.helpers.entity import EntityCategory
 
@@ -29,7 +28,6 @@ TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
     enum=ynca.HdmiOut,
     icon="mdi:hdmi-port",
     name="HDMI Out",
-    options=build_enum_options_list(ynca.HdmiOut),
 )
 
 
@@ -195,3 +193,7 @@ async def test_select_surrounddecoder_entity_current_option(mock_zone: ZoneBase)
     # Current value, PLIIx value
     mock_zone.twochdecoder = ynca.TwoChDecoder.DolbyPl2xMovie
     assert entity.current_option == "dolby_plii_movie"
+
+    # Current value, not supported (should not happen)
+    mock_zone.twochdecoder = None
+    assert entity.current_option == None
