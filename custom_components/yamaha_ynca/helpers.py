@@ -33,7 +33,7 @@ def scale(input_value, input_range, output_range):
     return output_min + (value_scaled * output_spread)
 
 
-class YamahaYncaSettingEntityMixin:
+class YamahaYncaSettingEntity:
     """
     Common code for YamahaYnca settings entities.
     Entities derived from this also need to derive from the standard HA entities.

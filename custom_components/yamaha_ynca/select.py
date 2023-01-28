@@ -11,7 +11,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import slugify
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
-from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
+from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
@@ -57,7 +57,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(entities)
 
 
-class YamahaYncaSelect(YamahaYncaSettingEntityMixin, SelectEntity):
+class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
     """Representation of a select entity on a Yamaha Ynca device."""
 
     entity_description: YncaSelectEntityDescription
