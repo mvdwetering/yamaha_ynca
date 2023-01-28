@@ -96,7 +96,7 @@
       "initial_volume_mode": {
         "state": {
           "last_value": "Last value",
-          "mute": "Mute",
+          "mute": "Muted",
           "configured_initial_volume": "Configured initial volume"
         }
       },
