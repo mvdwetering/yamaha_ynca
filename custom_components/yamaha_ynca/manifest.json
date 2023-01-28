@@ -13,6 +13,8 @@
   "codeowners": [
     "@mvdwetering"
   ],
-  "loggers": ["ynca"],
-  "version": "0.0.0"
+  "loggers": [
+    "ynca"
+  ],
+  "version": "6.1.0"
 }
