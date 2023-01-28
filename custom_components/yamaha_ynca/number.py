@@ -14,7 +14,7 @@ from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME
-from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
+from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 
 @dataclass
@@ -126,7 +126,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(entities)
 
 
-class YamahaYncaNumber(YamahaYncaSettingEntityMixin, NumberEntity):
+class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
     """Representation of a number on a Yamaha Ynca device."""
 
     entity_description: YncaNumberEntityDescription

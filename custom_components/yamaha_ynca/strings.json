@@ -96,7 +96,7 @@
       "initial_volume_mode": {
         "state": {
           "last_value": "Last value",
-          "mute": "Mute",
+          "mute": "Muted",
           "configured_initial_volume": "Configured initial volume"
         }
       },
@@ -107,6 +107,16 @@
           "60_min": "60 Minutes",
           "90_min": "90 Minutes",
           "120_min": "120 Minutes"
+        }
+      },
+      "twochdecoder": {
+        "state": {
+          "dolby_pl": "Dolby Pro Logic",
+          "dolby_plii_game": "Dolby Pro Logic II(x) Game",
+          "dolby_plii_movie": "Dolby Pro Logic II(x) Movie",
+          "dolby_plii_music": "Dolby Pro Logic II(x) Music",
+          "dts_neo_6_cinema": "DTS NEO:6 Cinema",
+          "dts_neo_6_music": "DTS NEO:6 Music"
         }
       }
     }

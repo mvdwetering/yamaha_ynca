@@ -125,10 +125,8 @@ async def test_button_entity_behavior(mock_zone):
     entity.schedule_update_ha_state.assert_not_called()
 
     # HA state is updated when related YNCA messages are handled
-    callback("ZONENAME", None)
-    assert entity.schedule_update_ha_state.call_count == 1
     callback("SCENE1NAME", None)
-    assert entity.schedule_update_ha_state.call_count == 2
+    entity.schedule_update_ha_state.assert_called_once()
 
     # Cleanup on exit
     await entity.async_will_remove_from_hass()

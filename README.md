@@ -4,7 +4,7 @@ Custom integration for Home Assistant to support Yamaha AV receivers with the YN
 
 According to reports of users and info found on the internet the following AV receivers should be supported (not all tested), there might be more. If your receiver works and is not in the list please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions).
 
-> RX-A700, RX-A710, RX-A720, RX-A800, RX-A810, RX-A820, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A3000, RX-A3010, RX-A3020, RX-V475, RX-V671, RX-V673, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700
+> RX-A700, RX-A710, RX-A720, RX-A800, RX-A810, RX-A820, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A3000, RX-A3010, RX-A3020, RX-V475, RX-V671, RX-V673, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700
 
 In case of issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
@@ -26,12 +26,13 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * CINEMA DSP 3D mode
   * Adaptive DRC
   * Compressed Music Enhancer
-  * HDMI Out selection (off, HDMI1, HDMI2 or Both)
+  * HDMI Out selection (Off, HDMI1, HDMI2 or Both)
   * Initial volume
   * Max volume
   * Sleep timer
-  * Speaker bass/treable
+  * Speaker bass/treble
   * Headphone bass/treble (default disabled)
+  * Surround Decoder
 
 
 ## Limitations

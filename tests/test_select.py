@@ -1,22 +1,25 @@
 from __future__ import annotations
 
-from unittest.mock import ANY, Mock, call, patch
+from typing import TYPE_CHECKING
+from unittest.mock import Mock
 
-import pytest
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from custom_components.yamaha_ynca.select import (
-    InitialVolumeModeEntityDescription,
+    ENTITY_DESCRIPTIONS,
     YamahaYncaSelect,
     YamahaYncaSelectInitialVolumeMode,
+    YamahaYncaSelectSurroundDecoder,
     YncaSelectEntityDescription,
     async_setup_entry,
-    build_enum_options_list,
 )
 from homeassistant.helpers.entity import EntityCategory
 
 from tests.conftest import setup_integration
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunits.zone import ZoneBase
 
 
 TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
@@ -25,54 +28,35 @@ TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
     enum=ynca.HdmiOut,
     icon="mdi:hdmi-port",
     name="HDMI Out",
-    options=build_enum_options_list(ynca.HdmiOut),
 )
 
 
-@patch("custom_components.yamaha_ynca.select.YamahaYncaSelect", autospec=True)
-@patch(
-    "custom_components.yamaha_ynca.select.YamahaYncaSelectInitialVolumeMode",
-    autospec=True,
-)
+def get_entity_description_by_key(key: str):
+    return [e for e in ENTITY_DESCRIPTIONS if e.key == key][0]
+
+
 async def test_async_setup_entry(
-    yamahayncaselectinitialvolumemode_mock,
-    yamahayncaselect_mock,
     hass,
-    mock_ynca,
-    mock_zone_main,
+    mock_ynca: ynca.YncaApi,
+    mock_zone_main: ZoneBase,
 ):
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.sleep = ynca.Sleep.THIRTY_MIN
     mock_ynca.main.initvollvl = ynca.InitVolLvl.MUTE
+    mock_ynca.main.twochdecoder = ynca.TwoChDecoder.DolbyPl2Music
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
 
     await async_setup_entry(hass, integration.entry, add_entities_mock)
 
-    yamahayncaselect_mock.assert_has_calls(
-        [
-            # TODO: improve checks to see if expected entity descriptions are used
-            #       but just want to check for key, not the whole (internal) configuration
-            call("entry_id", mock_ynca.main, ANY),
-            call("entry_id", mock_ynca.main, ANY),
-        ]
-    )
-    yamahayncaselectinitialvolumemode_mock.assert_has_calls(
-        [
-            # TODO: improve checks to see if expected entity descriptions are used
-            #       but just want to check for key, not the whole (internal) configuration
-            call("entry_id", mock_ynca.main, ANY),
-        ]
-    )
-
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 3
+    assert len(entities) == 4
 
 
-async def test_select_entity_fields(mock_zone):
+async def test_select_entity_fields(mock_zone: ZoneBase):
 
     entity = YamahaYncaSelect("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
@@ -95,10 +79,12 @@ async def test_select_entity_fields(mock_zone):
     assert entity.current_option == "out2"
 
 
-async def test_select_initial_volume_mode_entity_select_option(mock_zone):
+async def test_select_initial_volume_mode_entity_select_option(mock_zone: ZoneBase):
 
     entity = YamahaYncaSelectInitialVolumeMode(
-        "ReceiverUniqueId", mock_zone, InitialVolumeModeEntityDescription
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("initial_volume_mode"),
     )
 
     assert entity.name == "Initial Volume Mode"
@@ -146,10 +132,12 @@ async def test_select_initial_volume_mode_entity_select_option(mock_zone):
     )  # Copied value from vol as there was no previous value
 
 
-async def test_select_initial_volume_mode_entity_current_option(mock_zone):
+async def test_select_initial_volume_mode_entity_current_option(mock_zone: ZoneBase):
 
     entity = YamahaYncaSelectInitialVolumeMode(
-        "ReceiverUniqueId", mock_zone, InitialVolumeModeEntityDescription
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("initial_volume_mode"),
     )
 
     assert entity.name == "Initial Volume Mode"
@@ -178,3 +166,34 @@ async def test_select_initial_volume_mode_entity_current_option(mock_zone):
 
     mock_zone.initvollvl = -12.0
     assert entity.current_option == "configured_initial_volume"
+
+
+async def test_select_surrounddecoder_entity_current_option(mock_zone: ZoneBase):
+
+    entity = YamahaYncaSelectSurroundDecoder(
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("twochdecoder"),
+    )
+
+    assert entity.name == "Surround Decoder"
+    assert entity.unique_id == "ReceiverUniqueId_ZoneId_twochdecoder"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
+    }
+
+    # Current value, normal value
+    mock_zone.twochdecoder = ynca.TwoChDecoder.DolbyPl
+    assert entity.current_option == "dolby_pl"
+
+    # Current value, PLII value
+    mock_zone.twochdecoder = ynca.TwoChDecoder.DolbyPl2Game
+    assert entity.current_option == "dolby_plii_game"
+
+    # Current value, PLIIx value
+    mock_zone.twochdecoder = ynca.TwoChDecoder.DolbyPl2xMovie
+    assert entity.current_option == "dolby_plii_movie"
+
+    # Current value, not supported (should not happen)
+    mock_zone.twochdecoder = None
+    assert entity.current_option == None

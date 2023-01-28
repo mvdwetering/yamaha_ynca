@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
+from typing import TYPE_CHECKING, List
 
 import ynca
 
 from custom_components.yamaha_ynca.const import DOMAIN
 from homeassistant.helpers.entity import EntityDescription
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunits.zone import ZoneBase
 
 
 @dataclass
@@ -30,7 +33,7 @@ def scale(input_value, input_range, output_range):
     return output_min + (value_scaled * output_spread)
 
 
-class YamahaYncaSettingEntityMixin:
+class YamahaYncaSettingEntity:
     """
     Common code for YamahaYnca settings entities.
     Entities derived from this also need to derive from the standard HA entities.
@@ -38,7 +41,9 @@ class YamahaYncaSettingEntityMixin:
 
     _attr_has_entity_name = True
 
-    def __init__(self, receiver_unique_id, zone, description: EntityDescription):
+    def __init__(
+        self, receiver_unique_id, zone: ZoneBase, description: EntityDescription
+    ):
         self.entity_description = description
         self._zone = zone
 
