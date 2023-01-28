@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import ynca
 
-from custom_components.yamaha_ynca.helpers import YamahaYncaSettingEntityMixin, scale
+from custom_components.yamaha_ynca.helpers import YamahaYncaSettingEntity, scale
 from homeassistant.helpers.entity import EntityDescription
 
 
@@ -22,6 +22,7 @@ TEST_ENTITY_DESCRIPTION = EntityDescription(
 
 @dataclass
 class TestYncaEntityDescription(EntityDescription):
+    __test__ = False  # This avoids pytest thinking it is a test
     function_names: List[str] | None = None
 
 
@@ -34,11 +35,11 @@ TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME = TestYncaEntityDescription(
 
 async def test_yamaha_ynca_settings_entity_update(mock_zone):
 
-    entity = YamahaYncaSettingEntityMixin(
+    entity = YamahaYncaSettingEntity(
         "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
 
-    entity2 = YamahaYncaSettingEntityMixin(
+    entity2 = YamahaYncaSettingEntity(
         "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME
     )
 

@@ -152,7 +152,8 @@ async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
     assert not hass.data.get(yamaha_ynca.DOMAIN)
 
 
-async def test_reload_on_disconnect(hass, mock_ynca, mock_zone_main):
+@patch("homeassistant.config_entries.ConfigEntries.async_reload")
+async def test_reload_on_disconnect(async_reload_mock, hass, mock_ynca, mock_zone_main):
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
@@ -162,7 +163,7 @@ async def test_reload_on_disconnect(hass, mock_ynca, mock_zone_main):
     await hass.async_add_executor_job(integration.on_disconnect)
     await hass.async_block_till_done()
 
-    assert len(mock_ynca.close.mock_calls) == 1
+    assert len(async_reload_mock.mock_calls) == 1
 
 
 async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zone3):

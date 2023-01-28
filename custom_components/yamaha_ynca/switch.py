@@ -12,7 +12,7 @@ from homeassistant.components.switch import (
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
-from .helpers import DomainEntryData, YamahaYncaSettingEntityMixin
+from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 
 @dataclass
@@ -69,7 +69,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(entities)
 
 
-class YamahaYncaSwitch(YamahaYncaSettingEntityMixin, SwitchEntity):
+class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
     """Representation of a switch on a Yamaha Ynca device."""
 
     entity_description: YncaSwitchEntityDescription
