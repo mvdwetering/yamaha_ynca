@@ -102,7 +102,7 @@ def test_sourcelist_input_subunits(mock_ynca):
 
     mapping = InputHelper.get_source_mapping(mock_ynca)
 
-    assert mapping[ynca.Input.AIRPLAY] == "Airplay"
+    assert mapping[ynca.Input.AIRPLAY] == "AirPlay"
     assert mapping[ynca.Input.BLUETOOTH] == "Bluetooth"
     assert mapping[ynca.Input.IPOD] == "iPod"
     assert mapping[ynca.Input.IPOD_USB] == "iPod (USB)"
