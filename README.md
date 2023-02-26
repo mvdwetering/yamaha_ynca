@@ -70,9 +70,11 @@ If you want your receiver added to the list of models with known soundmodes star
 
 ## Installation
 
-### HACS
+### Home Assistant Community Store (HACS)
 
 *Recommended as you get notified of updates.*
+
+HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site https://hacs.xyz/
 
 * Add integration within HACS (use the + button and search for "YNCA")
 * Restart Home Assistant
