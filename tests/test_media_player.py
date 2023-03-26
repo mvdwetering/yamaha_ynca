@@ -54,7 +54,7 @@ async def test_async_setup_entry(
     assert len(entities) == 2
 
 
-async def test_mediaplayer_entity(mp_entity, mock_zone, mock_ynca):
+async def test_mediaplayer_entity(mp_entity: YamahaYncaZone, mock_zone, mock_ynca):
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
 
     assert mp_entity.unique_id == "ReceiverUniqueId_ZoneId"
@@ -134,7 +134,7 @@ async def test_mediaplayer_entity_turn_on_off(
     assert mp_entity.state is MediaPlayerState.OFF
 
 
-async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
+async def test_mediaplayer_entity_mute_volume(mp_entity: YamahaYncaZone, mock_zone):
 
     mp_entity.mute_volume(True)
     assert mock_zone.mute is ynca.Mute.ON
@@ -149,7 +149,9 @@ async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
     assert mp_entity.is_volume_muted == None
 
 
-async def test_mediaplayer_entity_volume_set_up_down(mp_entity, mock_zone):
+async def test_mediaplayer_entity_volume_set_up_down(
+    mp_entity: YamahaYncaZone, mock_zone
+):
 
     mock_zone.maxvol = 10
 
@@ -236,21 +238,35 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
 
 
-async def test_mediaplayer_entity_sound_mode(mp_entity, mock_zone):
+async def test_mediaplayer_entity_sound_mode(mp_entity: YamahaYncaZone, mock_zone):
+
+    mock_zone.straight = ynca.Straight.OFF
+    mock_zone.puredirmode = ynca.PureDirMode.OFF
 
     mp_entity.select_sound_mode("Village Vanguard")
     assert mock_zone.soundprg is ynca.SoundPrg.VILLAGE_VANGUARD
     assert mock_zone.straight is ynca.Straight.OFF
+    assert mock_zone.puredirmode is ynca.PureDirMode.OFF
     assert mp_entity.sound_mode == "Village Vanguard"
 
     # Straight is special as it is a separate setting on the Zone
     mp_entity.select_sound_mode("Straight")
     assert mock_zone.soundprg is ynca.SoundPrg.VILLAGE_VANGUARD
     assert mock_zone.straight is ynca.Straight.ON
+    assert mock_zone.puredirmode is ynca.PureDirMode.OFF
     assert mp_entity.sound_mode == "Straight"
 
+    # Setting soundmode disables Pure Direct (since otherwise it the selected soundmode would be not audible)
+    mock_zone.puredirmode = ynca.PureDirMode.ON
 
-async def test_mediaplayer_entity_sound_mode_list(mp_entity, mock_zone):
+    mp_entity.select_sound_mode("Sports")
+    assert mock_zone.soundprg is ynca.SoundPrg.SPORTS
+    assert mock_zone.straight is ynca.Straight.OFF
+    assert mock_zone.puredirmode is ynca.PureDirMode.OFF
+    assert mp_entity.sound_mode == "Sports"
+
+
+async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, mock_zone):
 
     mock_zone.soundprg = ynca.SoundPrg.VILLAGE_VANGUARD
     mock_zone.straight = ynca.Straight.OFF
@@ -296,7 +312,9 @@ async def test_mediaplayer_entity_hidden_sound_mode(hass, mock_ynca, mock_zone):
     assert mp_entity.sound_mode == "Mono Movie"
 
 
-async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_ynca):
+async def test_mediaplayer_entity_supported_features(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
 
     expected_supported_features = 0
 
@@ -358,7 +376,9 @@ async def test_mediaplayer_entity_supported_features(mp_entity, mock_zone, mock_
     assert mp_entity.supported_features == expected_supported_features
 
 
-async def test_mediaplayer_entity_state(mp_entity, mock_zone, mock_ynca):
+async def test_mediaplayer_entity_state(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
 
     mock_zone.pwr = ynca.Pwr.STANDBY
     assert mp_entity.state is MediaPlayerState.OFF
@@ -392,7 +412,7 @@ async def test_mediaplayer_playback_controls(mp_entity, mock_zone):
     mock_zone.playback.assert_called_with(ynca.Playback.SKIP_REV)
 
 
-async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
+async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_ynca):
 
     assert mp_entity.media_album_name is None
     assert mp_entity.media_artist is None
@@ -480,7 +500,9 @@ async def test_mediaplayer_mediainfo(mp_entity, mock_zone, mock_ynca):
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
 
-async def test_mediaplayer_entity_shuffle(mp_entity, mock_zone, mock_ynca):
+async def test_mediaplayer_entity_shuffle(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
 
     # Unsupported subunit selected
     assert mp_entity.shuffle is None
@@ -503,7 +525,9 @@ async def test_mediaplayer_entity_shuffle(mp_entity, mock_zone, mock_ynca):
     assert mp_entity.shuffle is None
 
 
-async def test_mediaplayer_entity_repeat(mp_entity, mock_zone, mock_ynca):
+async def test_mediaplayer_entity_repeat(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
 
     # Unsupported subunit selected
     assert mp_entity.repeat is None
