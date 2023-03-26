@@ -33,6 +33,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * Speaker bass/treble
   * Headphone bass/treble (default disabled)
   * Surround Decoder
+  * Pure Direct
 
 
 ## Limitations
