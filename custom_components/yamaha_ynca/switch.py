@@ -48,6 +48,13 @@ ENTITY_DESCRIPTIONS = [
         on=ynca.ThreeDeeCinema.AUTO,
         off=ynca.ThreeDeeCinema.OFF,
     ),
+    YncaSwitchEntityDescription(  # type: ignore
+        key="puredirmode",
+        entity_category=EntityCategory.CONFIG,
+        name="Pure Direct",
+        on=ynca.PureDirMode.ON,
+        off=ynca.PureDirMode.OFF,
+    ),
 ]
 
 

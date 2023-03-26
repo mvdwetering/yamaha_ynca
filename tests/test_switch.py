@@ -33,6 +33,7 @@ async def test_async_setup_entry(
     mock_ynca.main.adaptivedrc = ynca.AdaptiveDrc.OFF
     mock_ynca.main.enhancer = ynca.Enhancer.OFF
     mock_ynca.main.threedcinema = ynca.ThreeDeeCinema.AUTO
+    mock_ynca.main.puredirmode = ynca.PureDirMode.OFF
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -46,12 +47,13 @@ async def test_async_setup_entry(
             call("entry_id", mock_ynca.main, ANY),
             call("entry_id", mock_ynca.main, ANY),
             call("entry_id", mock_ynca.main, ANY),
+            call("entry_id", mock_ynca.main, ANY),
         ]
     )
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 3
+    assert len(entities) == 4
 
 
 async def test_switch_entity_fields(mock_zone):
