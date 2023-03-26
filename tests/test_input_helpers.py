@@ -7,7 +7,7 @@ from custom_components.yamaha_ynca.input_helpers import InputHelper
 from tests.conftest import INPUT_SUBUNITS
 
 
-def test_sourcelist_inpnames_set(mock_ynca):
+def test_sourcemapping_inpnames_set(mock_ynca):
 
     # Setup external input names
     mock_sys = mock_ynca.sys
@@ -42,7 +42,7 @@ def test_sourcelist_inpnames_set(mock_ynca):
     assert mapping[ynca.Input.USB] == "_INPNAMEUSB_"
 
 
-def test_sourcelist_inpname_some_set(mock_ynca):
+def test_sourcemapping_inpname_some_set(mock_ynca):
     """
     Scenario when a receiver supports some of the inputs and therefore
     responds with only a subset of INPNAMEs
@@ -59,7 +59,7 @@ def test_sourcelist_inpname_some_set(mock_ynca):
             assert input not in mapping.keys()
 
 
-def test_sourcelist_inpnames_not_set(mock_ynca):
+def test_sourcemapping_inpnames_not_set(mock_ynca):
     """
     Some receivers do not report INPNAMES at all
     Check that they all known are reported with default names
@@ -91,7 +91,7 @@ def test_sourcelist_inpnames_not_set(mock_ynca):
     assert mapping[ynca.Input.USB] == "USB"
 
 
-def test_sourcelist_input_subunits(mock_ynca):
+def test_sourcemapping_input_subunits(mock_ynca):
     """
     Check names of input subunits
     """
@@ -121,7 +121,7 @@ def test_sourcelist_input_subunits(mock_ynca):
     assert mapping[ynca.Input.USB] == "USB"
 
 
-def test_sourcelist_no_duplicates(mock_ynca):
+def test_sourcemapping_no_duplicates(mock_ynca):
     """
     Should be no duplicates, e.g. avoid USB is in the list twice
     """
@@ -139,7 +139,7 @@ def test_sourcelist_no_duplicates(mock_ynca):
     assert len(mapping.values()) == len(set(mapping.values()))
 
 
-def test_sourcelist_input_duplicates_prefer_inpname(mock_ynca):
+def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca):
     """
     Inputs mentioned multiple times (like USB)
     should use inpname<input> over default inputsubunit name
@@ -151,6 +151,24 @@ def test_sourcelist_input_duplicates_prefer_inpname(mock_ynca):
     mapping = InputHelper.get_source_mapping(mock_ynca)
 
     assert mapping[ynca.Input.USB] == "_INPNAMEUSB_"
+
+
+def test_sourcemapping_trim_whitepspace(mock_ynca):
+    """
+    Check that (leading and trailing) whitespace is trimmed from names
+    """
+
+    mock_ynca.sys.inpnamehdmi1 = "No spaces"
+    mock_ynca.sys.inpnamehdmi2 = "   Leading spaces"
+    mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
+    mock_ynca.sys.inpnamehdmi4 = "   Leading and trailing spaces   "
+
+    mapping = InputHelper.get_source_mapping(mock_ynca)
+
+    assert mapping[ynca.Input.HDMI1] == "No spaces"
+    assert mapping[ynca.Input.HDMI2] == "Leading spaces"
+    assert mapping[ynca.Input.HDMI3] == "Trailing spaces"
+    assert mapping[ynca.Input.HDMI4] == "Leading and trailing spaces"
 
 
 def test_get_name_of_input(mock_ynca):
