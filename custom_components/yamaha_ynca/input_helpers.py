@@ -79,7 +79,7 @@ class InputHelper:
         """Returns input by name"""
         source_mapping = InputHelper.get_source_mapping(api)
         for source_input, source_name in source_mapping.items():
-            if source_name == name:
+            if source_name == name.strip():
                 return source_input
         return None
 
@@ -103,7 +103,7 @@ class InputHelper:
         # this will also weed out inputs that are not supported on the specific receiver
         for mapping in input_mappings:
             # Use the input name with only letters and numbers
-            # Solves cases like V-AUX input vs VAUX 'inputnmamevaux'
+            # Solves cases like V-AUX input vs VAUX 'inputnamevaux'
             postfix = "".join(
                 x
                 for x in mapping.ynca_input.value.lower()
@@ -128,5 +128,10 @@ class InputHelper:
                 for subunit_attribute_name in mapping.subunit_attribute_names:
                     if getattr(api, subunit_attribute_name) is not None:
                         source_mapping[mapping.ynca_input] = mapping.ynca_input.value
+
+        # Trim whitespace for receivers that add spaces around names like "  HDMI4  " (presumably to center on display)
+        # Having the spaces makes it hard to use for automations, especially since HA frontend does not show the spaces
+        for input in source_mapping.keys():
+            source_mapping[input] = source_mapping[input].strip()
 
         return source_mapping

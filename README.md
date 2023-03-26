@@ -4,7 +4,7 @@ Custom integration for Home Assistant to support Yamaha AV receivers with the YN
 
 According to reports of users and info found on the internet the following AV receivers should be working (not all tested), there might be more. If your receiver works and is not in the list please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions).
 
-> RX-A700, RX-A710, RX-A720, RX-A800, RX-A810, RX-A820, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A3000, RX-A3010, RX-A3020, RX-V475, RX-V671, RX-V673, RX-V677, RX-V773, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700
+> RX-A700, RX-A710, RX-A720, RX-A800, RX-A810, RX-A820, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A3000, RX-A3010, RX-A3020, RX-V475, RX-V477, RX-V671, RX-V673, RX-V677, RX-V771, RX-V773, RX-V867, RX-V871, RX-V1067, RX-V2067, RX-V3067, TSR-700, TSR-7850
 
 In case of issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
@@ -33,6 +33,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * Speaker bass/treble
   * Headphone bass/treble (default disabled)
   * Surround Decoder
+  * Pure Direct
 
 
 ## Limitations
@@ -70,9 +71,11 @@ If you want your receiver added to the list of models with known soundmodes star
 
 ## Installation
 
-### HACS
+### Home Assistant Community Store (HACS)
 
 *Recommended as you get notified of updates.*
+
+HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site https://hacs.xyz/
 
 * Add integration within HACS (use the + button and search for "YNCA")
 * Restart Home Assistant

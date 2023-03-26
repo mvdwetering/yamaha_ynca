@@ -1,20 +1,20 @@
 {
   "domain": "yamaha_ynca",
   "name": "Yamaha (YNCA)",
-  "integration_type": "hub",
-  "iot_class": "local_push",
-  "documentation": "https://github.com/mvdwetering/yamaha_ynca",
-  "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
-  "config_flow": true,
-  "requirements": [
-    "ynca==5.4.0"
-  ],
-  "dependencies": [],
   "codeowners": [
     "@mvdwetering"
   ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/mvdwetering/yamaha_ynca",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "loggers": [
     "ynca"
   ],
-  "version": "6.2.0"
+  "requirements": [
+    "ynca==5.4.0"
+  ],
+  "version": "7.0.0"
 }

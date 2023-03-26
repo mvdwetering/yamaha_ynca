@@ -309,8 +309,13 @@ class YamahaYncaZone(MediaPlayerEntity):
         if sound_mode == STRAIGHT:
             self._zone.straight = ynca.Straight.ON
         else:
-            self._zone.straight = ynca.Straight.OFF
             self._zone.soundprg = ynca.SoundPrg(sound_mode)
+
+            if self._zone.straight is ynca.Straight.ON:
+                self._zone.straight = ynca.Straight.OFF
+
+            if self._zone.puredirmode is ynca.PureDirMode.ON:
+                self._zone.puredirmode = ynca.PureDirMode.OFF
 
     # Playback controls (zone forwards to active subunit automatically it seems)
     def media_play(self):
