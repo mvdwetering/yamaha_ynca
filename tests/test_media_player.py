@@ -4,6 +4,7 @@ from __future__ import annotations
 from unittest.mock import Mock, call, create_autospec, patch
 
 import pytest
+from pytest_unordered import unordered
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
@@ -236,6 +237,42 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     )
 
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
+
+
+async def test_mediaplayer_entity_source_whitespace_handling(
+    hass, mock_zone, mock_ynca
+):
+
+    mock_ynca.sys.inpnamehdmi1 = "No spaces"
+    mock_ynca.sys.inpnamehdmi2 = "   Leading spaces"
+    mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
+    mock_ynca.sys.inpnamehdmi4 = "   Leading and trailing spaces   "
+
+    mp_entity = YamahaYncaZone(hass, "ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+
+    assert mp_entity.source_list == unordered(
+        [
+            "No spaces",
+            "Leading spaces",
+            "Trailing spaces",
+            "Leading and trailing spaces",
+        ]
+    )
+
+    # Trim whitespaces when setting source
+    mp_entity.select_source("  No spaces   ")
+    assert mock_zone.inp is ynca.Input.HDMI1
+    assert mp_entity.source == "No spaces"
+
+    # Source with whitespace are trimmed
+    mock_zone.inp = ynca.Input.HDMI2
+    assert mp_entity.source == "Leading spaces"
+
+    mock_zone.inp = ynca.Input.HDMI3
+    assert mp_entity.source == "Trailing spaces"
+
+    mock_zone.inp = ynca.Input.HDMI4
+    assert mp_entity.source == "Leading and trailing spaces"
 
 
 async def test_mediaplayer_entity_sound_mode(mp_entity: YamahaYncaZone, mock_zone):
