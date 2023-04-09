@@ -1,9 +1,5 @@
 # This file is copied from Home Assistant and might be out of date
 
-[build-system]
-requires = ["setuptools~=60.5", "wheel~=0.37.1"]
-build-backend = "setuptools.build_meta"
-
 [tool.black]
 target-version = ["py39", "py310"]
 exclude = 'generated'
