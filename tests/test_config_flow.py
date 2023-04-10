@@ -10,6 +10,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from tests.conftest import setup_integration
 
 async def test_menu_form(hass: HomeAssistant) -> None:
     """Test we get the menu form when initialized by user."""
@@ -150,3 +151,47 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "unknown"}
+
+
+async def test_reauth(hass: HomeAssistant, mock_ynca) -> None:
+
+    integration = await setup_integration(hass, mock_ynca)
+
+    # Flow goes to menu with connection options
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_REAUTH, "entry_id": integration.entry.entry_id}
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    # Select network (could be any)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={"next_step_id": "network"},
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] is None
+
+    with patch(
+        "ynca.YncaApi.connection_check",
+        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
+    ) as mock_setup, patch(
+        "custom_components.yamaha_ynca.async_setup_entry",
+        return_value=True,
+    ) as mock_setup_entry:
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                yamaha_ynca.const.CONF_HOST: "hostname_or_ipaddress",
+                yamaha_ynca.const.CONF_PORT: 44444,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert len(mock_setup.mock_calls) == 1
+    assert len(mock_setup_entry.mock_calls) == 1
+
+    # Entry got updated and flow is aborted (as intended)
+    assert integration.entry.data[yamaha_ynca.const.CONF_SERIAL_URL] == "socket://hostname_or_ipaddress:44444"
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "reauth_successful"
