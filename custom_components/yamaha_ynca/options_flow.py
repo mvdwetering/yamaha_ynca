@@ -1,4 +1,4 @@
-"""Config flow for Yamaha (YNCA) integration."""
+"""Options flow for Yamaha (YNCA) integration."""
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -24,6 +24,7 @@ from .const import (
 )
 
 STEP_ID_INIT = "init"
+STEP_ID_NO_CONNECTION = "no_connection"
 STEP_ID_GENERAL = "general"
 STEP_ID_MAIN = "main"
 STEP_ID_ZONE2 = "zone2"
@@ -84,7 +85,20 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.options = dict(self.config_entry.options)
             return await self.async_step_general()
 
-        return self.async_abort(reason="connection_required")
+        return await self.async_step_no_connection()
+
+
+    async def async_step_no_connection(self, user_input=None):
+        """No connection dialog"""
+        if user_input is not None:
+            self.config_entry.async_start_reauth(self.hass)
+            return self.async_abort(reason="marked_for_reconfiguring")
+
+
+        return self.async_show_form(
+            step_id=STEP_ID_NO_CONNECTION
+        )
+
 
     async def async_step_general(self, user_input=None):
         """General device options"""
