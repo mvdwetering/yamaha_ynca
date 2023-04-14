@@ -37,7 +37,6 @@ STRAIGHT = "Straight"
 
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
-
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
@@ -387,7 +386,10 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._get_input_subunit():
             if self._is_radio_subunit(subunit):
                 return MediaType.CHANNEL
-            if getattr(subunit, "song", None) is not None:
+            if (
+                getattr(subunit, "song", None) is not None
+                or getattr(subunit, "track", None) is not None
+            ):
                 return MediaType.MUSIC
         return None
 
@@ -397,6 +399,8 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._get_input_subunit():
             if song := getattr(subunit, "song", None):
                 return song
+            if track := getattr(subunit, "track", None):
+                return track
             if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:
                 if subunit.dabdlslabel:
                     return subunit.dabdlslabel
