@@ -463,10 +463,21 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
 
     mock_ynca.usb.album = "AlbumName"
     mock_ynca.usb.artist = "ArtistName"
-    mock_ynca.usb.song = "Title"
+    mock_ynca.usb.song = "Song title"
     assert mp_entity.media_album_name == "AlbumName"
     assert mp_entity.media_artist == "ArtistName"
-    assert mp_entity.media_title == "Title"
+    assert mp_entity.media_title == "Song title"
+    assert mp_entity.media_content_type is MediaType.MUSIC
+
+    # Spotify uses Track for song titles
+    mock_zone.inp = ynca.Input.SPOTIFY
+    mock_ynca.spotify = create_autospec(ynca.subunits.spotify.Spotify)
+    mock_ynca.spotify.album = "AlbumName"
+    mock_ynca.spotify.artist = "ArtistName"
+    mock_ynca.spotify.track = "Track title"
+    assert mp_entity.media_album_name == "AlbumName"
+    assert mp_entity.media_artist == "ArtistName"
+    assert mp_entity.media_title == "Track title"
     assert mp_entity.media_content_type is MediaType.MUSIC
 
     # Netradio is a "channel" which name is exposed by the "station" attribute
