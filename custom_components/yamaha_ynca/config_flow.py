@@ -75,6 +75,9 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     # When updating also update the one used in `setup_integration` for tests
     VERSION = 7
 
+    reauth_entry: config_entries.ConfigEntry | None = None
+
+
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
@@ -111,6 +114,12 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data[CONF_SERIAL_URL] = user_input[CONF_SERIAL_URL]
             data[DATA_MODELNAME] = check_result.modelname
             data[DATA_ZONES] = check_result.zones
+
+            if self.reauth_entry:
+                self.hass.config_entries.async_update_entry(self.reauth_entry, data=data)
+                await self.hass.config_entries.async_reload(self.reauth_entry.entry_id)
+                return self.async_abort(reason="reauth_successful")            
+
             return self.async_create_entry(title=check_result.modelname, data=data)
 
         return self.async_show_form(
@@ -157,3 +166,11 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_try_connect(
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
+
+    async def async_step_reauth(self, user_input=None):
+        """Reauth is (ab)used to allow setting up connection settings again through the existing flow."""
+        self.reauth_entry = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
+        )
+
+        return await self.async_step_user()

@@ -117,7 +117,17 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "no_connection"
+
+    # Press Submit
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={},
+    )
+
     assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "marked_for_reconfiguring"
 
 
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:

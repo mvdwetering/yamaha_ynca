@@ -39,7 +39,8 @@
       "unknown": "Unexpected error."
     },
     "abort": {
-      "already_configured": "Device is already configured"
+      "already_configured": "Device is already configured",
+      "reauth_successful": "Successfully reconfigured connection"
     }
   },
   "options": {
@@ -77,10 +78,14 @@
           "hidden_inputs": "Hidden inputs",
           "number_of_scenes": "Number of scenes"
         }
+      },
+      "no_connection": {
+        "title": "No connection",
+        "description": "Could not connect to the receiver.\n\nClick 'Submit' to mark the integration for reconfiguration to be able to change the connection settings (or close this window to do nothing)."
       }
     },
     "abort": {
-      "connection_required": "An active connection with the receiver is required to configure the integration."
+      "marked_for_reconfiguring": "Configentry is marked for reconfiguration. You might need to refresh the browser."
     }
   },
   "entity": {
