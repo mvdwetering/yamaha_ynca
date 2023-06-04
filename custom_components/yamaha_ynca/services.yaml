@@ -2,7 +2,7 @@
 
 send_raw_ynca:
   name: Send raw YNCA command
-  description: Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Ymaha (YNCA) integration.
+  description: Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Yamaha (YNCA) integration.
   target:
     device:
       integration: yamaha_ynca
@@ -12,8 +12,9 @@ send_raw_ynca:
   fields:
     raw_data:
       name: Raw YNCA data
-      description: Raw YNCA data to send. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE
+      description: Raw YNCA data to send. One command per line. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE
       example: "@MAIN:INP=HDMI3"
       required: true
       selector:
         text:
+          multiline: true
