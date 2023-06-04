@@ -110,7 +110,10 @@ async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall):
     config_entry_ids = await async_extract_config_entry_ids(hass, call)
     for config_entry_id in config_entry_ids:
         if domain_entry_info := hass.data[DOMAIN].get(config_entry_id, None):
-            domain_entry_info.api.send_raw(call.data.get("raw_data"))
+            for line in call.data.get("raw_data").splitlines():
+                line = line.strip()
+                if line.startswith('@'):
+                    domain_entry_info.api.send_raw(line)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
