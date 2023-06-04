@@ -194,6 +194,7 @@ async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zon
 
 
 # Can't figure out how to patch `async_extract_config_entry_ids`
+# TODO: Add test for multiline commands
 #
 # @patch("homeassistant.helpers.service.async_extract_config_entry_ids")
 # async def test_service_raw_ynca_command_handler(
