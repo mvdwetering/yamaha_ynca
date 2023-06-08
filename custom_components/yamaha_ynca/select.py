@@ -87,7 +87,7 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
     """
     Representation of a select entity on a Yamaha Ynca device specifically for Initial Volume.
-    Initial Volume is special as it dependes on 2 attributes (INITVOLLVL and/or INITVOLMODE)
+    Initial Volume is special as it depends on 2 attributes (INITVOLLVL and/or INITVOLMODE)
     """
 
     @property
