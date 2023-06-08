@@ -1,2 +1,2 @@
 -r requirements.txt
-homeassistant-stubs==2023.1.0
+homeassistant-stubs==2023.6.0
