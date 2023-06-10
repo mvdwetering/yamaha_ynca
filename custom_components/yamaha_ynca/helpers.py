@@ -53,13 +53,18 @@ class YamahaYncaSettingEntity:
             function_names or [self.entity_description.key.upper()]
         )
 
+        self._receiver_unique_id_zone_id = f"{receiver_unique_id}_{self._zone.id}"
+
         self._attr_device_info = DeviceInfo(
-            identifiers = {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
+            identifiers = {(DOMAIN, self._receiver_unique_id_zone_id)}
         )
         self._attr_name = self.entity_description.name
-        self._attr_translation_key = self.entity_description.key
-        self._attr_unique_id = (
-            f"{receiver_unique_id}_{self._zone.id}_{self.entity_description.key}"
+
+        # Need to provide type annotations since in MRO for subclasses this class is before the
+        # HA entity that actually defines the _attr_* methods
+        self._attr_translation_key: str | None = self.entity_description.key 
+        self._attr_unique_id: str | None = (
+            f"{self._receiver_unique_id_zone_id}_{self.entity_description.key}"
         )
 
     def update_callback(self, function, value):
