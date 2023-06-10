@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, List
 import ynca
 
 from custom_components.yamaha_ynca.const import DOMAIN
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.entity import EntityDescription, DeviceInfo
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
@@ -53,9 +53,9 @@ class YamahaYncaSettingEntity:
             function_names or [self.entity_description.key.upper()]
         )
 
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers = {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
+        )
         self._attr_name = self.entity_description.name
         self._attr_translation_key = self.entity_description.key
         self._attr_unique_id = (
