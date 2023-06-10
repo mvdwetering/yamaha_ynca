@@ -15,6 +15,7 @@ from homeassistant.components.media_player import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry
+from homeassistant.helpers.entity import DeviceInfo
 
 from . import build_devicename
 from .const import (
@@ -83,20 +84,22 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._hidden_inputs = hidden_inputs
         self._hidden_sound_modes = hidden_sound_modes
 
-        self._attr_unique_id = f"{receiver_unique_id}_{self._zone.id}"
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
-        }
+        self._device_id = f"{receiver_unique_id}_{self._zone.id}"
+
+        self._attr_unique_id = self._device_id
+        self._attr_device_info = DeviceInfo(
+            identifiers = {(DOMAIN, self._device_id)}
+        )
 
     def update_callback(self, function, value):
         if function == "ZONENAME":
             # Note that the mediaplayer does not have a name since it uses the devicename
             # So update the device name when the zonename changes to keep names as expected
             registry = device_registry.async_get(self._hass)
-            device = registry.async_get_device({(DOMAIN, self._attr_unique_id)})
-
-            devicename = build_devicename(self._ynca, self._zone)
-            registry.async_update_device(device.id, name=devicename)
+            device = registry.async_get_device(identifiers={(DOMAIN, self._device_id)})
+            if device:
+                devicename = build_devicename(self._ynca, self._zone)
+                registry.async_update_device(device.id, name=devicename)
 
         self.schedule_update_ha_state()
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.components.button import ButtonEntity
+from homeassistant.helpers.entity import DeviceInfo
 
 from .const import (
     CONF_NUMBER_OF_SCENES,
@@ -54,9 +55,9 @@ class YamahaYncaSceneButton(ButtonEntity):
         self._attr_unique_id = (
             f"{receiver_unique_id}_{self._zone.id}_scene_{self._scene_id}"
         )
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
+        )
 
     def update_callback(self, function, value):
         if function == self._update_functioname:
