@@ -1,7 +1,7 @@
 """Test the Yamaha (YNCA) config flow."""
 from __future__ import annotations
 
-from unittest.mock import Mock, create_autospec, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, call, create_autospec, patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 import ynca
@@ -193,29 +193,30 @@ async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zon
     assert "ZONE4" not in entry.data["zones"]
 
 
-# Can't figure out how to patch `async_extract_config_entry_ids`
-# TODO: Add test for multiline commands
-#
-# @patch("homeassistant.helpers.service.async_extract_config_entry_ids")
-# async def test_service_raw_ynca_command_handler(
-#     async_extract_config_entry_ids_mock, hass, mock_ynca
-# ):
-#     """Test sending raw YNCA command."""
-#     integration = await setup_integration(hass, mock_ynca)
+async def test_service_raw_ynca_command_handler(hass, mock_ynca):
+    """Test sending raw YNCA command."""
+    integration = await setup_integration(hass, mock_ynca)
 
-#     call = ServiceCall(
-#         yamaha_ynca.DOMAIN,
-#         yamaha_ynca.SERVICE_SEND_RAW_YNCA,
-#         {
-#             "device_id": f"{integration.entry.entry_id}_MAIN",
-#             "raw_data": "COMMAND_TO_SEND",
-#             # "entity_id": "media_player.main",
-#         },
-#     )
+    # There must be a better way than patching it this way,
+    # but can't figure it out and this works...
+    yamaha_ynca.async_extract_config_entry_ids = AsyncMock()
+    yamaha_ynca.async_extract_config_entry_ids.return_value = {
+        integration.entry.entry_id
+    }
 
-#     async_extract_config_entry_ids_mock.return_value = {integration.entry.entry_id}
-#     await yamaha_ynca.async_handle_send_raw_ynca(hass, call)
-#     mock_ynca.send_raw.assert_called_once_with("COMMAND_TO_SEND")
+    service_call = ServiceCall(
+        yamaha_ynca.DOMAIN,
+        yamaha_ynca.SERVICE_SEND_RAW_YNCA,
+        {
+            "device_id": "device_id",
+            "raw_data": "# Ignore this\n@COMMAND:TO_SEND=1\nMore stuff to ignore\n@COMMAND:TO_SEND=2",
+        },
+    )
+
+    await yamaha_ynca.async_handle_send_raw_ynca(hass, service_call)
+    mock_ynca.send_raw.assert_has_calls(
+        [call("@COMMAND:TO_SEND=1"), call("@COMMAND:TO_SEND=2")]
+    )
 
 
 @patch("custom_components.yamaha_ynca.async_handle_send_raw_ynca")
