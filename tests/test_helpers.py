@@ -33,14 +33,14 @@ TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME = TestYncaEntityDescription(
 )
 
 
-async def test_yamaha_ynca_settings_entity_update(mock_zone):
+async def test_yamaha_ynca_settings_entity_update(mock_zone, mock_zone_zone3):
 
     entity = YamahaYncaSettingEntity(
         "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
 
     entity2 = YamahaYncaSettingEntity(
-        "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME
+        "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME, mock_zone_zone3
     )
 
     # Setup entities to handle updates
@@ -80,11 +80,17 @@ async def test_yamaha_ynca_settings_entity_update(mock_zone):
 
     # Entity is unavailable when zone is powered off
     mock_zone.pwr = ynca.Pwr.ON
-    assert entity.available == True
-    assert entity2.available == True
+    mock_zone_zone3.pwr = ynca.Pwr.ON
+    assert entity.available is True
+    assert entity2.available is True
     mock_zone.pwr = ynca.Pwr.STANDBY
-    assert entity.available == False
-    assert entity2.available == False
+    assert entity.available is False
+    assert entity2.available is True
+    # Entity 2 has associated zone, so availability depends on that power
+    mock_zone.pwr = ynca.Pwr.ON
+    mock_zone_zone3.pwr = ynca.Pwr.STANDBY
+    assert entity.available is True
+    assert entity2.available is False
 
     # Cleanup on exit
     await entity.async_will_remove_from_hass()
