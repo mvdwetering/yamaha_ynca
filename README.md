@@ -1,6 +1,6 @@
 # Yamaha YNCA
 
-Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and IP).
+Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
 
 According to reports of users and info found on the internet the following AV receivers should be working (not all tested), there might be more. If your receiver works and is not in the list please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions).
 
@@ -26,11 +26,11 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * CINEMA DSP 3D mode
   * Adaptive DRC
   * Compressed Music Enhancer
-  * HDMI Out selection (Off, HDMI1, HDMI2 or Both)
+  * HDMI Out enable/disable
   * Initial volume
   * Max volume
   * Sleep timer
-  * Speaker bass/treble
+  * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
   * Surround Decoder
   * Pure Direct
