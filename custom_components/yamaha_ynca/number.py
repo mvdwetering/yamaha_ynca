@@ -47,6 +47,7 @@ ENTITY_DESCRIPTIONS = [
         native_max_value=6,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
     ),
     YncaNumberEntityDescription(  # type: ignore
         key="sptreble",
@@ -58,6 +59,7 @@ ENTITY_DESCRIPTIONS = [
         native_max_value=6,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
     ),
     YncaNumberEntityDescription(  # type: ignore
         key="hpbass",
