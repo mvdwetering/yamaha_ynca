@@ -101,7 +101,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     )
 
     # These are features on the SYS subunit, but they are tied to a zone
+    assert(domain_entry_data.api.sys is not None)
     for entity_description in SYS_ENTITY_DESCRIPTIONS:
+        assert(isinstance(entity_description.associated_zone_attr, str))
         if getattr(domain_entry_data.api.sys, entity_description.key, None) is not None:
             if zone_subunit := getattr(domain_entry_data.api, entity_description.associated_zone_attr):
                 entities.append(

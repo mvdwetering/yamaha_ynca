@@ -43,11 +43,16 @@ class YamahaYncaSettingEntity:
     _attr_has_entity_name = True
 
     def __init__(
-        self, receiver_unique_id, subunit: SubunitBase, description: EntityDescription, associated_zone: ZoneBase | None=None
+        self, receiver_unique_id, subunit: SubunitBase, description: EntityDescription, associated_zone: ZoneBase | None = None
     ):
         self.entity_description = description
         self._subunit = subunit
-        self._associated_zone = associated_zone or subunit
+
+        if associated_zone is None:
+            if TYPE_CHECKING:
+                assert(isinstance(subunit, ZoneBase))
+            associated_zone = subunit
+        self._associated_zone = associated_zone
 
         function_names = getattr(self.entity_description, "function_names", None)
         self._relevant_updates = ["PWR"]
