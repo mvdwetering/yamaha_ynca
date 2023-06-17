@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING, List
 import ynca
 
 from custom_components.yamaha_ynca.const import DOMAIN
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.entity import EntityDescription, DeviceInfo
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
+    from ynca.subunit import SubunitBase
 
 
 @dataclass
@@ -42,10 +43,16 @@ class YamahaYncaSettingEntity:
     _attr_has_entity_name = True
 
     def __init__(
-        self, receiver_unique_id, zone: ZoneBase, description: EntityDescription
+        self, receiver_unique_id, subunit: SubunitBase, description: EntityDescription, associated_zone: ZoneBase | None = None
     ):
         self.entity_description = description
-        self._zone = zone
+        self._subunit = subunit
+
+        if associated_zone is None:
+            if TYPE_CHECKING:
+                assert(isinstance(subunit, ZoneBase))
+            associated_zone = subunit
+        self._associated_zone = associated_zone
 
         function_names = getattr(self.entity_description, "function_names", None)
         self._relevant_updates = ["PWR"]
@@ -53,13 +60,18 @@ class YamahaYncaSettingEntity:
             function_names or [self.entity_description.key.upper()]
         )
 
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, f"{receiver_unique_id}_{self._zone.id}")}
-        }
+        self._receiver_unique_id_subunit_id = f"{receiver_unique_id}_{self._subunit.id}"
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"{receiver_unique_id}_{self._associated_zone.id}")}
+        )
         self._attr_name = self.entity_description.name
-        self._attr_translation_key = self.entity_description.key
-        self._attr_unique_id = (
-            f"{receiver_unique_id}_{self._zone.id}_{self.entity_description.key}"
+
+        # Need to provide type annotations since in MRO for subclasses this class is before the
+        # HA entity that actually defines the _attr_* methods
+        self._attr_translation_key: str | None = self.entity_description.key 
+        self._attr_unique_id: str | None = (
+            f"{self._receiver_unique_id_subunit_id}_{self.entity_description.key}"
         )
 
     def update_callback(self, function, value):
@@ -67,11 +79,11 @@ class YamahaYncaSettingEntity:
             self.schedule_update_ha_state()  # type: ignore
 
     async def async_added_to_hass(self):
-        self._zone.register_update_callback(self.update_callback)
+        self._subunit.register_update_callback(self.update_callback)
 
     async def async_will_remove_from_hass(self):
-        self._zone.unregister_update_callback(self.update_callback)
+        self._subunit.unregister_update_callback(self.update_callback)
 
     @property
     def available(self):
-        return self._zone.pwr is ynca.Pwr.ON
+        return self._associated_zone.pwr is ynca.Pwr.ON

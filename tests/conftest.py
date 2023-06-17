@@ -137,8 +137,13 @@ def mock_ynca(hass):
 
     # Setup minimal SYS subunit with no inputs
     mock_ynca.sys = Mock(spec=ynca.subunits.system.System)
+    mock_ynca.sys.id = "SYS"
     mock_ynca.sys.modelname = MODELNAME
     mock_ynca.sys.version = "Version"
+    mock_ynca.sys.pwr = ynca.Pwr.ON
+    mock_ynca.sys.hdmiout1 = None
+    mock_ynca.sys.hdmiout2 = None
+    mock_ynca.sys.hdmiout3 = None
 
     for attribute in dir(mock_ynca.sys):
         if attribute.startswith("inpname"):

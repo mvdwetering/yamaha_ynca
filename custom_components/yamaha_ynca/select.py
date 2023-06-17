@@ -65,7 +65,7 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return slugify(getattr(self._zone, self.entity_description.key).value)
+        return slugify(getattr(self._subunit, self.entity_description.key).value)
 
     def select_option(self, option: str) -> None:
         """Change the selected option."""
@@ -78,7 +78,7 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 
             if len(value) == 1:
                 setattr(
-                    self._zone,
+                    self._subunit,
                     self.entity_description.key,
                     self.entity_description.enum(value[0]),
                 )
@@ -90,16 +90,20 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
     Initial Volume is special as it depends on 2 attributes (INITVOLLVL and/or INITVOLMODE)
     """
 
+    # Note that _associated_zone is used instead of _subunit
+    # both will be the same as initvol is only available on zones
+    # and this way type checkers see ZoneBse instead of SubunitBase
+
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        if self._zone.initvolmode is ynca.InitVolMode.OFF:
+        if self._associated_zone.initvolmode is ynca.InitVolMode.OFF:
             return InitialVolumeMode.LAST_VALUE.value
-        # Some (newer?) receivers dont have separate mode
+        # Some (newer?) receivers don't have separate mode
         # and report Off in INITVOLLVL
-        if self._zone.initvollvl is ynca.InitVolLvl.OFF:
+        if self._associated_zone.initvollvl is ynca.InitVolLvl.OFF:
             return InitialVolumeMode.LAST_VALUE.value
-        if self._zone.initvollvl is ynca.InitVolLvl.MUTE:
+        if self._associated_zone.initvollvl is ynca.InitVolLvl.MUTE:
             return InitialVolumeMode.MUTE.value
 
         return InitialVolumeMode.CONFIGURED_INITIAL_VOLUME.value
@@ -109,28 +113,28 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
         value = InitialVolumeMode(option)
 
         if value is InitialVolumeMode.MUTE:
-            self._zone.initvollvl = ynca.InitVolLvl.MUTE
-            if self._zone.initvolmode is not None:
-                self._zone.initvolmode = ynca.InitVolMode.ON
+            self._associated_zone.initvollvl = ynca.InitVolLvl.MUTE
+            if self._associated_zone.initvolmode is not None:
+                self._associated_zone.initvolmode = ynca.InitVolMode.ON
             return
 
         if value is InitialVolumeMode.LAST_VALUE:
-            if self._zone.initvolmode is not None:
-                self._zone.initvolmode = ynca.InitVolMode.OFF
+            if self._associated_zone.initvolmode is not None:
+                self._associated_zone.initvolmode = ynca.InitVolMode.OFF
             else:
-                self._zone.initvollvl = ynca.InitVolLvl.OFF
+                self._associated_zone.initvollvl = ynca.InitVolLvl.OFF
             return
 
         if (
-            isinstance(self._zone.initvollvl, ynca.InitVolLvl)
-            and self._zone.initvollvl in ynca.InitVolLvl
+            isinstance(self._associated_zone.initvollvl, ynca.InitVolLvl)
+            and self._associated_zone.initvollvl in ynca.InitVolLvl
         ):
             # Was Off or Mute, need to fill in some value
             # Since value is also stored in here there is no previous value
             # Lets just take current volume?
-            self._zone.initvollvl = self._zone.vol
-        if self._zone.initvolmode is not None:
-            self._zone.initvolmode = ynca.InitVolMode.ON
+            self._associated_zone.initvollvl = self._associated_zone.vol
+        if self._associated_zone.initvolmode is not None:
+            self._associated_zone.initvolmode = ynca.InitVolMode.ON
 
 
 class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
@@ -145,10 +149,10 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        if self._zone.twochdecoder is None:
+        if self._associated_zone.twochdecoder is None:
             return None
 
-        current_option = self._zone.twochdecoder
+        current_option = self._associated_zone.twochdecoder
         # Map any PLLx options back as if it was the normal version
         current_option = SurroundDecoderOptionsPl2xMap.get(
             current_option, current_option

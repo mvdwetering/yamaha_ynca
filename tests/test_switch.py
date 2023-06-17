@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import ANY, Mock, call, patch
 
-import pytest
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
@@ -24,6 +23,14 @@ TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     off=ynca.Enhancer.OFF,
 )
 
+TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE = YncaSwitchEntityDescription(
+    key="hdmiout1",
+    name="Name",
+    on=ynca.HdmiOutOnOff.ON,
+    off=ynca.HdmiOutOnOff.OFF,
+    associated_zone_attr="main"
+)
+
 
 @patch("custom_components.yamaha_ynca.switch.YamahaYncaSwitch", autospec=True)
 async def test_async_setup_entry(
@@ -34,6 +41,8 @@ async def test_async_setup_entry(
     mock_ynca.main.enhancer = ynca.Enhancer.OFF
     mock_ynca.main.threedcinema = ynca.ThreeDeeCinema.AUTO
     mock_ynca.main.puredirmode = ynca.PureDirMode.OFF
+    mock_ynca.sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
+    mock_ynca.sys.hdmiout2 = ynca.HdmiOutOnOff.ON
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -53,7 +62,7 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 4
+    assert len(entities) == 6
 
 
 async def test_switch_entity_fields(mock_zone):
@@ -74,6 +83,32 @@ async def test_switch_entity_fields(mock_zone):
 
     # Reading state
     mock_zone.enhancer = ynca.Enhancer.ON
-    assert entity.is_on == True
+    assert entity.is_on is True
     mock_zone.enhancer = ynca.Enhancer.OFF
-    assert entity.is_on == False
+    assert entity.is_on is False
+
+
+async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
+
+    mock_sys = mock_ynca.sys
+    mock_main = mock_zone_main
+
+    entity = YamahaYncaSwitch("ReceiverUniqueId", mock_sys, TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE, mock_main)
+
+    assert entity.name == "Name"
+    assert entity.unique_id == "ReceiverUniqueId_SYS_hdmiout1"
+    assert entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_MAIN")
+    }
+
+    # Setting value
+    entity.turn_on()
+    assert mock_sys.hdmiout1 is ynca.HdmiOutOnOff.ON
+    entity.turn_off()
+    assert mock_sys.hdmiout1 is ynca.HdmiOutOnOff.OFF
+
+    # Reading state
+    mock_sys.hdmiout1 = ynca.HdmiOutOnOff.ON
+    assert entity.is_on is True
+    mock_sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
+    assert entity.is_on is False

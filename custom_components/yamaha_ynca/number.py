@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-from typing import Any, List
+from typing import List
 
 import ynca
 
@@ -47,6 +47,7 @@ ENTITY_DESCRIPTIONS = [
         native_max_value=6,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
     ),
     YncaNumberEntityDescription(  # type: ignore
         key="sptreble",
@@ -58,6 +59,7 @@ ENTITY_DESCRIPTIONS = [
         native_max_value=6,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
     ),
     YncaNumberEntityDescription(  # type: ignore
         key="hpbass",
@@ -134,10 +136,10 @@ class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
-        return getattr(self._zone, self.entity_description.key)
+        return getattr(self._subunit, self.entity_description.key)
 
     def set_native_value(self, value: float) -> None:
-        setattr(self._zone, self.entity_description.key, value)
+        setattr(self._subunit, self.entity_description.key, value)
 
 
 class YamahaYncaNumberInitialVolume(YamahaYncaNumber):
@@ -150,6 +152,6 @@ class YamahaYncaNumberInitialVolume(YamahaYncaNumber):
     def available(self):
         return (
             super().available
-            and isinstance(self._zone.initvollvl, float)
-            and self._zone.initvolmode is not ynca.InitVolMode.OFF
+            and isinstance(self._associated_zone.initvollvl, float)
+            and self._associated_zone.initvolmode is not ynca.InitVolMode.OFF
         )
