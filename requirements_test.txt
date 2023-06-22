@@ -7,5 +7,3 @@ pytest-homeassistant-custom-component==0.13.36
 # but the tests fail because the HA http component can not be setup because of missing lib.
 # Maybe it is because HA http is in default? That would not be needed for the tests
 aiohttp_cors
-
-mypy
