@@ -8,5 +8,4 @@ pytest-homeassistant-custom-component==0.13.36
 # Maybe it is because HA http is in default? That would not be needed for the tests
 aiohttp_cors
 
-# Unfortunatly one test became flaky, lets retry a few times for now
-flaky
+mypy
