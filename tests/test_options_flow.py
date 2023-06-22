@@ -129,7 +129,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "marked_for_reconfiguring"
 
-# Not sure why it became flaky, just disable it for now :(
+
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
 
     # Set a modelname that is in the modelinfo, but does not support all SoundPrg values
