@@ -227,7 +227,7 @@ async def test_service_raw_ynca_command(
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
 
-    # Service call is done, but odes not work due to no configentries found
+    # Service call is done, but does not work due to no configentries found
     await hass.services.async_call(
         yamaha_ynca.DOMAIN,
         yamaha_ynca.SERVICE_SEND_RAW_YNCA,
