@@ -4,7 +4,6 @@ from __future__ import annotations
 from unittest.mock import create_autospec
 
 import ynca
-from flaky import flaky
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.core import HomeAssistant
@@ -130,39 +129,42 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "marked_for_reconfiguring"
 
-# Not sure why it became flaky, just disable it for now :(
-# @flaky(max_runs=5)
-# async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
 
-#     # Set a modelname that is in the modelinfo, but does not support all SoundPrg values
-#     mock_ynca.sys.modelname = "RX-A810"
+async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
 
-#     integration = await setup_integration(hass, mock_ynca)
+    # Set a modelname that is in the modelinfo, but does not support all SoundPrg values
+    mock_ynca.sys.modelname = "RX-A810"
 
-#     options = dict(integration.entry.options)
-#     options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
-#         "Obsolete",  # Obsolete values should not break the schema
-#     ]
-#     integration.entry.options = options
+    integration = await setup_integration(hass, mock_ynca)
 
-#     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
+    options = dict(integration.entry.options)
+    options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
+        "Obsolete",  # Obsolete values should not break the schema
+    ]
+    integration.entry.options = options
 
-#     assert result["type"] == FlowResultType.FORM
-#     assert result["step_id"] == "general"
+    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
-#     result = await hass.config_entries.options.async_configure(
-#         result["flow_id"],
-#         user_input={
-#             yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
-#                 "Hall in Vienna",
-#             ],
-#         },
-#     )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "general"
 
-#     assert result["type"] == "create_entry"
-#     assert result["data"] == {
-#         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
-#     }
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
+                "Hall in Vienna",
+            ],
+        },
+    )
+
+    assert result["type"] == "create_entry"
+    assert result["data"] == {
+        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
+    }
+
+    # Make sure HA finishes creating entry completely
+    # or it will result in errors when tearing down the test
+    await hass.async_block_till_done()    
 
 
 async def test_options_flow_zone_inputs(

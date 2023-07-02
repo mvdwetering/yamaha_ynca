@@ -49,7 +49,7 @@ class YamahaYncaSettingEntity:
         self._subunit = subunit
 
         if associated_zone is None:
-            if TYPE_CHECKING:
+            if TYPE_CHECKING:   # pragma: no cover
                 assert(isinstance(subunit, ZoneBase))
             associated_zone = subunit
         self._associated_zone = associated_zone
