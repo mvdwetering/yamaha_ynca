@@ -1,7 +1,7 @@
 -r requirements.txt
 
-# homeassistant version: 2023.6.0
-pytest-homeassistant-custom-component==0.13.36
+# homeassistant version: 2023.7.0
+pytest-homeassistant-custom-component==0.13.42
 
 # Not entirely clear why it is needed as not a requirement for yamaha_ynca
 # but the tests fail because the HA http component can not be setup because of missing lib.
