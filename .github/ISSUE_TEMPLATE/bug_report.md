@@ -29,8 +29,13 @@ Please add the file itself (drag-and-drop in this box). Do not, copy-paste the c
 **Logging**
 If there are errors in the Home Assistant logs please add them here.
 
-**Home Assistant version information:**
- - Version [e.g. 2022.8.0]
+**Environment**
+Provide details about the versions you are using, which helps to reproduce and find the issue quicker.
+
+- Home Assistant Core version: 
+- Home Assistant operating environment (OS/Container/Supervised/Core): 
+- Huesyncbox integration version: 
+- Last working version (if known): 
 
 **Additional context**
 Add any other context about the problem here.
