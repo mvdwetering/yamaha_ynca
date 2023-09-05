@@ -89,8 +89,49 @@
     }
   },
   "entity": {
+    "number": {
+      "hpbass": {
+        "name": "Headphone bass"
+      },
+      "hptreble": {
+        "name": "Headphones treble"
+      },
+      "initvollvl": {
+        "name": "Initial Volume"
+      },
+      "maxvol": {
+        "name": "Max Volume"
+      },
+      "spbass": {
+        "name": "Speaker bass"
+      },
+      "sptreble": {
+        "name": "Speaker treble"
+      }
+    },
+    "switch": {
+      "adaptivedrc": {
+        "name": "Adaptive DRC"
+      },
+      "enhancer": {
+        "name": "Compressed Music Enhancer"
+      },
+      "hdmiout1": {
+        "name": "HDMI Out 1"
+      },
+      "hdmiout2": {
+        "name": "HDMI Out 2"
+      },
+      "puredirmode": {
+        "name": "Pure Direct"
+      },
+      "threedcinema": {
+        "name": "CINEMA DSP 3D Mode"
+      }
+    },
     "select": {
       "hdmiout": {
+        "name": "HDMI Out",
         "state": {
           "off": "Off",
           "out1": "HDMI OUT 1",
@@ -99,6 +140,7 @@
         }
       },
       "initial_volume_mode": {
+        "name": "Initial Volume Mode",
         "state": {
           "last_value": "Last value",
           "mute": "Muted",
@@ -106,6 +148,7 @@
         }
       },
       "sleep": {
+        "name": "Sleep timer",
         "state": {
           "off": "Off",
           "30_min": "30 Minutes",
@@ -115,6 +158,7 @@
         }
       },
       "twochdecoder": {
+        "name": "Surround Decoder",
         "state": {
           "dolby_pl": "Dolby Pro Logic",
           "dolby_plii_game": "Dolby Pro Logic II(x) Game",

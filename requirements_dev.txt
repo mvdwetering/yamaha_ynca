@@ -1,3 +1,11 @@
 -r requirements.txt
-homeassistant-stubs==2023.6.0
-mypy
+
+mypy>=1.4.0
+
+homeassistant-stubs==2023.8.0
+pytest-homeassistant-custom-component==0.13.49
+
+# Not entirely clear why it is needed as not a requirement for yamaha_ynca
+# but the tests fail because the HA http component can not be setup because of missing lib.
+# Maybe it is because HA http is in default? That would not be needed for the tests
+aiohttp_cors

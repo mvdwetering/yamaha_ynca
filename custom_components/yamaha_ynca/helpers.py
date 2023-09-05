@@ -62,13 +62,11 @@ class YamahaYncaSettingEntity:
 
         self._receiver_unique_id_subunit_id = f"{receiver_unique_id}_{self._subunit.id}"
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{receiver_unique_id}_{self._associated_zone.id}")}
-        )
-        self._attr_name = self.entity_description.name
-
         # Need to provide type annotations since in MRO for subclasses this class is before the
         # HA entity that actually defines the _attr_* methods
+        self._attr_device_info: DeviceInfo | None = DeviceInfo(
+            identifiers={(DOMAIN, f"{receiver_unique_id}_{self._associated_zone.id}")}
+        )
         self._attr_translation_key: str | None = self.entity_description.key 
         self._attr_unique_id: str | None = (
             f"{self._receiver_unique_id_subunit_id}_{self.entity_description.key}"
