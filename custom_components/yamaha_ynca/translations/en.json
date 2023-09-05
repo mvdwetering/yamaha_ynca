@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
+        "title": "Select connection method",
         "menu_options": {
           "serial": "Serial connection",
           "network": "Network connection",
           "advanced": "PySerial URL handler (advanced)"
-        },
-        "title": "Select connection method"
+        }
       },
       "serial": {
         "title": "Serial connection",
@@ -107,6 +107,9 @@
       },
       "sptreble": {
         "name": "Speaker treble"
+      },
+      "vol": {
+        "name": "Volume"
       }
     },
     "switch": {
