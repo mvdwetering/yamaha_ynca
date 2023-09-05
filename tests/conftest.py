@@ -160,7 +160,7 @@ def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
 
 class Integration(NamedTuple):
     entry: Type[ConfigEntry]
-    on_disconnect: Callable
+    on_disconnect: Callable | None
     mock_ynca: Type[Mock]
 
 

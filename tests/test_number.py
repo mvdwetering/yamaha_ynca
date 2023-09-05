@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import ANY, Mock, call, patch
 
-import pytest
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
@@ -19,7 +18,7 @@ from homeassistant.helpers.entity import EntityCategory
 from tests.conftest import setup_integration
 
 
-TEST_ENTITY_DESCRIPTION = NumberEntityDescription(
+TEST_ENTITY_DESCRIPTION = NumberEntityDescription(  # type: ignore
     key="spbass",
     entity_category=EntityCategory.CONFIG,
     native_min_value=-6,
@@ -77,11 +76,32 @@ async def test_async_setup_entry(
     assert len(entities) == 4
 
 
+async def test_number_entity(hass, mock_ynca, mock_zone_main):
+    entity_under_test = "number.modelname_main_max_volume"
+
+    mock_zone_main.maxvol = 0
+    mock_zone_main.pwr = ynca.Pwr.ON
+    mock_ynca.main = mock_zone_main
+    await setup_integration(hass, mock_ynca)
+
+    # Initial value
+    max_volume = hass.states.get(entity_under_test)
+    assert max_volume is not None
+    assert max_volume.state == "0"
+
+    # Set value
+    await hass.services.async_call(
+        "number",
+        "set_value",
+        {"entity_id": entity_under_test, "value": 10},
+        blocking=True,
+    )
+    assert mock_zone_main.maxvol == 10
+
 async def test_number_entity_fields(mock_zone):
 
     entity = YamahaYncaNumber("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
-    assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_spbass"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")

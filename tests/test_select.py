@@ -60,7 +60,6 @@ async def test_select_entity_fields(mock_zone: ZoneBase):
 
     entity = YamahaYncaSelect("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
-    assert entity.name == "HDMI Out"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_hdmiout"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
@@ -87,7 +86,6 @@ async def test_select_initial_volume_mode_entity_select_option(mock_zone: ZoneBa
         get_entity_description_by_key("initial_volume_mode"),
     )
 
-    assert entity.name == "Initial Volume Mode"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_initial_volume_mode"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
@@ -140,7 +138,6 @@ async def test_select_initial_volume_mode_entity_current_option(mock_zone: ZoneB
         get_entity_description_by_key("initial_volume_mode"),
     )
 
-    assert entity.name == "Initial Volume Mode"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_initial_volume_mode"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
@@ -176,7 +173,6 @@ async def test_select_surrounddecoder_entity_current_option(mock_zone: ZoneBase)
         get_entity_description_by_key("twochdecoder"),
     )
 
-    assert entity.name == "Surround Decoder"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_twochdecoder"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")

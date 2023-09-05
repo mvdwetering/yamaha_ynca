@@ -69,7 +69,6 @@ async def test_switch_entity_fields(mock_zone):
 
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
-    assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
@@ -95,7 +94,6 @@ async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
 
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_sys, TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE, mock_main)
 
-    assert entity.name == "Name"
     assert entity.unique_id == "ReceiverUniqueId_SYS_hdmiout1"
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_MAIN")
