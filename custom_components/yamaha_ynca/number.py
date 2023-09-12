@@ -49,7 +49,6 @@ ENTITY_DESCRIPTIONS = [
     YncaNumberEntityDescription(  # type: ignore
         key="vol",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
-        entity_category=EntityCategory.CONFIG,
         icon="mdi:volume-high",
         native_min_value=ZONE_MIN_VOLUME,
         native_max_value_fn=volume_native_max_value_fn,
