@@ -7,22 +7,27 @@ import ynca
 import custom_components.yamaha_ynca as yamaha_ynca
 from custom_components.yamaha_ynca.number import (
     InitialVolumeValueEntityDescription,
+    YncaNumberEntityDescription,
     YamahaYncaNumber,
     YamahaYncaNumberInitialVolume,
     async_setup_entry,
 )
-from homeassistant.components.number import NumberDeviceClass, NumberEntityDescription
+from homeassistant.components.number import NumberDeviceClass
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.helpers.entity import EntityCategory
 
 from tests.conftest import setup_integration
 
 
-TEST_ENTITY_DESCRIPTION = NumberEntityDescription(  # type: ignore
+def native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
+    return 5.5
+
+TEST_ENTITY_DESCRIPTION = YncaNumberEntityDescription(  # type: ignore
     key="spbass",
     entity_category=EntityCategory.CONFIG,
     native_min_value=-6,
     native_max_value=6,
+    native_max_value_fn=native_max_value_fn,
     native_step=0.5,
     device_class=NumberDeviceClass.SIGNAL_STRENGTH,
     native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
@@ -98,6 +103,30 @@ async def test_number_entity(hass, mock_ynca, mock_zone_main):
     )
     assert mock_zone_main.maxvol == 10
 
+
+async def test_number_entity_volume(hass, mock_ynca, mock_zone_main):
+    entity_under_test = "number.vol"
+
+    mock_zone_main.vol = -5
+    mock_zone_main.pwr = ynca.Pwr.ON
+    mock_ynca.main = mock_zone_main
+    await setup_integration(hass, mock_ynca, enable_all_entities=True)
+
+    # Initial value
+    volume = hass.states.get(entity_under_test)
+    assert volume is not None
+    assert volume.state == "-5"
+
+    # Set value
+    await hass.services.async_call(
+        "number",
+        "set_value",
+        {"entity_id": entity_under_test, "value": 10},
+        blocking=True,
+    )
+    assert mock_zone_main.vol == 10
+
+
 async def test_number_entity_fields(mock_zone):
 
     entity = YamahaYncaNumber("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
@@ -106,6 +135,9 @@ async def test_number_entity_fields(mock_zone):
     assert entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
     }
+
+    # Value from native_max_value_fn instead of static value
+    assert entity.capability_attributes["max"] == 5.5
 
     # Setting value
     entity.set_native_value(-4.5)
