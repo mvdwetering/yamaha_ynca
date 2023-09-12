@@ -17,7 +17,7 @@ from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME, ZONE_MIN_VOLUM
 from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 
-def volume_native_max_value_fn(associated_zone: ynca.ZoneBase) -> float:
+def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
     return (
         associated_zone.maxvol
         if associated_zone.maxvol is not None
@@ -29,7 +29,7 @@ def volume_native_max_value_fn(associated_zone: ynca.ZoneBase) -> float:
 class YncaNumberEntityDescription(NumberEntityDescription):
     function_names: List[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
-    native_max_value_fn: Callable[[ynca.ZoneBase], float] | None = None
+    native_max_value_fn: Callable[[ynca.subunits.zone.ZoneBase], float] | None = None
     """Function that returns max value. Use when a fixed number is not enough"""
 
 
