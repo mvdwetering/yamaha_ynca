@@ -5,7 +5,7 @@ import logging
 DOMAIN = "yamaha_ynca"
 LOGGER = logging.getLogger(__package__)
 
-COMMUNICATION_LOG_SIZE = 1000
+COMMUNICATION_LOG_SIZE = 5000
 
 CONF_SERIAL_URL = "serial_url"
 CONF_HOST = "host"
