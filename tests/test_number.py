@@ -98,6 +98,28 @@ async def test_number_entity(hass, mock_ynca, mock_zone_main):
     )
     assert mock_zone_main.maxvol == 10
 
+async def test_number_entity_volume(hass, mock_ynca, mock_zone_main):
+    entity_under_test = "number.vol"
+
+    mock_zone_main.vol = -5
+    mock_zone_main.pwr = ynca.Pwr.ON
+    mock_ynca.main = mock_zone_main
+    await setup_integration(hass, mock_ynca, enable_all_entities=True)
+
+    # Initial value
+    volume = hass.states.get(entity_under_test)
+    assert volume is not None
+    assert volume.state == "-5"
+
+    # Set value
+    await hass.services.async_call(
+        "number",
+        "set_value",
+        {"entity_id": entity_under_test, "value": 10},
+        blocking=True,
+    )
+    assert mock_zone_main.vol == 10
+
 async def test_number_entity_fields(mock_zone):
 
     entity = YamahaYncaNumber("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
