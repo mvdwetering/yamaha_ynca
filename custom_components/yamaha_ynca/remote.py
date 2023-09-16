@@ -1,7 +1,6 @@
-from __future__ import annotations
 import re
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, Mapping
+from typing import TYPE_CHECKING, Any, Dict, Iterable
 
 from homeassistant.components.remote import RemoteEntity
 from homeassistant.helpers.entity import DeviceInfo
@@ -70,7 +69,8 @@ ent,7F01-5CA3, 7F01-7C83, 7F01-9C63
 
 """
 
-def get_zone_codes(zone_id:str) -> Dict[str, str]:
+
+def get_zone_codes(zone_id: str) -> Dict[str, str]:
     offset = ZONE_ATTRIBUTE_NAMES.index(zone_id.lower()) + 1
 
     codes = {}
@@ -86,14 +86,18 @@ def get_zone_codes(zone_id:str) -> Dict[str, str]:
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             entities.append(
-                YamahaYncaZoneRemote(config_entry.entry_id, domain_entry_data.api, zone_subunit, get_zone_codes(zone_subunit.id))
+                YamahaYncaZoneRemote(
+                    config_entry.entry_id,
+                    domain_entry_data.api,
+                    zone_subunit,
+                    get_zone_codes(zone_subunit.id),
+                )
             )
 
     async_add_entities(entities)
@@ -102,29 +106,32 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class YamahaYncaZoneRemote(RemoteEntity):
     """Representation of a remote of a Yamaha Ynca receiver."""
 
-    _remotecode_formats_regex = re.compile(r"^(?P<left>([0-9A-F]{2}){1,2}?)[^0-9A-F]?(?P<right>([0-9A-F]{2}){1,2})$")
+    _remotecode_formats_regex = re.compile(
+        r"^(?P<left>([0-9A-F]{2}){1,2}?)[^0-9A-F]?(?P<right>([0-9A-F]{2}){1,2})$"
+    )
     _attr_has_entity_name = True
     _attr_entity_registry_enabled_default = False
 
-    def __init__(self, receiver_unique_id, api:ynca.YncaApi, zone:ZoneBase, zone_codes:Dict[str,str]):
+    def __init__(
+        self,
+        receiver_unique_id,
+        api: ynca.YncaApi,
+        zone: ZoneBase,
+        zone_codes: Dict[str, str],
+    ):
         self._api = api
         self._zone = zone
         self._zone_codes = zone_codes
         self._attr_translation_key = str.lower(zone.id)
 
-        self._attr_unique_id = (
-            f"{receiver_unique_id}_{zone.id}_remote"
-        )
+        self._attr_unique_id = f"{receiver_unique_id}_{zone.id}_remote"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{receiver_unique_id}_{zone.id}")}
         )
 
-        self._attr_extra_state_attributes = {
-            "commands": list(self._zone_codes.keys())
-        }
+        self._attr_extra_state_attributes = {"commands": list(self._zone_codes.keys())}
 
-
-    def _format_remotecode(self, input_code:str) -> str:
+    def _format_remotecode(self, input_code: str) -> str:
         """
         Convert various inputs to 32bit NEC
         Supported are (- can be any separator):
@@ -137,13 +144,15 @@ class YamahaYncaZoneRemote(RemoteEntity):
             raise ValueError(f"Unrecognized remotecode format for '{input_code}'")
 
         output_code = ""
-        for part in ['left', 'right']:
+        for part in ["left", "right"]:
             part = matches.group(part)
             if len(part) == 2:
                 output_code += part
-                # Add fillerbyte by inverting the first byte, research NEC ir codes for more info
+                # Add filler byte by inverting the first byte, research NEC ir codes for more info
                 # Invert with 'xor 0xFF' because Python ~ operator makes it signed otherwise
-                output_code += int.to_bytes(int.from_bytes(bytes.fromhex(part)) ^ 0xFF).hex()
+                output_code += int.to_bytes(
+                    int.from_bytes(bytes.fromhex(part)) ^ 0xFF
+                ).hex()
             else:
                 output_code += part
         return output_code
