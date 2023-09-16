@@ -10,7 +10,6 @@ from custom_components.yamaha_ynca.remote import (
     YamahaYncaZoneRemote,
     async_setup_entry,
 )
-from homeassistant.helpers.entity import EntityCategory
 
 from tests.conftest import setup_integration
 
