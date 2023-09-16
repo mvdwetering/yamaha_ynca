@@ -95,12 +95,12 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
 
 async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
 
-    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {"power_toggle": "12345678"})
+    mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
-    # Setting value
+    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
+
     entity.turn_on()
-    assert mock_ynca.sys.remotecode.called_with("12345678")
+    assert mock_zone_zone3.pwr == ynca.Pwr.ON
 
     entity.turn_off()
-    assert mock_ynca.sys.remotecode.called_with("12345678")
-    assert mock_ynca.sys.remotecode.call_count == 2
+    assert mock_zone_zone3.pwr == ynca.Pwr.STANDBY
