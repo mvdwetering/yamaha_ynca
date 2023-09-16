@@ -112,6 +112,20 @@
         "name": "Volume"
       }
     },
+    "remote": {
+      "main": {
+        "name": "Remote"
+      },
+      "zone2": {
+        "name": "Remote"
+      },
+      "zone3": {
+        "name": "Remote"
+      },
+      "zone4": {
+        "name": "Remote"
+      }
+    },
     "switch": {
       "adaptivedrc": {
         "name": "Adaptive DRC"
