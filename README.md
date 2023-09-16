@@ -22,6 +22,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Activate scenes
 * Hide unused inputs per zone
 * Hide soundmodes
+* Send remote control commands (experimental)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
@@ -38,34 +39,33 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 
 ## FAQ
 
-### Q: Some entities unavailable when receiver in standby
+* **Q: Some entities unavailable when receiver in standby**  
+  The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
-The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
+* **Q: Scenes are not detected or not working**  
+  On newer receivers the autodetection of the amount of Scenes supported per zone does not work anymore, so no Scenes are detected.
 
-### Q: Scenes are not detected or not working
+  *Solution:* Override the autodetect and manually configure the amount of Scenes supported per zone in the integration configuration.
+ 
+  For the RX-V475 with firmware 1.34/2.06 the command to activate the scenes does not work even though scenes seem to be supported by the receiver. As a workaround you might try sending scene commands using the remote entity. Please let me know the results as I don't have an RX-V475 to test with.
 
-On newer receivers the autodetection of the amount of Scenes supported per zone does not work anymore, so no Scenes are detected.
-For the RX-V475 with firmware 1.34/2.06 the command to activate the scenes does not work even though scenes seem to be supported by the receiver.
+* **Q: Sources list does not match receiver zone capabilities**  
 
-*Solution:* Override the autodetect and manually configure the amount of Scenes supported per zone in the integration configuration.
+  For most receivers the total amount/type of inputs available on the receiver can be detected, but it is not possible to detect which of those inputs are available per zone.
 
-### Q: Sources list does not match receiver zone capabilities
+  *Solution:* Manually hide the sources that are not supported per zone in the integration configuration.
 
-For most receivers the total amount/type of inputs available on the receiver can be detected, but it is not possible to detect which of those inputs are available per zone.
+* **Q: Soundmodes do not match receiver**  
 
-*Solution:* Manually hide the sources that are not supported per zone in the integration configuration.
+  The list of soundmodes can not be detected, for some models the list is known, for the rest the whole list of known soundmodes is shown.
 
-### Q: Soundmodes do not match receiver
+  *Solution:* Manually hide Soundmodes that are not supported in the integration configuration.
 
-The list of soundmodes can not be detected, for some models the list is known, for the rest the whole list of known soundmodes is shown.
+  If you want your receiver added to the list of models with known soundmodes start a [discussion](https://github.com/mvdwetering/yamaha_ynca/discussions) or [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues)
 
-*Solution:* Manually hide Soundmodes that are not supported in the integration configuration.
+* **Q: How can I change the connection settings**  
 
-If you want your receiver added to the list of models with known soundmodes start a [discussion](https://github.com/mvdwetering/yamaha_ynca/discussions) or [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues)
-
-### Q: How can I change the connection settings
-
-When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
+  When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
 
 
 ## Installation
