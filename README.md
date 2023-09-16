@@ -22,7 +22,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Activate scenes
 * Hide unused inputs per zone
 * Hide soundmodes
-* Send remote control commands
+* Send remote control commands (experimental)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
