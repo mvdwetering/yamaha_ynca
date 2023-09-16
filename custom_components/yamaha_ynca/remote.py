@@ -19,6 +19,10 @@ if TYPE_CHECKING:  # pragma: no cover
 
 # Use a docstring to more easily write the codes
 REMOTE_CODES = """
+
+on, 7E81-7E81, 7E81-BA45, 7A85-ED12, 7A85-7B84
+standby, 7E81-7F80, 7E81-BB44, 7A85-EE11, 7A85-7C83
+
 receiver_power_toggle, 7E81-2AD5, 7A85-453A, 7A85-4639, 7A85-6F10
 source_power_toggle, 7F01-50AF, 7F01-708F, 7F01-906F, 7F01-B04F
 
@@ -146,11 +150,11 @@ class YamahaYncaZoneRemote(RemoteEntity):
 
     def turn_on(self, **kwargs: Any) -> None:
         """Send the power on command."""
-        self._zone.pwr = ynca.Pwr.ON # No remote code for ON, just toggle so cheat by using API
+        self.send_command(["on"])
 
     def turn_off(self, **kwargs: Any) -> None:
         """Send the power off command."""
-        self._zone.pwr = ynca.Pwr.STANDBY # No remote code for OFF, just toggle so cheat by using API
+        self.send_command(["standby"])
 
     def send_command(self, command: Iterable[str], **kwargs):
         """Send commands to a device."""

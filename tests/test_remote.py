@@ -97,10 +97,10 @@ async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
 
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
-    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
+    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {"on": "12345678", "standby": "90ABCDEF"})
 
     entity.turn_on()
-    assert mock_zone_zone3.pwr == ynca.Pwr.ON
+    assert mock_ynca.sys.remotecode.called_with("12345678")
 
     entity.turn_off()
-    assert mock_zone_zone3.pwr == ynca.Pwr.STANDBY
+    assert mock_ynca.sys.remotecode.called_with("90ABCDEF")
