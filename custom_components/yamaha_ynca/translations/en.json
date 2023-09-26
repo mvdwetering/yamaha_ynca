@@ -47,35 +47,40 @@
     "step": {
       "general": {
         "title": "General settings",
+        "description": "Not all options can be autodetected. Select the soundmodes that are applicable to your receiver.",
         "data": {
-          "hidden_sound_modes": "Hidden sound modes"
+          "selected_sound_modes": "Sound modes"
         }
       },
       "main": {
         "title": "Main zone settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for the main zone.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
       "zone2": {
         "title": "Zone 2 settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 2.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
       "zone3": {
         "title": "Zone 3 settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 3.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
       "zone4": {
         "title": "Zone 4 settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 4.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
@@ -183,6 +188,18 @@
           "dolby_plii_music": "Dolby Pro Logic II(x) Music",
           "dts_neo_6_cinema": "DTS NEO:6 Cinema",
           "dts_neo_6_music": "DTS NEO:6 Music"
+        }
+      }
+    }
+  },
+  "services": {
+    "send_raw_ynca": {
+      "name": "Send raw YNCA command",
+      "description": "Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Yamaha (YNCA) integration.",
+      "fields": {
+        "raw_data": {
+          "name": "Raw YNCA data",
+          "description": "Raw YNCA data to send. One command per line. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE"
         }
       }
     }

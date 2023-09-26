@@ -55,7 +55,6 @@ fast_forward, 7F01-6B94, 7F01-8B74, 7F01-AB54,
 previous, 7F01-6C93, 7F01-8C73, 7F01-AC53, 
 next, 7F01-6D92, 7F01-8D72, 7F01-AD52,
 
-0, 7F01-5AA5, 7F01-7A85, 7F01-9A65
 1, 7F01-51AE, 7F01-718E, 7F01-916E
 2, 7F01-52AD, 7F01-728D, 7F01-926D
 3, 7F01-53AC, 7F01-738C, 7F01-936C
@@ -65,6 +64,7 @@ next, 7F01-6D92, 7F01-8D72, 7F01-AD52,
 7, 7F01-57A8, 7F01-7788, 7F01-9768
 8, 7F01-58A7, 7F01-7887, 7F01-9867
 9, 7F01-59A6, 7F01-7986, 7F01-9966
+0, 7F01-5AA5, 7F01-7A85, 7F01-9A65
 +10, 7F01-5BA4, 7F01-7B84, 7F01-9B64, 7F01-BB44
 ent,7F01-5CA3, 7F01-7C83, 7F01-9C63
 
@@ -169,7 +169,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
     def send_command(self, command: Iterable[str], **kwargs):
         """Send commands to a device."""
         for cmd in command:
-            # Use remotecode from mapping otherwise must be raw code
+            # Use raw remotecode from mapping otherwise assume user provided raw code
             code = self._zone_codes.get(cmd, cmd)
             code = self._format_remotecode(code)
 

@@ -15,6 +15,8 @@ from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     CONF_NUMBER_OF_SCENES,
+    CONF_SELECTED_INPUTS,
+    CONF_SELECTED_SOUND_MODES,
     DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
@@ -87,29 +89,25 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         return await self.async_step_no_connection()
 
-
     async def async_step_no_connection(self, user_input=None):
         """No connection dialog"""
         if user_input is not None:
             self.config_entry.async_start_reauth(self.hass)
             return self.async_abort(reason="marked_for_reconfiguring")
 
-
-        return self.async_show_form(
-            step_id=STEP_ID_NO_CONNECTION
-        )
-
+        return self.async_show_form(step_id=STEP_ID_NO_CONNECTION)
 
     async def async_step_general(self, user_input=None):
         """General device options"""
-        if user_input is not None:
-            self.options[CONF_HIDDEN_SOUND_MODES] = user_input[CONF_HIDDEN_SOUND_MODES]
-            return await self.do_next_step(STEP_ID_GENERAL)
 
-        schema = {}
         modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
 
-        # Hiding sound modes
+        # Note that hidden modes are stored, but selected modes are shown in UI
+        # It makes selecting easier for the user (if selected then it is used)
+        # Storing hidden so that when adding support for new soundmodes/sources they will show up automatically
+        # Not sure if it is the best way, but lets see feedback in the (expected rare) case this will happen.
+
+        # List all sound modes for this model
         sound_modes = []
         for sound_mode in ynca.SoundPrg:
             if sound_mode is ynca.SoundPrg.UNKNOWN:
@@ -119,18 +117,29 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             sound_modes.append(sound_mode.value)
         sound_modes.sort(key=str.lower)
 
-        # Protect against supported soundmode list updates
-        stored_sound_modes = self.options.get(CONF_HIDDEN_SOUND_MODES, [])
-        stored_sound_modes = [
+        if user_input is not None:
+            hidden_sound_modes = list(
+                set(sound_modes) - set(user_input[CONF_SELECTED_SOUND_MODES])
+            )
+            self.options[CONF_HIDDEN_SOUND_MODES] = hidden_sound_modes
+            return await self.do_next_step(STEP_ID_GENERAL)
+
+        # List all hidden modes
+        hidden_sound_modes = self.options.get(CONF_HIDDEN_SOUND_MODES, [])
+        hidden_sound_modes = [
             stored_sound_mode
-            for stored_sound_mode in stored_sound_modes
+            for stored_sound_mode in hidden_sound_modes
+            # Protect against supported soundmode list updates
             if stored_sound_mode in sound_modes
         ]
 
+        selected_sound_modes = list(set(sound_modes) - set(hidden_sound_modes))
+
+        schema = {}
         schema[
             vol.Required(
-                CONF_HIDDEN_SOUND_MODES,
-                default=stored_sound_modes,
+                CONF_SELECTED_SOUND_MODES,
+                default=selected_sound_modes,
             )
         ] = cv.multi_select(sound_modes)
 
@@ -163,30 +172,42 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_zone_settings_screen(self, step_id, user_input=None):
         zone_id = step_id.upper()
 
-        if user_input is not None:
-            self.options[zone_id] = user_input
-            return await self.do_next_step(step_id)
-
-        schema = {}
-
-        # Hiding inputs for zone
-        inputs = {}
+        all_inputs = {}
         for input, name in InputHelper.get_source_mapping(self.api).items():
-            inputs[input.value] = (
+            all_inputs[input.value] = (
                 f"{input.value} ({name})"
                 if input.value.lower() != name.strip().lower()
                 else name
             )
-        inputs = dict(sorted(inputs.items(), key=lambda item: item[1]))
+        all_inputs = dict(sorted(all_inputs.items(), key=lambda item: item[1].lower()))
+        all_input_ids = list(all_inputs.keys())
+
+        if user_input is not None:
+            hidden_input_ids = list(
+                set(all_input_ids) - set(user_input[CONF_SELECTED_INPUTS])
+            )
+
+            self.options.setdefault(zone_id, {})
+            self.options[zone_id][CONF_HIDDEN_INPUTS] = hidden_input_ids
+            self.options[zone_id][CONF_NUMBER_OF_SCENES] = user_input[
+                CONF_NUMBER_OF_SCENES
+            ]
+            return await self.do_next_step(step_id)
+
+        schema = {}
+
+        # Select inputs for zone
+        stored_hidden_input_ids = self.config_entry.options.get(zone_id, {}).get(
+            CONF_HIDDEN_INPUTS, []
+        )
+        selected_inputs = list(set(all_input_ids) - set(stored_hidden_input_ids))
 
         schema[
             vol.Required(
-                CONF_HIDDEN_INPUTS,
-                default=self.config_entry.options.get(zone_id, {}).get(
-                    CONF_HIDDEN_INPUTS, []
-                ),
+                CONF_SELECTED_INPUTS,
+                default=selected_inputs,
             )
-        ] = cv.multi_select(inputs)
+        ] = cv.multi_select(all_inputs)
 
         # Number of scenes for zone
         # Use a select so we can have nice distinct values presented with Autodetect and 0-12
