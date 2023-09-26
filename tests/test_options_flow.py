@@ -11,6 +11,38 @@ from homeassistant.data_entry_flow import FlowResultType
 
 from tests.conftest import setup_integration
 
+ALL_SOUND_MODES = [
+    ynca.SoundPrg.HALL_IN_MUNICH,
+    ynca.SoundPrg.HALL_IN_VIENNA,
+    ynca.SoundPrg.CHAMBER,
+    ynca.SoundPrg.CELLAR_CLUB,
+    ynca.SoundPrg.THE_ROXY_THEATRE,
+    ynca.SoundPrg.THE_BOTTOM_LINE,
+    ynca.SoundPrg.SPORTS,
+    ynca.SoundPrg.ACTION_GAME,
+    ynca.SoundPrg.ROLEPLAYING_GAME,
+    ynca.SoundPrg.MUSIC_VIDEO,
+    ynca.SoundPrg.STANDARD,
+    ynca.SoundPrg.SPECTACLE,
+    ynca.SoundPrg.SCI_FI,
+    ynca.SoundPrg.ADVENTURE,
+    ynca.SoundPrg.DRAMA,
+    ynca.SoundPrg.MONO_MOVIE,
+    ynca.SoundPrg.TWO_CH_STEREO,
+    ynca.SoundPrg.SURROUND_DECODER,
+    ynca.SoundPrg.HALL_IN_AMSTERDAM,
+    ynca.SoundPrg.CHURCH_IN_FREIBURG,
+    ynca.SoundPrg.CHURCH_IN_ROYAUMONT,
+    ynca.SoundPrg.VILLAGE_VANGUARD,
+    ynca.SoundPrg.WAREHOUSE_LOFT,
+    ynca.SoundPrg.RECITAL_OPERA,
+    ynca.SoundPrg.FIVE_CH_STEREO,
+    ynca.SoundPrg.SEVEN_CH_STEREO,
+    ynca.SoundPrg.NINE_CH_STEREO,
+    ynca.SoundPrg.ALL_CH_STEREO,
+    ynca.SoundPrg.ENHANCED,
+]
+
 
 async def test_options_flow_navigate_all_screens(
     hass: HomeAssistant,
@@ -20,7 +52,6 @@ async def test_options_flow_navigate_all_screens(
     mock_zone_zone3,
     mock_zone_zone4,
 ) -> None:
-
     mock_ynca.main = mock_zone_main
     mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone3 = mock_zone_zone3
@@ -36,7 +67,7 @@ async def test_options_flow_navigate_all_screens(
     assert result["last_step"] is False
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: []}
+        result["flow_id"], user_input={yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES}
     )
 
     assert result["type"] == FlowResultType.FORM
@@ -131,7 +162,6 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
 
 
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
-
     # Set a modelname that is in the modelinfo, but does not support all SoundPrg values
     mock_ynca.sys.modelname = "RX-A810"
 
@@ -151,26 +181,43 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [
-                "Hall in Vienna",
+            yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: [
+                ynca.SoundPrg.HALL_IN_MUNICH,
+                # ynca.SoundPrg.HALL_IN_VIENNA,
+                ynca.SoundPrg.CHAMBER,
+                ynca.SoundPrg.CELLAR_CLUB,
+                ynca.SoundPrg.THE_ROXY_THEATRE,
+                ynca.SoundPrg.THE_BOTTOM_LINE,
+                ynca.SoundPrg.SPORTS,
+                ynca.SoundPrg.ACTION_GAME,
+                ynca.SoundPrg.ROLEPLAYING_GAME,
+                ynca.SoundPrg.MUSIC_VIDEO,
+                ynca.SoundPrg.STANDARD,
+                ynca.SoundPrg.SPECTACLE,
+                ynca.SoundPrg.SCI_FI,
+                ynca.SoundPrg.ADVENTURE,
+                ynca.SoundPrg.DRAMA,
+                ynca.SoundPrg.MONO_MOVIE,
+                ynca.SoundPrg.TWO_CH_STEREO,
+                ynca.SoundPrg.SURROUND_DECODER,
+                ynca.SoundPrg.SEVEN_CH_STEREO,
             ],
         },
     )
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"],
+        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"]
     }
 
     # Make sure HA finishes creating entry completely
     # or it will result in errors when tearing down the test
-    await hass.async_block_till_done()    
+    await hass.async_block_till_done()
 
 
 async def test_options_flow_zone_inputs(
     hass: HomeAssistant, mock_ynca, mock_zone_main
 ) -> None:
-
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
@@ -185,7 +232,7 @@ async def test_options_flow_zone_inputs(
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        user_input={yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: []},
+        user_input={yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES},
     )
 
     assert result["type"] == FlowResultType.FORM
@@ -213,7 +260,6 @@ async def test_options_flow_zone_inputs(
 async def test_options_flow_configure_nof_scenes(
     hass: HomeAssistant, mock_ynca, mock_zone_main
 ) -> None:
-
     mock_ynca.main = mock_zone_main
 
     integration = await setup_integration(hass, mock_ynca)
@@ -226,7 +272,7 @@ async def test_options_flow_configure_nof_scenes(
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        user_input={yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: []},
+        user_input={yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES},
     )
 
     assert result["type"] == FlowResultType.FORM

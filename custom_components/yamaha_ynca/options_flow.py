@@ -15,6 +15,7 @@ from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     CONF_NUMBER_OF_SCENES,
+    CONF_SELECTED_SOUND_MODES,
     DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
@@ -102,14 +103,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_general(self, user_input=None):
         """General device options"""
-        if user_input is not None:
-            self.options[CONF_HIDDEN_SOUND_MODES] = user_input[CONF_HIDDEN_SOUND_MODES]
-            return await self.do_next_step(STEP_ID_GENERAL)
 
-        schema = {}
         modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
 
-        # Hiding sound modes
+        # Note that hidden modes are stored, but selected modes are shown in UI
+        # It makes selecting easier for the user (if selected then it is used)
+        # Storing hidden so that when adding support for new soundmodes/sources they will show up automatically
+        # Not sure if it is the best way, but lets see feedback in the (expected rare) case this will happen.
+
+        # List all sound modes for this model
         sound_modes = []
         for sound_mode in ynca.SoundPrg:
             if sound_mode is ynca.SoundPrg.UNKNOWN:
@@ -119,18 +121,27 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             sound_modes.append(sound_mode.value)
         sound_modes.sort(key=str.lower)
 
-        # Protect against supported soundmode list updates
-        stored_sound_modes = self.options.get(CONF_HIDDEN_SOUND_MODES, [])
-        stored_sound_modes = [
+        if user_input is not None:
+            hidden_sound_modes = list(set(sound_modes) - set(user_input[CONF_SELECTED_SOUND_MODES]))
+            self.options[CONF_HIDDEN_SOUND_MODES] = hidden_sound_modes
+            return await self.do_next_step(STEP_ID_GENERAL)
+
+        # List all hidden modes
+        hidden_sound_modes = self.options.get(CONF_HIDDEN_SOUND_MODES, [])
+        hidden_sound_modes = [
             stored_sound_mode
-            for stored_sound_mode in stored_sound_modes
+            for stored_sound_mode in hidden_sound_modes
+            # Protect against supported soundmode list updates
             if stored_sound_mode in sound_modes
         ]
 
+        selected_sound_modes = list(set(sound_modes) - set(hidden_sound_modes))
+
+        schema = {}
         schema[
             vol.Required(
-                CONF_HIDDEN_SOUND_MODES,
-                default=stored_sound_modes,
+                CONF_SELECTED_SOUND_MODES,
+                default=selected_sound_modes,
             )
         ] = cv.multi_select(sound_modes)
 

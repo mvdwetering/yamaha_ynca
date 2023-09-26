@@ -28,6 +28,7 @@ ZONE_ATTRIBUTE_NAMES = [
 ]
 
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
+CONF_SELECTED_SOUND_MODES = "selected_sound_modes"
 CONF_HIDDEN_INPUTS = "hidden_inputs"
 CONF_NUMBER_OF_SCENES = "number_of_scenes"
 NUMBER_OF_SCENES_AUTODETECT = -1
