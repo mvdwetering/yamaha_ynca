@@ -43,6 +43,32 @@ ALL_SOUND_MODES = [
     ynca.SoundPrg.ENHANCED,
 ]
 
+ALL_INPUTS = [
+    "AUDIO1",
+    "AUDIO2",
+    "AUDIO3",
+    "AUDIO4",
+    "AV1",
+    "AV2",
+    "AV3",
+    "AV4",
+    "AV5",
+    "AV6",
+    "AV7",
+    "DOCK",
+    "HDMI1",
+    "HDMI2",
+    "HDMI3",
+    "HDMI4",
+    "HDMI5",
+    "HDMI6",
+    "HDMI7",
+    "MULTI CH",
+    "PHONO",
+    "USB",
+    "V-AUX",
+]
+
 
 async def test_options_flow_navigate_all_screens(
     hass: HomeAssistant,
@@ -67,7 +93,8 @@ async def test_options_flow_navigate_all_screens(
     assert result["last_step"] is False
 
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES}
+        result["flow_id"],
+        user_input={yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES},
     )
 
     assert result["type"] == FlowResultType.FORM
@@ -77,7 +104,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -89,7 +116,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -101,7 +128,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -113,7 +140,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -242,7 +269,7 @@ async def test_options_flow_zone_inputs(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ["NET RADIO"],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -282,7 +309,7 @@ async def test_options_flow_configure_nof_scenes(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     )

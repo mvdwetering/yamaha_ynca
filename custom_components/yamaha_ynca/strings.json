@@ -47,14 +47,14 @@
     "step": {
       "general": {
         "title": "General settings",
-        "description": "Supported sound modes can not be detected. Select the soundmodes that are applicable to your receiver.",
+        "description": "Not all options can be autodetected. Select the soundmodes that are applicable to your receiver.",
         "data": {
           "selected_sound_modes": "Sound modes"
         }
       },
       "main": {
         "title": "Main zone settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable to your receiver.",
+        "description": "Not all options can be auto detected. Select the options that are applicable for the main zone.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
@@ -62,7 +62,7 @@
       },
       "zone2": {
         "title": "Zone 2 settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable to your receiver.",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 2.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
@@ -70,7 +70,7 @@
       },
       "zone3": {
         "title": "Zone 3 settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable to your receiver.",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 3.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
@@ -78,7 +78,7 @@
       },
       "zone4": {
         "title": "Zone 4 settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable to your receiver.",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 4.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"

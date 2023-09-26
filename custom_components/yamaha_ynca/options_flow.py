@@ -15,6 +15,7 @@ from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     CONF_NUMBER_OF_SCENES,
+    CONF_SELECTED_INPUTS,
     CONF_SELECTED_SOUND_MODES,
     DATA_MODELNAME,
     DATA_ZONES,
@@ -88,18 +89,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         return await self.async_step_no_connection()
 
-
     async def async_step_no_connection(self, user_input=None):
         """No connection dialog"""
         if user_input is not None:
             self.config_entry.async_start_reauth(self.hass)
             return self.async_abort(reason="marked_for_reconfiguring")
 
-
-        return self.async_show_form(
-            step_id=STEP_ID_NO_CONNECTION
-        )
-
+        return self.async_show_form(step_id=STEP_ID_NO_CONNECTION)
 
     async def async_step_general(self, user_input=None):
         """General device options"""
@@ -122,7 +118,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         sound_modes.sort(key=str.lower)
 
         if user_input is not None:
-            hidden_sound_modes = list(set(sound_modes) - set(user_input[CONF_SELECTED_SOUND_MODES]))
+            hidden_sound_modes = list(
+                set(sound_modes) - set(user_input[CONF_SELECTED_SOUND_MODES])
+            )
             self.options[CONF_HIDDEN_SOUND_MODES] = hidden_sound_modes
             return await self.do_next_step(STEP_ID_GENERAL)
 
@@ -174,30 +172,42 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_zone_settings_screen(self, step_id, user_input=None):
         zone_id = step_id.upper()
 
-        if user_input is not None:
-            self.options[zone_id] = user_input
-            return await self.do_next_step(step_id)
-
-        schema = {}
-
-        # Hiding inputs for zone
-        inputs = {}
+        all_inputs = {}
         for input, name in InputHelper.get_source_mapping(self.api).items():
-            inputs[input.value] = (
+            all_inputs[input.value] = (
                 f"{input.value} ({name})"
                 if input.value.lower() != name.strip().lower()
                 else name
             )
-        inputs = dict(sorted(inputs.items(), key=lambda item: item[1]))
+        all_inputs = dict(sorted(all_inputs.items(), key=lambda item: item[1].lower()))
+        all_input_ids = list(all_inputs.keys())
+
+        if user_input is not None:
+            hidden_input_ids = list(
+                set(all_input_ids) - set(user_input[CONF_SELECTED_INPUTS])
+            )
+
+            self.options.setdefault(zone_id, {})
+            self.options[zone_id][CONF_HIDDEN_INPUTS] = hidden_input_ids
+            self.options[zone_id][CONF_NUMBER_OF_SCENES] = user_input[
+                CONF_NUMBER_OF_SCENES
+            ]
+            return await self.do_next_step(step_id)
+
+        schema = {}
+
+        # Select inputs for zone
+        stored_hidden_input_ids = self.config_entry.options.get(zone_id, {}).get(
+            CONF_HIDDEN_INPUTS, []
+        )
+        selected_inputs = list(set(all_input_ids) - set(stored_hidden_input_ids))
 
         schema[
             vol.Required(
-                CONF_HIDDEN_INPUTS,
-                default=self.config_entry.options.get(zone_id, {}).get(
-                    CONF_HIDDEN_INPUTS, []
-                ),
+                CONF_SELECTED_INPUTS,
+                default=selected_inputs,
             )
-        ] = cv.multi_select(inputs)
+        ] = cv.multi_select(all_inputs)
 
         # Number of scenes for zone
         # Use a select so we can have nice distinct values presented with Autodetect and 0-12
