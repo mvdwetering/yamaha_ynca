@@ -97,13 +97,15 @@ target:
 ```
 
 
-In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It just uses standard built-in Home Assistant cards, so should work everywhere. 
+In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so should work everywhere. 
 
 On a dashboard add a "manual" card. Paste the code below and search and replace the entity name with your own.
 
 <details>
-<summary>Gid with buttons for remote control commands.</summary>
- 
+<summary>Grid with buttons for remote control commands.</summary>
+
+![image](https://github.com/mvdwetering/yamaha_ynca/assets/732514/321181e2-81c3-4a1d-8084-8efceb94f7ff)
+
 ```yaml
 type: vertical-stack
 cards:
