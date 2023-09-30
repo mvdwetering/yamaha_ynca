@@ -5,7 +5,7 @@ import logging
 DOMAIN = "yamaha_ynca"
 LOGGER = logging.getLogger(__package__)
 
-COMMUNICATION_LOG_SIZE = 1000
+COMMUNICATION_LOG_SIZE = 5000
 
 CONF_SERIAL_URL = "serial_url"
 CONF_HOST = "host"
@@ -28,7 +28,9 @@ ZONE_ATTRIBUTE_NAMES = [
 ]
 
 CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
+CONF_SELECTED_SOUND_MODES = "selected_sound_modes"
 CONF_HIDDEN_INPUTS = "hidden_inputs"
+CONF_SELECTED_INPUTS = "selected_inputs"
 CONF_NUMBER_OF_SCENES = "number_of_scenes"
 NUMBER_OF_SCENES_AUTODETECT = -1
 MAX_NUMBER_OF_SCENES = 12

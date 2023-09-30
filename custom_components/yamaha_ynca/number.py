@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-from typing import List
+from typing import Callable, List
 
 import ynca
 
@@ -13,14 +13,24 @@ from homeassistant.components.number import (
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.helpers.entity import EntityCategory
 
-from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME
+from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME, ZONE_MIN_VOLUME
 from .helpers import DomainEntryData, YamahaYncaSettingEntity
+
+
+def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
+    return (
+        associated_zone.maxvol
+        if associated_zone.maxvol is not None
+        else ZONE_MAX_VOLUME
+    )
 
 
 @dataclass
 class YncaNumberEntityDescription(NumberEntityDescription):
     function_names: List[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
+    native_max_value_fn: Callable[[ynca.subunits.zone.ZoneBase], float] | None = None
+    """Function that returns max value. Use when a fixed number is not enough"""
 
 
 ENTITY_DESCRIPTIONS = [
@@ -30,19 +40,28 @@ ENTITY_DESCRIPTIONS = [
         key="maxvol",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
-        icon="mdi:volume-high",
-        name="Max Volume",
+        icon="mdi:volume-vibrate",
         native_min_value=-30,
         native_max_value=ZONE_MAX_VOLUME,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
     ),
     YncaNumberEntityDescription(  # type: ignore
+        key="vol",
+        device_class=NumberDeviceClass.SIGNAL_STRENGTH,
+        icon="mdi:volume-high",
+        native_min_value=ZONE_MIN_VOLUME,
+        native_max_value_fn=volume_native_max_value_fn,
+        native_step=0.5,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
+        entity_registry_enabled_default=False,
+        function_names=["VOL", "MAXVOL"],
+    ),
+    YncaNumberEntityDescription(  # type: ignore
         key="spbass",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
         icon="mdi:speaker",
-        name="Speaker bass",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
@@ -54,7 +73,6 @@ ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         icon="mdi:speaker",
-        name="Speaker treble",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
@@ -66,7 +84,6 @@ ENTITY_DESCRIPTIONS = [
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
         icon="mdi:headphones",
-        name="Headphone bass",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
@@ -78,7 +95,6 @@ ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         icon="mdi:headphones",
-        name="Headphones treble",
         native_min_value=-6,
         native_max_value=6,
         native_step=0.5,
@@ -92,7 +108,6 @@ InitialVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: igno
     entity_category=EntityCategory.CONFIG,
     device_class=NumberDeviceClass.SIGNAL_STRENGTH,
     icon="mdi:knob",
-    name="Initial Volume",
     native_min_value=-80.0,
     native_max_value=ZONE_MAX_VOLUME,
     native_step=0.5,
@@ -102,7 +117,6 @@ InitialVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: igno
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
@@ -137,6 +151,13 @@ class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
         return getattr(self._subunit, self.entity_description.key)
+
+    @property
+    def native_max_value(self) -> float:
+        """Return the maximum value."""
+        if fn := self.entity_description.native_max_value_fn:
+            return fn(self._associated_zone)
+        return super().native_max_value
 
     def set_native_value(self, value: float) -> None:
         setattr(self._subunit, self.entity_description.key, value)

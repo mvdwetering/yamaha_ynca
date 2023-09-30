@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
+        "title": "Select connection method",
         "menu_options": {
           "serial": "Serial connection",
           "network": "Network connection",
           "advanced": "PySerial URL handler (advanced)"
-        },
-        "title": "Select connection method"
+        }
       },
       "serial": {
         "title": "Serial connection",
@@ -47,35 +47,40 @@
     "step": {
       "general": {
         "title": "General settings",
+        "description": "Not all options can be autodetected. Select the soundmodes that are applicable to your receiver.",
         "data": {
-          "hidden_sound_modes": "Hidden sound modes"
+          "selected_sound_modes": "Sound modes"
         }
       },
       "main": {
         "title": "Main zone settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for the main zone.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
       "zone2": {
         "title": "Zone 2 settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 2.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
       "zone3": {
         "title": "Zone 3 settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 3.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
       "zone4": {
         "title": "Zone 4 settings",
+        "description": "Not all options can be auto detected. Select the options that are applicable for zone 4.",
         "data": {
-          "hidden_inputs": "Hidden inputs",
+          "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
         }
       },
@@ -89,8 +94,66 @@
     }
   },
   "entity": {
+    "number": {
+      "hpbass": {
+        "name": "Headphone bass"
+      },
+      "hptreble": {
+        "name": "Headphones treble"
+      },
+      "initvollvl": {
+        "name": "Initial Volume"
+      },
+      "maxvol": {
+        "name": "Max Volume"
+      },
+      "spbass": {
+        "name": "Speaker bass"
+      },
+      "sptreble": {
+        "name": "Speaker treble"
+      },
+      "vol": {
+        "name": "Volume"
+      }
+    },
+    "remote": {
+      "main": {
+        "name": "Remote"
+      },
+      "zone2": {
+        "name": "Remote"
+      },
+      "zone3": {
+        "name": "Remote"
+      },
+      "zone4": {
+        "name": "Remote"
+      }
+    },
+    "switch": {
+      "adaptivedrc": {
+        "name": "Adaptive DRC"
+      },
+      "enhancer": {
+        "name": "Compressed Music Enhancer"
+      },
+      "hdmiout1": {
+        "name": "HDMI Out 1"
+      },
+      "hdmiout2": {
+        "name": "HDMI Out 2"
+      },
+      "puredirmode": {
+        "name": "Pure Direct"
+      },
+      "threedcinema": {
+        "name": "CINEMA DSP 3D Mode"
+      }
+    },
     "select": {
       "hdmiout": {
+        "name": "HDMI Out",
         "state": {
           "off": "Off",
           "out1": "HDMI OUT 1",
@@ -99,6 +162,7 @@
         }
       },
       "initial_volume_mode": {
+        "name": "Initial Volume Mode",
         "state": {
           "last_value": "Last value",
           "mute": "Muted",
@@ -106,6 +170,7 @@
         }
       },
       "sleep": {
+        "name": "Sleep timer",
         "state": {
           "off": "Off",
           "30_min": "30 Minutes",
@@ -115,6 +180,7 @@
         }
       },
       "twochdecoder": {
+        "name": "Surround Decoder",
         "state": {
           "dolby_pl": "Dolby Pro Logic",
           "dolby_plii_game": "Dolby Pro Logic II(x) Game",
@@ -122,6 +188,18 @@
           "dolby_plii_music": "Dolby Pro Logic II(x) Music",
           "dts_neo_6_cinema": "DTS NEO:6 Cinema",
           "dts_neo_6_music": "DTS NEO:6 Music"
+        }
+      }
+    }
+  },
+  "services": {
+    "send_raw_ynca": {
+      "name": "Send raw YNCA command",
+      "description": "Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Yamaha (YNCA) integration.",
+      "fields": {
+        "raw_data": {
+          "name": "Raw YNCA data",
+          "description": "Raw YNCA data to send. One command per line. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE"
         }
       }
     }

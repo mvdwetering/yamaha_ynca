@@ -32,6 +32,7 @@ PLATFORMS: List[Platform] = [
     Platform.NUMBER,
     Platform.SELECT,
     Platform.SWITCH,
+    Platform.REMOTE,
 ]
 
 SERVICE_SEND_RAW_YNCA = "send_raw_ynca"

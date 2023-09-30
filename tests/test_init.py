@@ -1,7 +1,7 @@
 """Test the Yamaha (YNCA) config flow."""
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, Mock, call, create_autospec, patch
+from unittest.mock import AsyncMock, call, patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 import ynca
