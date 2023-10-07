@@ -149,7 +149,7 @@ async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
 
     mock_ynca.close.assert_called_once()
     assert integration.entry.state is ConfigEntryState.NOT_LOADED
-    assert not hass.data.get(yamaha_ynca.DOMAIN)
+    assert yamaha_ynca.DOMAIN not in hass.data
 
 
 @patch("homeassistant.config_entries.ConfigEntries.async_reload")
