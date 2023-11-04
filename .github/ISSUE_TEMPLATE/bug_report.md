@@ -34,7 +34,7 @@ Provide details about the versions you are using, which helps to reproduce and f
 
 - Home Assistant Core version: 
 - Home Assistant operating environment (OS/Container/Supervised/Core): 
-- Huesyncbox integration version: 
+- Integration version: 
 - Last working version (if known): 
 
 **Additional context**
