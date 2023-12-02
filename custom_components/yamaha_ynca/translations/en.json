@@ -114,7 +114,7 @@
         "name": "Speaker treble"
       },
       "vol": {
-        "name": "Volume"
+        "name": "Volume (dB)"
       }
     },
     "remote": {
