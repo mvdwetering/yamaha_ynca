@@ -65,7 +65,7 @@ HACS is a 3rd party downloader for Home Assistant to easily install and update c
 
 ## Volume (dB) entity
 
-The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1. The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in dB unit on the display. This integration maps this full range onto the 0-to-1 range in Home Assistant. But this makes setting volume in Home Assistant difficult as those Home Assistant numbers are not easily convertible to the dB numbers shown by the receiver.
+The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1. The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in dB unit on the display. This integration maps the full dB range onto the 0-to-1 range in Home Assistant. But this makes setting volume in Home Assistant difficult as those Home Assistant numbers are not easily convertible to the dB numbers shown by the receiver.
 
 The "Volume (dB)" entity was added to work around this. It is basically the same as the `media_player` volume, but using the familiar dB values that the receiver shows.
 
