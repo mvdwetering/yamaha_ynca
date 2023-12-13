@@ -20,8 +20,8 @@ from tests.conftest import setup_integration
 
 
 @pytest.fixture
-def mp_entity(hass, mock_zone, mock_ynca) -> YamahaYncaZone:
-    return YamahaYncaZone(hass, "ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
+    return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
 
 
 @patch("custom_components.yamaha_ynca.media_player.YamahaYncaZone", autospec=True)
@@ -44,9 +44,9 @@ async def test_async_setup_entry(
     yamahayncazone_mock.assert_has_calls(
         [
             call(
-                hass, "entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]
+                "entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]
             ),
-            call(hass, "entry_id", mock_ynca, mock_ynca.zone2, [], ["Adventure"]),
+            call("entry_id", mock_ynca, mock_ynca.zone2, [], ["Adventure"]),
         ]
     )
 
@@ -88,7 +88,7 @@ async def test_mediaplayer_entity(mp_entity: YamahaYncaZone, mock_zone, mock_ync
 
 
 async def test_mediaplayer_entity_update_callback_zonename(
-    mock_zone, mock_ynca, device_reg, hass
+    mock_zone, mock_ynca, hass, device_reg
 ):
     # Setup integration, device registry and entiry
     mock_ynca.main = mock_zone
@@ -100,12 +100,14 @@ async def test_mediaplayer_entity_update_callback_zonename(
         name="Old Zonename",
     )
 
-    zone_entity = YamahaYncaZone(hass, "ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    zone_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
     assert zone_entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
     }
 
+    zone_entity.hass = hass  # In a real system this is done by HA
     await zone_entity.async_added_to_hass()
+
     zone_callback = mock_zone.register_update_callback.call_args.args[0]
     zone_entity.schedule_update_ha_state = Mock()
 
@@ -194,7 +196,7 @@ async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
     mp_entity = YamahaYncaZone(
-        hass, "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
+        "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
     )
 
     # Select a rename-able source
@@ -233,7 +235,7 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
 
     # Tuner is hidden
     mp_entity = YamahaYncaZone(
-        hass, "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
+        "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
     )
 
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
@@ -248,7 +250,7 @@ async def test_mediaplayer_entity_source_whitespace_handling(
     mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
     mock_ynca.sys.inpnamehdmi4 = "   Leading and trailing spaces   "
 
-    mp_entity = YamahaYncaZone(hass, "ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
 
     assert mp_entity.source_list == unordered(
         [
@@ -338,7 +340,7 @@ async def test_mediaplayer_entity_hidden_sound_mode(hass, mock_ynca, mock_zone):
     mock_zone.soundprg = ynca.SoundPrg.VILLAGE_VANGUARD
 
     mp_entity = YamahaYncaZone(
-        hass, "ReceiverUniqueId", mock_ynca, mock_zone, [], ["MONO_MOVIE"]
+        "ReceiverUniqueId", mock_ynca, mock_zone, [], ["MONO_MOVIE"]
     )
 
     assert "Drama" in mp_entity.sound_mode_list
