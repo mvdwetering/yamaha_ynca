@@ -50,7 +50,6 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
 
             entities.append(
                 YamahaYncaZone(
-                    hass,
                     config_entry.entry_id,
                     domain_entry_data.api,
                     zone_subunit,
@@ -72,14 +71,12 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def __init__(
         self,
-        hass: HomeAssistant,
         receiver_unique_id: str,
         ynca: ynca.YncaApi,
         zone: ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
     ):
-        self._hass = hass
         self._ynca = ynca
         self._zone = zone
         self._hidden_inputs = hidden_inputs
@@ -96,7 +93,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if function == "ZONENAME":
             # Note that the mediaplayer does not have a name since it uses the devicename
             # So update the device name when the zonename changes to keep names as expected
-            registry = device_registry.async_get(self._hass)
+            registry = device_registry.async_get(self.hass)
             device = registry.async_get_device(identifiers={(DOMAIN, self._device_id)})
             if device:
                 devicename = build_devicename(self._ynca, self._zone)
