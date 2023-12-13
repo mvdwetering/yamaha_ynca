@@ -117,7 +117,6 @@ class YamahaYncaZoneRemote(RemoteEntity):
     )
     _attr_has_entity_name = True
     _attr_entity_registry_enabled_default = False
-    
     _unrecorded_attributes = frozenset({ATTR_COMMANDS})
 
     def __init__(
