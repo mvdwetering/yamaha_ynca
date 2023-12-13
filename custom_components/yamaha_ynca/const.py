@@ -14,6 +14,7 @@ CONF_PORT = "port"
 DATA_MODELNAME = "modelname"
 DATA_ZONES = "zones"
 
+ATTR_COMMANDS = "commands"
 
 MANUFACTURER_NAME = "Yamaha"
 
