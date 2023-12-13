@@ -90,7 +90,7 @@ async def test_mediaplayer_entity(mp_entity: YamahaYncaZone, mock_zone, mock_ync
 async def test_mediaplayer_entity_update_callback_zonename(
     mock_zone, mock_ynca, hass, device_reg
 ):
-    # Setup integration, device registry and entiry
+    # Setup integration, device registry and entity
     mock_ynca.main = mock_zone
     integration = await setup_integration(hass, mock_ynca)
 
