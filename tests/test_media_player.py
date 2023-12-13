@@ -114,7 +114,7 @@ async def test_mediaplayer_entity_update_callback_zonename(
     # Zonename update
     mock_zone.zonename = "New Zonename"
     zone_callback("ZONENAME", "VALUE")  # Note VALUE is not used it is read from API
-    zone_entity.schedule_update_ha_state.call_count == 1
+    assert zone_entity.schedule_update_ha_state.call_count == 1
 
     # Check for name change
     device_entry = device_reg.async_get_or_create(
