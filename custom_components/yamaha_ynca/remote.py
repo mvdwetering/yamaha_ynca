@@ -7,6 +7,7 @@ from homeassistant.components.remote import RemoteEntity
 from homeassistant.helpers.entity import DeviceInfo
 
 from .const import (
+    ATTR_COMMANDS,
     DOMAIN,
     ZONE_ATTRIBUTE_NAMES,
 )
@@ -116,6 +117,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
     )
     _attr_has_entity_name = True
     _attr_entity_registry_enabled_default = False
+    _unrecorded_attributes = frozenset({ATTR_COMMANDS})
 
     def __init__(
         self,
@@ -134,7 +136,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
             identifiers={(DOMAIN, f"{receiver_unique_id}_{zone.id}")}
         )
 
-        self._attr_extra_state_attributes = {"commands": list(self._zone_codes.keys())}
+        self._attr_extra_state_attributes = {ATTR_COMMANDS: list(self._zone_codes.keys())}
 
     def _format_remotecode(self, input_code: str) -> str:
         """
