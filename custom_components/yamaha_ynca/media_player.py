@@ -221,7 +221,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         ]
         sound_modes.sort(key=str.lower)
 
-        return sound_modes if len(sound_modes) > 0 else None
+        return sound_modes if sound_modes else None
 
     def _has_limited_playback_controls(self, subunit):
         """Indicates if subunit has limited playback control (aka only Play and Stop)"""

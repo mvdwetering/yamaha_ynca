@@ -74,7 +74,7 @@ def migrate_v5_to_v6(hass: HomeAssistant, config_entry: ConfigEntry):
     old_options = dict(config_entry.options)  # Convert to dict to be able to use .get
     new_options = {}
 
-    if hidden_sound_modes := old_options.get("hidden_sound_modes", None):
+    if hidden_sound_modes := old_options.get("hidden_sound_modes"):
         new_options["hidden_sound_modes"] = hidden_sound_modes
 
     for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
@@ -124,7 +124,7 @@ def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry):
     # Used to be the enum name, now it is the value
 
     options = dict(config_entry.options)
-    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES, None):
+    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES):
         new_hidden_soundmodes = []
         for old_hidden_soundmode in old_hidden_soundmodes:
             try:
