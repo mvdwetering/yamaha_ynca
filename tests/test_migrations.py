@@ -37,7 +37,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     migration_success = await yamaha_ynca.async_migrate_entry(hass, old_entry)
     await hass.async_block_till_done()
 
-    assert migration_success == True
+    assert migration_success
 
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry.version == 7
@@ -73,7 +73,7 @@ async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
     await hass.async_block_till_done()
 
     # Button entities removed
-    assert len(mock_entity_registry.entities) == 0
+    assert not mock_entity_registry.entities
 
     # Serial_port renamed to serial_url
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
@@ -111,7 +111,7 @@ async def test_async_migration_entry_version_v2_to_v3(hass: HomeAssistant):
     await hass.async_block_till_done()
 
     # Scene entities removed
-    assert len(mock_entity_registry.entities) == 0
+    assert not mock_entity_registry.entities
 
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry.version == 3

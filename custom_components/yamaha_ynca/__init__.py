@@ -196,7 +196,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         domain_entry_info = hass.data[DOMAIN].pop(entry.entry_id)
         await hass.async_add_executor_job(close_ynca, domain_entry_info.api)
 
-    if len(hass.data[DOMAIN]) == 0:
+    if not hass.data[DOMAIN]:
         hass.data.pop(DOMAIN)
         hass.services.async_remove(DOMAIN, SERVICE_SEND_RAW_YNCA)
 
