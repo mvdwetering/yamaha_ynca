@@ -23,7 +23,7 @@ from .const import (
     MANUFACTURER_NAME,
     ZONE_ATTRIBUTE_NAMES,
 )
-from .helpers import DomainEntryData
+from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
 from .migrations import async_migrate_entry as migrations_async_migrate_entry
 
 PLATFORMS: List[Platform] = [
@@ -122,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     def initialize_ynca(ynca_receiver: ynca.YncaApi):
         try:
-            # Sync function taking a long time (> 10 seconds depending on receiver capabilities)
+            # Synchronous function taking a long time (> 10 seconds depending on receiver capabilities)
             ynca_receiver.initialize()
             return True
         except ynca.YncaConnectionError as e:
@@ -165,6 +165,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if initialized:
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
+
+        if receiver_requires_audio_input_workaround(ynca_receiver):
+            # Pretend AUDIO provides a name like a normal input
+            # This makes it work with standard code
+            ynca_receiver.sys.inpnameaudio = "AUDIO"  # type: ignore
 
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = DomainEntryData(
             api=ynca_receiver,
