@@ -44,6 +44,7 @@ ALL_SOUND_MODES = [
 ]
 
 ALL_INPUTS = [
+    "AUDIO",
     "AUDIO1",
     "AUDIO2",
     "AUDIO3",

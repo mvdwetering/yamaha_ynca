@@ -3,13 +3,12 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, call, patch
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import MockConfigEntry # type: ignore[import]
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.service import ServiceCall
-from homeassistant.setup import async_setup_component
 
 from .conftest import setup_integration
 
@@ -68,6 +67,20 @@ async def test_async_setup_entry_socket_has_configuration_url(
         identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_MAIN")}
     )
     assert device.configuration_url == "http://1.2.3.4"
+
+
+async def test_async_setup_entry_audio_input_workaround_applied(
+    hass, device_reg, mock_ynca, mock_zone_main
+):
+    """Test a successful setup entry."""
+    mock_ynca.main = mock_zone_main
+    mock_ynca.sys.modelname = "RX-V475"
+
+    integration = await setup_integration(
+        hass, mock_ynca
+    )
+
+    assert mock_ynca.sys.inpnameaudio == "AUDIO"
 
 
 async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
