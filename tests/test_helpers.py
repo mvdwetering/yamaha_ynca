@@ -20,7 +20,7 @@ TEST_ENTITY_DESCRIPTION = EntityDescription(
 )
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class TestYncaEntityDescription(EntityDescription):
     __test__ = False  # This avoids pytest thinking it is a test
     function_names: List[str] | None = None
