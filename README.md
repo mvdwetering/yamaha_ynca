@@ -4,7 +4,7 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Volume (dB) entity](#volume-db-entity)
-- [Remote control (experimental)](#remote-control-experimental)
+- [Remote control](#remote-control)
 - [Q & A](#q--a)
 
 ## Description
@@ -30,7 +30,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Show metadata like artist, album, song (depends on source)
 * Control playback (depends on source)
 * Activate scenes
-* Send remote control commands (experimental)
+* Send remote control commands
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
@@ -69,13 +69,11 @@ The volume of a `media_player` entity in Home Assistant has to be in the range 0
 
 The "Volume (dB)" entity was added to work around this. It is basically the same as the `media_player` volume, but using the familiar dB values that the receiver shows.
 
-## Remote control (experimental)
-
-_This is currently experimental because it is unknown how well this works on different types of receivers and it is a bit complicated to use (see wall of text below). Please post feedback in [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions)_
+## Remote control
 
 The remote control entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone. Some remote commands are forwarded through HDMI-CEC and can be used to control other devices that way. I guess the commands are also sent over the remote out of the receiver, but that needs to be validated by someone that has equipment connected to the remote out port.
 
-The current list of commands is below, but not all zones support all commands. For the list of supported commands for a specific entity check the "commands" attribute of the remote entity. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
+The current list of commands is below. For the list of supported commands for a specific entity check the "commands" attribute of the remote entity. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
 
 > on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent"
 
@@ -83,7 +81,7 @@ More remote control commands exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send a code through any of the remote entities.
 
-Sending the commands is done through the `remote.send_command` service offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want send and call the service. The repeat, delay and hold options are not supported. 
+Sending the commands is done through the `remote.send_command` service offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want send and call the service. The repeat, delay and hold options are _not_ supported. 
 
 Example:
 
@@ -98,7 +96,7 @@ target:
 
 In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so should work everywhere. 
 
-On a dashboard add a "manual" card. Paste the code below and search and replace the entity name with your own.
+On a dashboard add a "manual" card. Paste the code below and search and replace the `entity_id` with your own.
 
 <details>
 <summary>Grid with buttons for remote control commands.</summary>
