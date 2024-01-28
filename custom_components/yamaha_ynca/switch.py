@@ -15,7 +15,7 @@ from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class YncaSwitchEntityDescription(SwitchEntityDescription):
     on: Enum | None = None
     off: Enum | None = None

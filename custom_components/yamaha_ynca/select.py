@@ -161,7 +161,7 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
         return slugify(current_option.value)
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class YncaSelectEntityDescription(SelectEntityDescription):
     enum: Type[Enum] | None = None
     """Enum is used to map and generate options (if not specified) for the select entity."""
@@ -180,10 +180,6 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     )
     """Callable to check support for this entity on the zone, default checks if attribute `key` is not None."""
 
-    def __post_init__(self):
-        if self.options is None and self.enum is not None:
-            self.options = [slugify(e.value) for e in self.enum if e.name != "UNKNOWN"]
-
     def is_supported(self, zone_subunit: ZoneBase):
         return self.supported_check(self, zone_subunit)
 
@@ -195,12 +191,14 @@ ENTITY_DESCRIPTIONS = [
         key="hdmiout",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.HdmiOut,
+        options=[slugify(e.value) for e in ynca.HdmiOut if e.name != "UNKNOWN"],
         icon="mdi:hdmi-port",
     ),
     YncaSelectEntityDescription(  # type: ignore
         key="sleep",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.Sleep,
+        options=[slugify(e.value) for e in ynca.Sleep if e.name != "UNKNOWN"],
         icon="mdi:timer-outline",
     ),
     YncaSelectEntityDescription(  # type: ignore
@@ -208,6 +206,7 @@ ENTITY_DESCRIPTIONS = [
         key="initial_volume_mode",
         entity_category=EntityCategory.CONFIG,
         enum=InitialVolumeMode,
+        options=[slugify(e.value) for e in InitialVolumeMode if e.name != "UNKNOWN"],
         function_names=["INITVOLMODE", "INITVOLLVL"],
         supported_check=lambda _, zone_subunit: zone_subunit.initvollvl is not None,
     ),
@@ -217,7 +216,7 @@ ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         enum=ynca.TwoChDecoder,
         icon="mdi:surround-sound",
-        options=[slugify(sdo) for sdo in SurroundDecoderOptions],
+        options=[slugify(sdo.value) for sdo in SurroundDecoderOptions],
         function_names=["2CHDECODER"],
         # Only support receivers with Dolby Prologic and DTS:Neo presets,
         # newer ones seem to have other values

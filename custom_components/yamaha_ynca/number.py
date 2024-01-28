@@ -25,7 +25,7 @@ def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> 
     )
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class YncaNumberEntityDescription(NumberEntityDescription):
     function_names: List[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
