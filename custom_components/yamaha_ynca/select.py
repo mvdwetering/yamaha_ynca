@@ -9,6 +9,8 @@ import ynca
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import slugify
+from ynca.subunit import SubunitBase
+from ynca.subunits.zone import ZoneBase
 
 from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
 from .helpers import DomainEntryData, YamahaYncaSettingEntity
@@ -62,6 +64,12 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 
     entity_description: YncaSelectEntityDescription
 
+    def __init__(self, receiver_unique_id, subunit: SubunitBase, description: YncaSelectEntityDescription, associated_zone: ZoneBase | None = None):
+        super().__init__(receiver_unique_id, subunit, description, associated_zone)
+
+        if description.options is None:
+            self._attr_options = [slugify(e.value) for e in description.enum if e.name != "UNKNOWN"]
+
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
@@ -92,7 +100,7 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
 
     # Note that _associated_zone is used instead of _subunit
     # both will be the same as initvol is only available on zones
-    # and this way type checkers see ZoneBse instead of SubunitBase
+    # and this way type checkers see ZoneBase instead of SubunitBase
 
     @property
     def current_option(self) -> str | None:
@@ -163,7 +171,7 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSelectEntityDescription(SelectEntityDescription):
-    enum: Type[Enum] | None = None
+    enum: Type[Enum]
     """Enum is used to map and generate options (if not specified) for the select entity."""
 
     function_names: List[str] | None = None
@@ -191,14 +199,12 @@ ENTITY_DESCRIPTIONS = [
         key="hdmiout",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.HdmiOut,
-        options=[slugify(e.value) for e in ynca.HdmiOut if e.name != "UNKNOWN"],
         icon="mdi:hdmi-port",
     ),
     YncaSelectEntityDescription(  # type: ignore
         key="sleep",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.Sleep,
-        options=[slugify(e.value) for e in ynca.Sleep if e.name != "UNKNOWN"],
         icon="mdi:timer-outline",
     ),
     YncaSelectEntityDescription(  # type: ignore
@@ -206,7 +212,6 @@ ENTITY_DESCRIPTIONS = [
         key="initial_volume_mode",
         entity_category=EntityCategory.CONFIG,
         enum=InitialVolumeMode,
-        options=[slugify(e.value) for e in InitialVolumeMode if e.name != "UNKNOWN"],
         function_names=["INITVOLMODE", "INITVOLLVL"],
         supported_check=lambda _, zone_subunit: zone_subunit.initvollvl is not None,
     ),
@@ -216,12 +221,7 @@ ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         enum=ynca.TwoChDecoder,
         icon="mdi:surround-sound",
-        options=[slugify(sdo.value) for sdo in SurroundDecoderOptions],
+        options=[slugify(e.value) for e in ynca.TwoChDecoder if e.name != "UNKNOWN" and e not in SurroundDecoderOptionsPl2xMap],
         function_names=["2CHDECODER"],
-        # Only support receivers with Dolby Prologic and DTS:Neo presets,
-        # newer ones seem to have other values
-        supported_check=lambda _, zone_subunit: zone_subunit.twochdecoder
-        in SurroundDecoderOptions
-        or zone_subunit.twochdecoder in SurroundDecoderOptionsPl2xMap.keys(),
     ),
 ]
