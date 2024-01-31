@@ -65,10 +65,7 @@ class InputHelper:
     def get_subunit_for_input(api: ynca.YncaApi, input: ynca.Input):
         """Returns Subunit of the current provided input if possible, otherwise None"""
         for mapping in input_mappings:
-            if (
-                mapping.ynca_input is input
-                and mapping.subunit_attribute_names is not None
-            ):
+            if mapping.ynca_input is input:
                 for subunit_attribute_name in mapping.subunit_attribute_names:
                     if subunit_attribute := getattr(api, subunit_attribute_name, None):
                         return subunit_attribute
