@@ -159,7 +159,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
                 # Invert with 'xor 0xFF' because Python ~ operator makes it signed otherwise
                 output_code += int.to_bytes(
                     int.from_bytes(bytes.fromhex(part)) ^ 0xFF
-                ).hex()
+                ).hex().upper()
             else:
                 output_code += part
         return output_code
