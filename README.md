@@ -534,7 +534,7 @@ cards:
   If a source is not listed at all it might not be supported or could be a bug, [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues) in that case.
 
 * **Q: Soundmodes do not match receiver**  
-  The list of suppoerted soundmodes can not be detected, for some models the list is known, for the rest the whole list of known soundmodes is shown.
+  The list of supported soundmodes can not be detected, for some models the list is known, for the rest the whole list of known soundmodes is shown.
   You can select the soundmodes that are supported by your receiver in the integration configuration.
 
   If you want your receiver added to the list of models with known soundmodes start a [discussion](https://github.com/mvdwetering/yamaha_ynca/discussions) or [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues)
