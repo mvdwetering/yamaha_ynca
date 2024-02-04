@@ -516,28 +516,32 @@ cards:
 
 ## Q & A
 
-* **Q: Entities unavailable when receiver in standby**  
+* **Q: Why are entities unavailable when receiver in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
-* **Q: Scene buttons are not created automatically**  
+* **Q: Why are the Scene buttons are not created automatically?**  
   It is not possible to autodetect the amount of supported scenes on all receivers. If no scene buttons are created and the Zone does support scenes you can specify the amount of scenes manually in the integration configuration.
 
-* **Q: Scene buttons are not working**  
-  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though scenes seem to be supported by the receiver. There might be more receivers with this issue, please report them.
+* **Q: Why are Scene buttons are not working?**  
+  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
 
   It might be possible to send scene commands using the remote entity as a workaround.
-  _Please drop a message in the  [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) if this actually works as I don't have an RX-V475 to test with._
+  _Please drop a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) if this actually works as I don't have an RX-V475 to test with._
 
-* **Q: Sources do not match receiver zone capabilities**  
+* **Q: Why do the sources not match receiver zone capabilities?**  
   It is not possible to detect which sources are supported per zone, only for the whole receiver. In the integration configuration it is possible to select which sources are avaialble per Zone.
 
   If a source is not listed at all it might not be supported or could be a bug, [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues) in that case.
 
-* **Q: Soundmodes do not match receiver**  
+* **Q: Why do the soundmodes not match the ones supported by the receiver**  
   The list of supported soundmodes can not be detected, for some models the list is known, for the rest the whole list of known soundmodes is shown.
   You can select the soundmodes that are supported by your receiver in the integration configuration.
 
   If you want your receiver added to the list of models with known soundmodes start a [discussion](https://github.com/mvdwetering/yamaha_ynca/discussions) or [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues)
 
-* **Q: How can I fix the connection settings if the connection is not working**  
+* **Q: How can I fix the connection settings if the connection is not working?**  
   When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
+
+* **Q: How can I stream audio?**  
+  You can't with integration since the protocol does not support that. You might be able to use the "DLNA Digital Media Renderer" that comes with Home Assistant.
+
