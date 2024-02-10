@@ -45,7 +45,7 @@ def receiver_requires_audio_input_workaround(modelname) -> bool:
         "RX-V475",
         "RX-V575",
         "HTR-4066",
-        "HTR-5066",  
+        "HTR-5066",
         "RX-V473",
         "RX-V573",
         "HTR-4065",
