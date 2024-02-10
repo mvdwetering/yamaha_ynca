@@ -233,13 +233,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         )
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> MediaPlayerEntityFeature:
         """Flag of media commands that are supported."""
-        supported_commands = 0
 
-        if self._zone.pwr is not None:
-            supported_commands |= MediaPlayerEntityFeature.TURN_ON
-            supported_commands |= MediaPlayerEntityFeature.TURN_OFF
+        # Assume power is always supported
+        # I can't initialize supported_command to nothing
+        supported_commands = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
 
         if self._zone.vol is not None:
             supported_commands |= MediaPlayerEntityFeature.VOLUME_SET
