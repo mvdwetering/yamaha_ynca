@@ -34,13 +34,11 @@ def scale(input_value, input_range, output_range):
     return output_min + (value_scaled * output_spread)
 
 
-def receiver_requires_audio_input_workaround(api:ynca.api.YncaApi) -> bool:
-    if api.sys:
-        # These models do not report the (single) AUDIO input properly
-        # Only confirmed on RX-V475, but the others share the same firmware
-        # See https://github.com/mvdwetering/yamaha_ynca/issues/230
-        return api.sys.modelname in ["RX-V475", "RX-V575", "HTR-4066", "HTR-5066"]
-    return False # pragma: no cover
+def receiver_requires_audio_input_workaround(modelname) -> bool:
+    # These models do not report the (single) AUDIO input properly
+    # Only confirmed on RX-V475, but the others share the same firmware
+    # See https://github.com/mvdwetering/yamaha_ynca/issues/230
+    return modelname in ["RX-V475", "RX-V575", "HTR-4066", "HTR-5066"]
 
 class YamahaYncaSettingEntity:
     """

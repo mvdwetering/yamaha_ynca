@@ -166,7 +166,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
 
-        if receiver_requires_audio_input_workaround(ynca_receiver):
+        assert(ynca_receiver.sys is not None)
+        if receiver_requires_audio_input_workaround(ynca_receiver.sys.modelname):
             # Pretend AUDIO provides a name like a normal input
             # This makes it work with standard code
             ynca_receiver.sys.inpnameaudio = "AUDIO"  # type: ignore
