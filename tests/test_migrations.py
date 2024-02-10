@@ -347,7 +347,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_no_audio_workaround(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title="ModelName",
-        data={"serial_url": "SerialUrl", "modelname": "ModelName"},
+        data={"serial_url": "SerialUrl", "zones": ["ZONE2"], "modelname": "ModelName"},
         options={"ZONE2": {"hidden_inputs": ["SOME INPUT"]}},
         version=7,
     )
@@ -361,6 +361,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_no_audio_workaround(
     assert new_entry is not None
     assert new_entry.version == 7
     assert new_entry.minor_version == 2
+    assert len(new_entry.options.keys()) == 1
     assert len(new_entry.options["ZONE2"]["hidden_inputs"]) == 2
     assert "AUDIO" in new_entry.options["ZONE2"]["hidden_inputs"]
     assert "SOME INPUT" in new_entry.options["ZONE2"]["hidden_inputs"]
@@ -373,7 +374,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title="ModelName",
-        data={"serial_url": "SerialUrl", "modelname": "RX-V475"},
+        data={"serial_url": "SerialUrl", "zones": ["ZONE2"], "modelname": "RX-V475"},
         options={"ZONE2": {"hidden_inputs": ["SOME INPUT"]}},
         version=7,
     )
@@ -387,4 +388,5 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
     assert new_entry is not None
     assert new_entry.version == 7
     assert new_entry.minor_version == 2
+    assert len(new_entry.options.keys()) == 1
     assert new_entry.options["ZONE2"]["hidden_inputs"] == ["SOME INPUT"]
