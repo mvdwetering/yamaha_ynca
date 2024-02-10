@@ -82,6 +82,19 @@ async def test_async_setup_entry_audio_input_workaround_applied(
 
     assert mock_ynca.sys.inpnameaudio == "AUDIO"
 
+async def test_async_setup_entry_audio_input_workaround_not_applied(
+    hass, device_reg, mock_ynca, mock_zone_main
+):
+    """Test a successful setup entry."""
+    mock_ynca.main = mock_zone_main
+    mock_ynca.sys.modelname = "RX-A6A"
+
+    integration = await setup_integration(
+        hass, mock_ynca
+    )
+
+    assert getattr(mock_ynca.sys, "inpnameaudio", None) is None
+
 
 async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
     """Test a successful setup entry."""

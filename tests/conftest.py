@@ -11,7 +11,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry, entity_registry
 
-from pytest_homeassistant_custom_component.common import (
+from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
     mock_device_registry,
 )
@@ -191,6 +191,7 @@ async def setup_integration(
 
     entry = MockConfigEntry(
         version=7,
+        minor_version=2,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title=MODELNAME,
