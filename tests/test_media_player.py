@@ -355,9 +355,9 @@ async def test_mediaplayer_entity_supported_features(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
 
-    expected_supported_features = 0
+    expected_supported_features = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
 
-    # Nothing supported
+    # Nothing supported (still reports on/off)
     mock_zone.pwr = None
     mock_zone.vol = None
     mock_zone.mute = None
