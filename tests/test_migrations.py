@@ -390,3 +390,28 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
     assert new_entry.minor_version == 2
     assert len(new_entry.options.keys()) == 1
     assert new_entry.options["ZONE2"]["hidden_inputs"] == ["SOME INPUT"]
+
+async def test_async_migration_entry_version_v7_1_to_v7_2_no_zones_data(
+    hass: HomeAssistant
+):
+    config_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl", "modelname": "ModelName"},
+        options={"ZONE2": {"hidden_inputs": ["SOME INPUT"]}},
+        version=7,
+    )
+    config_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrations.migrate_v7_1_to_v7_2(hass, config_entry)
+    await hass.async_block_till_done()
+
+    new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
+    assert new_entry is not None
+    assert new_entry.version == 7
+    assert new_entry.minor_version == 2
+
+    assert len(new_entry.options.keys()) == 1
+    assert new_entry.options == {"ZONE2": {"hidden_inputs": ["SOME INPUT"]}}
