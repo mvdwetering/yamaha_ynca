@@ -65,10 +65,7 @@ def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
     return next_step
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
+class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
 
     async def do_next_step(self, current_step_id: str):
         next_step_id = get_next_step_id(self, current_step_id)
@@ -84,7 +81,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.api: ynca.YncaApi = self.hass.data[DOMAIN][
                 self.config_entry.entry_id
             ].api
-            self.options = dict(self.config_entry.options)
             return await self.async_step_general()
 
         return await self.async_step_no_connection()
@@ -197,7 +193,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema = {}
 
         # Select inputs for zone
-        stored_hidden_input_ids = self.config_entry.options.get(zone_id, {}).get(
+        stored_hidden_input_ids = self.options.get(zone_id, {}).get(
             CONF_HIDDEN_INPUTS, []
         )
         selected_inputs = list(set(all_input_ids) - set(stored_hidden_input_ids))
@@ -218,7 +214,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema[
             vol.Required(
                 CONF_NUMBER_OF_SCENES,
-                default=self.config_entry.options.get(zone_id, {}).get(
+                default=self.options.get(zone_id, {}).get(
                     CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
                 ),
             )
