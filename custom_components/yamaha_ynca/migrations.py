@@ -66,10 +66,12 @@ def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
     # Hide new AUDIO input for existing users that do not use impacted receivers
     # Code is robust against unsupported inputs being listed in "hidden_input"s
     if not receiver_requires_audio_input_workaround(config_entry.data["modelname"]):
-        for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
-            options[zone_id] = options.get(zone_id, {})
-            options[zone_id]["hidden_inputs"] = options[zone_id].get(f"hidden_inputs", [])
-            options[zone_id]["hidden_inputs"].append("AUDIO")
+        # Upgrading from _really_ old version might not have zones key
+        if "zones" in config_entry.data:
+            for zone_id in config_entry.data["zones"]:
+                options[zone_id] = options.get(zone_id, {})
+                options[zone_id]["hidden_inputs"] = options[zone_id].get(f"hidden_inputs", [])
+                options[zone_id]["hidden_inputs"].append("AUDIO")
 
     config_entry.minor_version = 2
     hass.config_entries.async_update_entry(
