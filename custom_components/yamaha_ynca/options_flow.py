@@ -157,7 +157,7 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
                 all_surround_decoders = dict(sorted(TWOCHDECODER_STRINGS.items(), key=lambda item: item[1].lower()))
 
                 if not stored_selected_surround_decoders_ids:
-                    stored_selected_surround_decoders_ids = all_surround_decoders
+                    stored_selected_surround_decoders_ids =  list(all_surround_decoders.keys())
 
                 # Could technically use translation for this in Options flow, but only by using SelectorSelect
                 # but the multiselect UI it creates is a hassle to use and since there are no translations yet
