@@ -190,7 +190,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
 
 
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
-    # Set a modelname that is in the modelinfo, but does not support all SoundPrg values
+    # Set a modelname that is in the modelinfo that does not support all SoundPrg values
     mock_ynca.sys.modelname = "RX-A810"
 
     integration = await setup_integration(hass, mock_ynca)
@@ -237,6 +237,47 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     assert result["data"] == {
         yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"]
     }
+
+    # Make sure HA finishes creating entry completely
+    # or it will result in errors when tearing down the test
+    await hass.async_block_till_done()
+
+
+async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, mock_zone_main) -> None:
+    mock_zone_main.twochdecoder = ynca.TwoChDecoder.Auro3d
+    mock_ynca.main = mock_zone_main
+    integration = await setup_integration(hass, mock_ynca)
+
+    options = dict(integration.entry.options)
+    # Do _not_ set options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] to test handling of absent options
+    integration.entry.options = options
+
+    result = await hass.config_entries.options.async_init(integration.entry.entry_id)
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "general"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: [],
+            yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS: ["dolby_plii_movie", "auto", "dts_neural_x"],
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "main"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: [],
+            yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
+        },
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] == ["dolby_plii_movie", "auto", "dts_neural_x"]
 
     # Make sure HA finishes creating entry completely
     # or it will result in errors when tearing down the test

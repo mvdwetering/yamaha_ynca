@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components.yamaha_ynca.const import CONF_SELECTED_SURROUND_DECODERS
 from custom_components.yamaha_ynca.select import (
     ENTITY_DESCRIPTIONS,
     YamahaYncaSelect,
@@ -56,9 +57,11 @@ async def test_async_setup_entry(
     assert len(entities) == 4
 
 
-async def test_select_entity_fields(mock_zone: ZoneBase):
+async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
 
-    entity = YamahaYncaSelect("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
+    entity = YamahaYncaSelect(
+        mock_config_entry, "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
+    )
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_hdmiout"
     assert entity.device_info["identifiers"] == {
@@ -78,9 +81,12 @@ async def test_select_entity_fields(mock_zone: ZoneBase):
     assert entity.current_option == "out2"
 
 
-async def test_select_initial_volume_mode_entity_select_option(mock_zone: ZoneBase):
+async def test_select_initial_volume_mode_entity_select_option(
+    mock_zone: ZoneBase, mock_config_entry
+):
 
     entity = YamahaYncaSelectInitialVolumeMode(
+        mock_config_entry,
         "ReceiverUniqueId",
         mock_zone,
         get_entity_description_by_key("initial_volume_mode"),
@@ -130,9 +136,12 @@ async def test_select_initial_volume_mode_entity_select_option(mock_zone: ZoneBa
     )  # Copied value from vol as there was no previous value
 
 
-async def test_select_initial_volume_mode_entity_current_option(mock_zone: ZoneBase):
+async def test_select_initial_volume_mode_entity_current_option(
+    mock_zone: ZoneBase, mock_config_entry
+):
 
     entity = YamahaYncaSelectInitialVolumeMode(
+        mock_config_entry,
         "ReceiverUniqueId",
         mock_zone,
         get_entity_description_by_key("initial_volume_mode"),
@@ -165,9 +174,12 @@ async def test_select_initial_volume_mode_entity_current_option(mock_zone: ZoneB
     assert entity.current_option == "configured_initial_volume"
 
 
-async def test_select_surrounddecoder_entity_current_option(mock_zone: ZoneBase):
+async def test_select_surrounddecoder_entity_current_option(
+    mock_zone: ZoneBase, mock_config_entry
+):
 
     entity = YamahaYncaSelectSurroundDecoder(
+        mock_config_entry,
         "ReceiverUniqueId",
         mock_zone,
         get_entity_description_by_key("twochdecoder"),
@@ -193,3 +205,44 @@ async def test_select_surrounddecoder_entity_current_option(mock_zone: ZoneBase)
     # Current value, not supported (should not happen)
     mock_zone.twochdecoder = None
     assert entity.current_option == None
+
+
+async def test_select_surrounddecoder_entity_options_nothing_selection_in_configentry(
+    mock_zone: ZoneBase, mock_config_entry
+):
+    entity = YamahaYncaSelectSurroundDecoder(
+        mock_config_entry,
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("twochdecoder"),
+    )
+
+    assert entity.options == [
+        "auro_3d",
+        "auto",
+        "dolby_pl",
+        "dolby_plii_game",
+        "dolby_plii_movie",
+        "dolby_plii_music",
+        "dolby_surround",
+        "dts_neo_6_cinema",
+        "dts_neo_6_music",
+        "dts_neural_x",
+    ]
+
+
+async def test_select_surrounddecoder_entity_options_some_selected_in_configentry(
+    mock_zone: ZoneBase, mock_config_entry
+):
+    mock_config_entry.options = {
+        CONF_SELECTED_SURROUND_DECODERS: ["dolby_pl", "auto", "dolby_plii_movie"]
+    }
+
+    entity = YamahaYncaSelectSurroundDecoder(
+        mock_config_entry,
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("twochdecoder"),
+    )
+
+    assert entity.options == ["auto", "dolby_pl", "dolby_plii_movie"]
