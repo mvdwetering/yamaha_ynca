@@ -249,8 +249,7 @@ async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, moc
     integration = await setup_integration(hass, mock_ynca)
 
     options = dict(integration.entry.options)
-    # Test handling of absent options
-    # options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] = ["auro_3d"]
+    # Do _not_ set options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] to test handling of absent options
     integration.entry.options = options
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
