@@ -11,7 +11,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import slugify
 
-from .const import CONF_SELECTED_SURROUND_DECODERS, DOMAIN, TWOCHDECODER_STRINGS, ZONE_ATTRIBUTE_NAMES, SURROUNDDECODEROPTIONS_PLIIX_MAPPING
+from .const import (
+    CONF_SELECTED_SURROUND_DECODERS,
+    DOMAIN,
+    TWOCHDECODER_STRINGS,
+    ZONE_ATTRIBUTE_NAMES,
+    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
+)
 from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -24,6 +30,7 @@ class InitialVolumeMode(str, Enum):
     LAST_VALUE = "last_value"
     MUTE = "mute"
 
+
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
@@ -35,7 +42,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 if entity_description.is_supported(zone_subunit):
                     entities.append(
                         entity_description.entity_class(
-                            config_entry, config_entry.entry_id, zone_subunit, entity_description
+                            config_entry,
+                            config_entry.entry_id,
+                            zone_subunit,
+                            entity_description,
                         )
                     )
 
@@ -47,13 +57,22 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 
     entity_description: YncaSelectEntityDescription
 
-    def __init__(self, config_entry:ConfigEntry, receiver_unique_id, subunit: SubunitBase, description: YncaSelectEntityDescription, associated_zone: ZoneBase | None = None):
+    def __init__(
+        self,
+        config_entry: ConfigEntry,
+        receiver_unique_id,
+        subunit: SubunitBase,
+        description: YncaSelectEntityDescription,
+        associated_zone: ZoneBase | None = None,
+    ):
         super().__init__(receiver_unique_id, subunit, description, associated_zone)
 
         if description.options_fn is not None:
             self._attr_options = description.options_fn(config_entry)
         elif description.options is None:
-            self._attr_options = [slugify(e.value) for e in description.enum if e.name != "UNKNOWN"]
+            self._attr_options = [
+                slugify(e.value) for e in description.enum if e.name != "UNKNOWN"
+            ]
 
     @property
     def current_option(self) -> str | None:
@@ -209,7 +228,11 @@ ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         enum=ynca.TwoChDecoder,
         icon="mdi:surround-sound",
-        options_fn=lambda config_entry: sorted(config_entry.options.get(CONF_SELECTED_SURROUND_DECODERS, TWOCHDECODER_STRINGS.keys())),
+        options_fn=lambda config_entry: sorted(
+            config_entry.options.get(
+                CONF_SELECTED_SURROUND_DECODERS, TWOCHDECODER_STRINGS.keys()
+            )
+        ),
         function_names=["2CHDECODER"],
     ),
 ]
