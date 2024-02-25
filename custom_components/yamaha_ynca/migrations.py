@@ -1,4 +1,5 @@
 """The Yamaha (YNCA) integration migrations."""
+
 from __future__ import annotations
 
 import ynca
@@ -44,6 +45,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 7:
         if config_entry.minor_version == 1:
             migrate_v7_1_to_v7_2(hass, config_entry)
+        if config_entry.minor_version == 2:
+            migrate_v7_2_to_v7_3(hass, config_entry)
 
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
@@ -60,6 +63,35 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     return True
 
 
+def migrate_v7_2_to_v7_3(hass: HomeAssistant, config_entry: ConfigEntry):
+    options = dict(config_entry.options)  # Convert to dict to be able to use .get
+
+    # Check if twochdecoder entity exists for this entry
+    # If so then set options to PLII(X) and NEO surround decoders
+    # Otherwise do nothing (not set will result in all options being listed)
+
+    registry = entity_registry.async_get(hass)
+    entities = entity_registry.async_entries_for_config_entry(
+        registry, config_entry.entry_id
+    )
+
+    entity_unique_id = f"{config_entry.entry_id}_MAIN_twochdecoder"
+
+    for entity in entities:
+        if entity.unique_id == entity_unique_id:
+            options["selected_surround_decoders"] = [
+                "dolby_pl",
+                "dolby_plii_game",
+                "dolby_plii_movie",
+                "dolby_plii_music",
+                "dts_neo_6_cinema",
+                "dts_neo_6_music",
+            ]
+
+    config_entry.minor_version = 3
+    hass.config_entries.async_update_entry(config_entry, options=options)
+
+
 def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get
 
@@ -70,13 +102,13 @@ def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
         if "zones" in config_entry.data:
             for zone_id in config_entry.data["zones"]:
                 options[zone_id] = options.get(zone_id, {})
-                options[zone_id]["hidden_inputs"] = options[zone_id].get(f"hidden_inputs", [])
+                options[zone_id]["hidden_inputs"] = options[zone_id].get(
+                    f"hidden_inputs", []
+                )
                 options[zone_id]["hidden_inputs"].append("AUDIO")
 
     config_entry.minor_version = 2
-    hass.config_entries.async_update_entry(
-        config_entry, options=options
-    )
+    hass.config_entries.async_update_entry(config_entry, options=options)
 
 
 def migrate_v6_to_v7(hass: HomeAssistant, config_entry: ConfigEntry):

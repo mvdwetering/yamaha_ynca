@@ -43,7 +43,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 7
-    assert new_entry.minor_version == 2
+    assert new_entry.minor_version == 3
 
 
 async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
@@ -341,7 +341,7 @@ async def test_async_migration_entry_version_v6_to_v7(device_reg, hass: HomeAssi
 
 
 async def test_async_migration_entry_version_v7_1_to_v7_2_no_audio_workaround(
-    hass: HomeAssistant
+    hass: HomeAssistant,
 ):
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
@@ -368,7 +368,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_no_audio_workaround(
 
 
 async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
-    hass: HomeAssistant
+    hass: HomeAssistant,
 ):
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
@@ -391,8 +391,9 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
     assert len(new_entry.options.keys()) == 1
     assert new_entry.options["ZONE2"]["hidden_inputs"] == ["SOME INPUT"]
 
+
 async def test_async_migration_entry_version_v7_1_to_v7_2_no_zones_data(
-    hass: HomeAssistant
+    hass: HomeAssistant,
 ):
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
@@ -415,3 +416,69 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_no_zones_data(
 
     assert len(new_entry.options.keys()) == 1
     assert new_entry.options == {"ZONE2": {"hidden_inputs": ["SOME INPUT"]}}
+
+
+async def test_async_migration_entry_version_v7_2_to_v7_3_has_twochdecoder(hass: HomeAssistant):
+    config_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl", "modelname": "ModelName"},
+        options={},
+        version=7,
+    )
+    config_entry.add_to_hass(hass)
+
+    mock_entity_registry = mock_registry(hass)
+    mock_button_entity_entry = mock_entity_registry.async_get_or_create(
+        Platform.SELECT,
+        yamaha_ynca.DOMAIN,
+        f"{config_entry.entry_id}_MAIN_twochdecoder",
+        config_entry=config_entry
+    )
+    assert len(mock_entity_registry.entities) == 1  # Make sure entities were added
+
+    # Migrate
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get",
+        return_value=mock_entity_registry,
+    ):
+        yamaha_ynca.migrations.migrate_v7_2_to_v7_3(hass, config_entry)
+        await hass.async_block_till_done()
+
+    new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
+    assert new_entry is not None
+    assert new_entry.version == 7
+    assert new_entry.minor_version == 3
+
+    assert len(new_entry.options.keys()) == 1
+    assert new_entry.options["selected_surround_decoders"] == [
+        "dolby_pl",
+        "dolby_plii_game",
+        "dolby_plii_movie",
+        "dolby_plii_music",
+        "dts_neo_6_cinema",
+        "dts_neo_6_music",
+    ]
+
+
+async def test_async_migration_entry_version_v7_2_to_v7_3_no_twochdecoder(hass: HomeAssistant):
+    config_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl", "modelname": "ModelName"},
+        options={},
+        version=7,
+    )
+    config_entry.add_to_hass(hass)
+
+    yamaha_ynca.migrations.migrate_v7_2_to_v7_3(hass, config_entry)
+    await hass.async_block_till_done()
+
+    new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
+    assert new_entry is not None
+    assert new_entry.version == 7
+    assert new_entry.minor_version == 3
+
+    assert len(new_entry.options.keys()) == 0

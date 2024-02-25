@@ -50,7 +50,7 @@
         "description": "Not all options can be autodetected. Select the values that are supported by your receiver.",
         "data": {
           "selected_sound_modes": "Sound modes",
-          "surround_decoders": "Surround decoders"
+          "selected_surround_decoders": "Surround decoders"
         }
       },
       "main": {
