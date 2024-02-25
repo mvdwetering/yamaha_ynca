@@ -7,6 +7,7 @@ from homeassistant.components.remote import RemoteEntity
 from homeassistant.helpers.entity import DeviceInfo
 
 from .const import (
+    ATTR_COMMANDS,
     DOMAIN,
     ZONE_ATTRIBUTE_NAMES,
 )
@@ -25,6 +26,10 @@ standby, 7E81-7F80, 7E81-BB44, 7A85-EE11, 7A85-7C83
 
 receiver_power_toggle, 7E81-2AD5, 7A85-453A, 7A85-4639, 7A85-6F10
 source_power_toggle, 7F01-50AF, 7F01-708F, 7F01-906F, 7F01-B04F
+
+mute, 7A85-1CE3, 7A85-DC23, 7A85-FF00
+volume_up, 7A85-1BE4, 7A85-DB24, 7A85-FE01
+volume_down, 7A85-1AE5, 7A85-DA25, 7A85-FD02
 
 info, 7A85-2758
 
@@ -112,6 +117,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
     )
     _attr_has_entity_name = True
     _attr_entity_registry_enabled_default = False
+    _unrecorded_attributes = frozenset({ATTR_COMMANDS})
 
     def __init__(
         self,
@@ -130,7 +136,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
             identifiers={(DOMAIN, f"{receiver_unique_id}_{zone.id}")}
         )
 
-        self._attr_extra_state_attributes = {"commands": list(self._zone_codes.keys())}
+        self._attr_extra_state_attributes = {ATTR_COMMANDS: list(self._zone_codes.keys())}
 
     def _format_remotecode(self, input_code: str) -> str:
         """
@@ -153,7 +159,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
                 # Invert with 'xor 0xFF' because Python ~ operator makes it signed otherwise
                 output_code += int.to_bytes(
                     int.from_bytes(bytes.fromhex(part)) ^ 0xFF
-                ).hex()
+                ).hex().upper()
             else:
                 output_code += part
         return output_code

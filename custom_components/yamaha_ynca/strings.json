@@ -47,9 +47,10 @@
     "step": {
       "general": {
         "title": "General settings",
-        "description": "Not all options can be autodetected. Select the soundmodes that are applicable to your receiver.",
+        "description": "Not all options can be autodetected. Select the values that are supported by your receiver.",
         "data": {
-          "selected_sound_modes": "Sound modes"
+          "selected_sound_modes": "Sound modes",
+          "selected_surround_decoders": "Surround decoders"
         }
       },
       "main": {
@@ -96,7 +97,7 @@
   "entity": {
     "number": {
       "hpbass": {
-        "name": "Headphone bass"
+        "name": "Headphones bass"
       },
       "hptreble": {
         "name": "Headphones treble"
@@ -114,7 +115,7 @@
         "name": "Speaker treble"
       },
       "vol": {
-        "name": "Volume"
+        "name": "Volume (dB)"
       }
     },
     "remote": {
@@ -187,7 +188,11 @@
           "dolby_plii_movie": "Dolby Pro Logic II(x) Movie",
           "dolby_plii_music": "Dolby Pro Logic II(x) Music",
           "dts_neo_6_cinema": "DTS NEO:6 Cinema",
-          "dts_neo_6_music": "DTS NEO:6 Music"
+          "dts_neo_6_music": "DTS NEO:6 Music",
+          "auto": "Auto",
+          "dolby_surround": "Dolby Surround",
+          "dts_neural_x": "DTS Neural:X",
+          "auro_3d": "AURO-3D"
         }
       }
     }

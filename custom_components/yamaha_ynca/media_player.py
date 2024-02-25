@@ -50,7 +50,6 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
 
             entities.append(
                 YamahaYncaZone(
-                    hass,
                     config_entry.entry_id,
                     domain_entry_data.api,
                     zone_subunit,
@@ -72,14 +71,12 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def __init__(
         self,
-        hass: HomeAssistant,
         receiver_unique_id: str,
         ynca: ynca.YncaApi,
         zone: ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
     ):
-        self._hass = hass
         self._ynca = ynca
         self._zone = zone
         self._hidden_inputs = hidden_inputs
@@ -96,7 +93,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if function == "ZONENAME":
             # Note that the mediaplayer does not have a name since it uses the devicename
             # So update the device name when the zonename changes to keep names as expected
-            registry = device_registry.async_get(self._hass)
+            registry = device_registry.async_get(self.hass)
             device = registry.async_get_device(identifiers={(DOMAIN, self._device_id)})
             if device:
                 devicename = build_devicename(self._ynca, self._zone)
@@ -224,7 +221,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         ]
         sound_modes.sort(key=str.lower)
 
-        return sound_modes if len(sound_modes) > 0 else None
+        return sound_modes if sound_modes else None
 
     def _has_limited_playback_controls(self, subunit):
         """Indicates if subunit has limited playback control (aka only Play and Stop)"""
@@ -236,13 +233,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         )
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> MediaPlayerEntityFeature:
         """Flag of media commands that are supported."""
-        supported_commands = 0
 
-        if self._zone.pwr is not None:
-            supported_commands |= MediaPlayerEntityFeature.TURN_ON
-            supported_commands |= MediaPlayerEntityFeature.TURN_OFF
+        # Assume power is always supported
+        # I can't initialize supported_command to nothing
+        supported_commands = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
 
         if self._zone.vol is not None:
             supported_commands |= MediaPlayerEntityFeature.VOLUME_SET

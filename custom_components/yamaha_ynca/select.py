@@ -7,13 +7,21 @@ from typing import TYPE_CHECKING, Callable, List, Type
 import ynca
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import slugify
 
-from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
+from .const import (
+    CONF_SELECTED_SURROUND_DECODERS,
+    DOMAIN,
+    TWOCHDECODER_STRINGS,
+    ZONE_ATTRIBUTE_NAMES,
+    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
+)
 from .helpers import DomainEntryData, YamahaYncaSettingEntity
 
 if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunit import SubunitBase
     from ynca.subunits.zone import ZoneBase
 
 
@@ -21,22 +29,6 @@ class InitialVolumeMode(str, Enum):
     CONFIGURED_INITIAL_VOLUME = "configured_initial_volume"
     LAST_VALUE = "last_value"
     MUTE = "mute"
-
-
-SurroundDecoderOptions = [
-    ynca.TwoChDecoder.DolbyPl,
-    ynca.TwoChDecoder.DolbyPl2Game,
-    ynca.TwoChDecoder.DolbyPl2Movie,
-    ynca.TwoChDecoder.DolbyPl2Music,
-    ynca.TwoChDecoder.DtsNeo6Cinema,
-    ynca.TwoChDecoder.DtsNeo6Music,
-]
-
-SurroundDecoderOptionsPl2xMap = {
-    ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,
-    ynca.TwoChDecoder.DolbyPl2xMovie: ynca.TwoChDecoder.DolbyPl2Movie,
-    ynca.TwoChDecoder.DolbyPl2xMusic: ynca.TwoChDecoder.DolbyPl2Music,
-}
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -50,7 +42,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 if entity_description.is_supported(zone_subunit):
                     entities.append(
                         entity_description.entity_class(
-                            config_entry.entry_id, zone_subunit, entity_description
+                            config_entry,
+                            config_entry.entry_id,
+                            zone_subunit,
+                            entity_description,
                         )
                     )
 
@@ -61,6 +56,23 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
     """Representation of a select entity on a Yamaha Ynca device."""
 
     entity_description: YncaSelectEntityDescription
+
+    def __init__(
+        self,
+        config_entry: ConfigEntry,
+        receiver_unique_id,
+        subunit: SubunitBase,
+        description: YncaSelectEntityDescription,
+        associated_zone: ZoneBase | None = None,
+    ):
+        super().__init__(receiver_unique_id, subunit, description, associated_zone)
+
+        if description.options_fn is not None:
+            self._attr_options = description.options_fn(config_entry)
+        elif description.options is None:
+            self._attr_options = [
+                slugify(e.value) for e in description.enum if e.name != "UNKNOWN"
+            ]
 
     @property
     def current_option(self) -> str | None:
@@ -92,7 +104,7 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
 
     # Note that _associated_zone is used instead of _subunit
     # both will be the same as initvol is only available on zones
-    # and this way type checkers see ZoneBse instead of SubunitBase
+    # and this way type checkers see ZoneBase instead of SubunitBase
 
     @property
     def current_option(self) -> str | None:
@@ -154,16 +166,16 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
 
         current_option = self._associated_zone.twochdecoder
         # Map any PLLx options back as if it was the normal version
-        current_option = SurroundDecoderOptionsPl2xMap.get(
+        current_option = SURROUNDDECODEROPTIONS_PLIIX_MAPPING.get(
             current_option, current_option
         )
 
         return slugify(current_option.value)
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class YncaSelectEntityDescription(SelectEntityDescription):
-    enum: Type[Enum] | None = None
+    enum: Type[Enum]
     """Enum is used to map and generate options (if not specified) for the select entity."""
 
     function_names: List[str] | None = None
@@ -180,12 +192,11 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     )
     """Callable to check support for this entity on the zone, default checks if attribute `key` is not None."""
 
-    def __post_init__(self):
-        if self.options is None and self.enum is not None:
-            self.options = [slugify(e.value) for e in self.enum if e.name != "UNKNOWN"]
-
     def is_supported(self, zone_subunit: ZoneBase):
         return self.supported_check(self, zone_subunit)
+
+    options_fn: Callable[[ConfigEntry], List[str]] | None = None
+    """Override which optionns are supported for this entity."""
 
 
 ENTITY_DESCRIPTIONS = [
@@ -217,12 +228,11 @@ ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         enum=ynca.TwoChDecoder,
         icon="mdi:surround-sound",
-        options=[slugify(sdo) for sdo in SurroundDecoderOptions],
+        options_fn=lambda config_entry: sorted(
+            config_entry.options.get(
+                CONF_SELECTED_SURROUND_DECODERS, TWOCHDECODER_STRINGS.keys()
+            )
+        ),
         function_names=["2CHDECODER"],
-        # Only support receivers with Dolby Prologic and DTS:Neo presets,
-        # newer ones seem to have other values
-        supported_check=lambda _, zone_subunit: zone_subunit.twochdecoder
-        in SurroundDecoderOptions
-        or zone_subunit.twochdecoder in SurroundDecoderOptionsPl2xMap.keys(),
     ),
 ]

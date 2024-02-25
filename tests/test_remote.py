@@ -72,11 +72,11 @@ async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
         assert mock_ynca.sys.remotecode.call_count == expected_call_count
 
         if name.startswith("code1"):
-           assert mock_ynca.sys.remotecode.called_with("12EDABCD")
+            mock_ynca.sys.remotecode.assert_called_with("12EDAB54")
         elif name.startswith("code2"):
-            assert mock_ynca.sys.remotecode.called_with("12EDCDEF")
+            mock_ynca.sys.remotecode.assert_called_with("12EDCDEF")
         elif name.startswith("code3"):
-            assert mock_ynca.sys.remotecode.called_with("1234ABCD")
+            mock_ynca.sys.remotecode.assert_called_with("1234ABCD")
         else:
             assert False
 
@@ -86,7 +86,7 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
 
     # Setting value
     entity.send_command(["12ABCD"])
-    assert mock_ynca.sys.remotecode.called_with("12EDABCD")
+    mock_ynca.sys.remotecode.assert_called_with("12EDABCD")
 
     with pytest.raises(ValueError):
         entity.send_command(["not a valid code"])
@@ -99,7 +99,7 @@ async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {"on": "12345678", "standby": "90ABCDEF"})
 
     entity.turn_on()
-    assert mock_ynca.sys.remotecode.called_with("12345678")
+    mock_ynca.sys.remotecode.assert_called_with("12345678")
 
     entity.turn_off()
-    assert mock_ynca.sys.remotecode.called_with("90ABCDEF")
+    mock_ynca.sys.remotecode.assert_called_with("90ABCDEF")

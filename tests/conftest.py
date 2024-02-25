@@ -1,4 +1,5 @@
 """Fixtures for testing."""
+
 from __future__ import annotations
 from dataclasses import dataclass
 
@@ -11,7 +12,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry, entity_registry
 
-from pytest_homeassistant_custom_component.common import (
+from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
     mock_device_registry,
 )
@@ -72,6 +73,10 @@ def mock_zone_zone3():
 @pytest.fixture
 def mock_zone_zone4():
     return create_mock_zone(ynca.subunits.zone.Zone4)
+
+@pytest.fixture
+def mock_config_entry():
+    return create_mock_config_entry()
 
 
 def create_mock_zone(spec=None):
@@ -160,6 +165,21 @@ def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
     return mock_device_registry(hass)
 
 
+def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
+    return MockConfigEntry(
+        version=7,
+        minor_version=3,
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title=MODELNAME,
+        data={
+            yamaha_ynca.CONF_SERIAL_URL: serial_url or "SerialUrl",
+            yamaha_ynca.const.DATA_MODELNAME: modelname or "ModelName",
+            yamaha_ynca.const.DATA_ZONES: zones or [],
+        },
+    )
+
+
 class Integration(NamedTuple):
     entry: Type[ConfigEntry]
     on_disconnect: Callable | None
@@ -189,17 +209,7 @@ async def setup_integration(
     if mock_ynca.zone4:
         zones.append("ZONE4")
 
-    entry = MockConfigEntry(
-        version=7,
-        domain=yamaha_ynca.DOMAIN,
-        entry_id="entry_id",
-        title=MODELNAME,
-        data={
-            yamaha_ynca.CONF_SERIAL_URL: serial_url,
-            yamaha_ynca.const.DATA_MODELNAME: mock_ynca.sys.modelname,
-            yamaha_ynca.const.DATA_ZONES: zones,
-        },
-    )
+    entry = create_mock_config_entry(modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url)
     entry.add_to_hass(hass)
 
     if enable_all_entities:

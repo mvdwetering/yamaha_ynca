@@ -1,4 +1,5 @@
 """The Yamaha (YNCA) integration migrations."""
+
 from __future__ import annotations
 
 import ynca
@@ -7,6 +8,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry, entity_registry
+
+from .helpers import receiver_requires_audio_input_workaround
 
 from .const import (
     CONF_HIDDEN_SOUND_MODES,
@@ -18,7 +21,8 @@ from .const import (
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entry."""
     from_version = config_entry.version
-    LOGGER.debug("Migrating from version %s", from_version)
+    from_minor_version = config_entry.minor_version
+    LOGGER.debug("Migrating from version %s.%s", from_version, from_minor_version)
 
     if config_entry.version == 1:
         migrate_v1_to_v2(hass, config_entry)
@@ -38,17 +42,73 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 6:
         migrate_v6_to_v7(hass, config_entry)
 
+    if config_entry.version == 7:
+        if config_entry.minor_version == 1:
+            migrate_v7_1_to_v7_2(hass, config_entry)
+        if config_entry.minor_version == 2:
+            migrate_v7_2_to_v7_3(hass, config_entry)
+
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
     # and update the version in `setup_integration`
 
     LOGGER.info(
-        "Migration of ConfigEntry from version %s to version %s successful",
+        "Migration of ConfigEntry from version %s.%s to version %s.%s successful",
         from_version,
+        from_minor_version,
         config_entry.version,
+        config_entry.minor_version,
     )
 
     return True
+
+
+def migrate_v7_2_to_v7_3(hass: HomeAssistant, config_entry: ConfigEntry):
+    options = dict(config_entry.options)  # Convert to dict to be able to use .get
+
+    # Check if twochdecoder entity exists for this entry
+    # If so then set options to PLII(X) and NEO surround decoders
+    # Otherwise do nothing (not set will result in all options being listed)
+
+    registry = entity_registry.async_get(hass)
+    entities = entity_registry.async_entries_for_config_entry(
+        registry, config_entry.entry_id
+    )
+
+    entity_unique_id = f"{config_entry.entry_id}_MAIN_twochdecoder"
+
+    for entity in entities:
+        if entity.unique_id == entity_unique_id:
+            options["selected_surround_decoders"] = [
+                "dolby_pl",
+                "dolby_plii_game",
+                "dolby_plii_movie",
+                "dolby_plii_music",
+                "dts_neo_6_cinema",
+                "dts_neo_6_music",
+            ]
+
+    config_entry.minor_version = 3
+    hass.config_entries.async_update_entry(config_entry, options=options)
+
+
+def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
+    options = dict(config_entry.options)  # Convert to dict to be able to use .get
+
+    # Hide new AUDIO input for existing users that do not use impacted receivers
+    # Code is robust against unsupported inputs being listed in "hidden_input"s
+    if not receiver_requires_audio_input_workaround(config_entry.data["modelname"]):
+        # Upgrading from _really_ old version might not have zones key
+        if "zones" in config_entry.data:
+            for zone_id in config_entry.data["zones"]:
+                options[zone_id] = options.get(zone_id, {})
+                options[zone_id]["hidden_inputs"] = options[zone_id].get(
+                    f"hidden_inputs", []
+                )
+                options[zone_id]["hidden_inputs"].append("AUDIO")
+
+    config_entry.minor_version = 2
+    hass.config_entries.async_update_entry(config_entry, options=options)
 
 
 def migrate_v6_to_v7(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -74,7 +134,7 @@ def migrate_v5_to_v6(hass: HomeAssistant, config_entry: ConfigEntry):
     old_options = dict(config_entry.options)  # Convert to dict to be able to use .get
     new_options = {}
 
-    if hidden_sound_modes := old_options.get("hidden_sound_modes", None):
+    if hidden_sound_modes := old_options.get("hidden_sound_modes"):
         new_options["hidden_sound_modes"] = hidden_sound_modes
 
     for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
@@ -124,7 +184,7 @@ def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry):
     # Used to be the enum name, now it is the value
 
     options = dict(config_entry.options)
-    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES, None):
+    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES):
         new_hidden_soundmodes = []
         for old_hidden_soundmode in old_hidden_soundmodes:
             try:

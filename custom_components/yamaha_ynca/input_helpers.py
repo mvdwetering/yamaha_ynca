@@ -33,6 +33,7 @@ input_mappings: List[Mapping] = [
     Mapping(ynca.Input.UAW, ["uaw"]),
     Mapping(ynca.Input.USB, ["usb"]),
     # Inputs with connectors on the receiver
+    Mapping(ynca.Input.AUDIO, []),
     Mapping(ynca.Input.AUDIO1, []),
     Mapping(ynca.Input.AUDIO2, []),
     Mapping(ynca.Input.AUDIO3, []),
@@ -64,10 +65,7 @@ class InputHelper:
     def get_subunit_for_input(api: ynca.YncaApi, input: ynca.Input):
         """Returns Subunit of the current provided input if possible, otherwise None"""
         for mapping in input_mappings:
-            if (
-                mapping.ynca_input is input
-                and mapping.subunit_attribute_names is not None
-            ):
+            if mapping.ynca_input is input:
                 for subunit_attribute_name in mapping.subunit_attribute_names:
                     if subunit_attribute := getattr(api, subunit_attribute_name, None):
                         return subunit_attribute
@@ -96,9 +94,6 @@ class InputHelper:
         """Mapping of input to sourcename for this YNCA instance."""
         source_mapping = {}
 
-        # keep track of added inputs as some are renamable and subunits (e.g. USB)
-        inputs_added = set()
-
         # Try renameable inputs first
         # this will also weed out inputs that are not supported on the specific receiver
         for mapping in input_mappings:
@@ -111,7 +106,6 @@ class InputHelper:
             )
 
             if name := getattr(api.sys, f"inpname{postfix}", None):
-                inputs_added.add(mapping.ynca_input)
                 source_mapping[mapping.ynca_input] = name
                 continue
 
@@ -119,12 +113,11 @@ class InputHelper:
         if len(source_mapping) == 0:
             for mapping in input_mappings:
                 if not mapping.subunit_attribute_names:
-                    inputs_added.add(mapping.ynca_input)
                     source_mapping[mapping.ynca_input] = mapping.ynca_input.value
 
         # Add sources from subunits
         for mapping in input_mappings:
-            if mapping.ynca_input not in inputs_added:
+            if mapping.ynca_input not in source_mapping:
                 for subunit_attribute_name in mapping.subunit_attribute_names:
                     if getattr(api, subunit_attribute_name) is not None:
                         source_mapping[mapping.ynca_input] = mapping.ynca_input.value

@@ -8,8 +8,9 @@ import ynca
 
 from custom_components.yamaha_ynca.input_helpers import InputHelper
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import selector
+from homeassistant.util import slugify
 
 from .const import (
     CONF_HIDDEN_INPUTS,
@@ -17,12 +18,15 @@ from .const import (
     CONF_NUMBER_OF_SCENES,
     CONF_SELECTED_INPUTS,
     CONF_SELECTED_SOUND_MODES,
+    CONF_SELECTED_SURROUND_DECODERS,
     DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
     LOGGER,
     MAX_NUMBER_OF_SCENES,
     NUMBER_OF_SCENES_AUTODETECT,
+    TWOCHDECODER_STRINGS,
+    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
 )
 
 STEP_ID_INIT = "init"
@@ -51,7 +55,6 @@ ZONE_STEPS = [
     STEP_ID_ZONE4,
 ]
 
-
 def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
     index = STEP_SEQUENCE.index(current_step)
     next_step = STEP_SEQUENCE[index + 1]
@@ -65,10 +68,7 @@ def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
     return next_step
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
+class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
 
     async def do_next_step(self, current_step_id: str):
         next_step_id = get_next_step_id(self, current_step_id)
@@ -84,7 +84,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.api: ynca.YncaApi = self.hass.data[DOMAIN][
                 self.config_entry.entry_id
             ].api
-            self.options = dict(self.config_entry.options)
             return await self.async_step_general()
 
         return await self.async_step_no_connection()
@@ -122,6 +121,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 set(sound_modes) - set(user_input[CONF_SELECTED_SOUND_MODES])
             )
             self.options[CONF_HIDDEN_SOUND_MODES] = hidden_sound_modes
+
+            if CONF_SELECTED_SURROUND_DECODERS in user_input:
+                self.options[CONF_SELECTED_SURROUND_DECODERS] = user_input[CONF_SELECTED_SURROUND_DECODERS]
+
             return await self.do_next_step(STEP_ID_GENERAL)
 
         # List all hidden modes
@@ -142,6 +145,29 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 default=selected_sound_modes,
             )
         ] = cv.multi_select(sound_modes)
+
+        # Select supported Surround Decoders
+        # Technically twochdecoder could have different values per zone, but that seems unlikely
+        # It "feels" better to have it as a receiver wide configuration
+        if zone := self.api.main:
+            if zone.twochdecoder is not None:
+                stored_selected_surround_decoders_ids = self.options.get(
+                    CONF_SELECTED_SURROUND_DECODERS, []
+                )
+                all_surround_decoders = dict(sorted(TWOCHDECODER_STRINGS.items(), key=lambda item: item[1].lower()))
+
+                if not stored_selected_surround_decoders_ids:
+                    stored_selected_surround_decoders_ids =  list(all_surround_decoders.keys())
+
+                # Could technically use translation for this in Options flow, but only by using SelectorSelect
+                # but the multiselect UI it creates is a hassle to use and since there are no translations yet
+                # lets keep using cv.multiselect with hardcoded English translation
+                schema[
+                    vol.Required(
+                        CONF_SELECTED_SURROUND_DECODERS,
+                        default=stored_selected_surround_decoders_ids,
+                    )
+                ] =  cv.multi_select(all_surround_decoders)
 
         return self.async_show_form(
             step_id=STEP_ID_GENERAL,
@@ -197,7 +223,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema = {}
 
         # Select inputs for zone
-        stored_hidden_input_ids = self.config_entry.options.get(zone_id, {}).get(
+        stored_hidden_input_ids = self.options.get(zone_id, {}).get(
             CONF_HIDDEN_INPUTS, []
         )
         selected_inputs = list(set(all_input_ids) - set(stored_hidden_input_ids))
@@ -218,7 +244,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema[
             vol.Required(
                 CONF_NUMBER_OF_SCENES,
-                default=self.config_entry.options.get(zone_id, {}).get(
+                default=self.options.get(zone_id, {}).get(
                     CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
                 ),
             )
