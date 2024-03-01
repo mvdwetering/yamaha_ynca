@@ -450,6 +450,6 @@ class YamahaYncaZone(MediaPlayerEntity):
                 return station
 
             # Sirius variants
-            channelname = getattr(subunit, "chname", None)
-            return channelname
+            if channelname := getattr(subunit, "chname", None):
+                return channelname
         return None

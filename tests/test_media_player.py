@@ -486,8 +486,11 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.netradio.station = "StationName"
-    assert mp_entity.media_title is None
+    mock_ynca.netradio.song = "SongName"
+    mock_ynca.netradio.album = "AlbumName"
+    assert mp_entity.media_title is "SongName"
     assert mp_entity.media_channel == "StationName"
+    assert mp_entity.media_album_name == "AlbumName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
     # Tuner (AM/FM analog radio) is a "channel"
