@@ -1,4 +1,5 @@
-"""Test the Yamaha (YNCA) config flow."""
+"""Test the Yamaha (YNCA) media_player entitity."""
+
 from __future__ import annotations
 
 from unittest.mock import Mock, call, create_autospec, patch
@@ -15,6 +16,7 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
+from homeassistant.exceptions import HomeAssistantError
 
 from tests.conftest import setup_integration
 
@@ -43,9 +45,7 @@ async def test_async_setup_entry(
 
     yamahayncazone_mock.assert_has_calls(
         [
-            call(
-                "entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]
-            ),
+            call("entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]),
             call("entry_id", mock_ynca, mock_ynca.zone2, [], ["Adventure"]),
         ]
     )
@@ -195,9 +195,7 @@ async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
-    mp_entity = YamahaYncaZone(
-        "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
-    )
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     # Select a rename-able source
     mp_entity.select_source("Input HDMI 4")
@@ -234,9 +232,7 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
     # Tuner is hidden
-    mp_entity = YamahaYncaZone(
-        "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
-    )
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
 
@@ -355,7 +351,12 @@ async def test_mediaplayer_entity_supported_features(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
 
-    expected_supported_features = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
+    expected_supported_features = (
+        MediaPlayerEntityFeature.TURN_ON
+        | MediaPlayerEntityFeature.TURN_OFF
+        | MediaPlayerEntityFeature.BROWSE_MEDIA
+        | MediaPlayerEntityFeature.PLAY_MEDIA
+    )
 
     # Nothing supported (still reports on/off)
     mock_zone.pwr = None
@@ -498,19 +499,25 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
 
     # AM has no station name, so name is built from band and frequency
+    mock_ynca.tun.preset = None
     mock_ynca.tun.band = ynca.BandTun.AM
     mock_ynca.tun.amfreq = 1234
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "AM 1234 kHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+    mock_ynca.tun.preset = 12  # Preset is prefixed when available
+    assert mp_entity.media_channel == "12: AM 1234 kHz"
 
     # FM can have name from RDS info or falls back to band and frequency
+    mock_ynca.tun.preset = None
     mock_ynca.tun.band = ynca.BandTun.FM
     mock_ynca.tun.fmfreq = 123.45
     mock_ynca.tun.rdsprgservice = None
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+    mock_ynca.tun.preset = 23  # Preset is prefixed when available
+    assert mp_entity.media_channel == "23: FM 123.45 MHz"
 
     mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
     assert mp_entity.media_title is None
@@ -605,3 +612,103 @@ async def test_mediaplayer_entity_repeat(
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.NETRADIO = create_autospec(ynca.subunits.netradio.NetRadio)
     assert mp_entity.repeat is None
+
+
+async def test_mediaplayer_entity_play_media_unsupported_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    with pytest.raises(HomeAssistantError):
+        # Mediasources not supported
+        await mp_entity.async_play_media("media_type", "media-source://")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "media_id")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:TUNER")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "unsupported:TUNER:15")
+
+    # Out of range preset
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:TUNER:0")
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:TUNER:41")
+
+    # Invalid input not handles and does not change state
+    mock_zone.pwr = ynca.Pwr.STANDBY
+    mock_zone.inp = ynca.Input.USB
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:invalid:15")
+    assert mock_zone.pwr is ynca.Pwr.STANDBY
+    assert mock_zone.inp is ynca.Input.USB
+
+
+async def test_mediaplayer_entity_play_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    # Different from after state
+    mock_zone.pwr = ynca.Pwr.STANDBY
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun.preset = None
+
+    await mp_entity.async_play_media("channel", "preset:TUNER:15")
+    assert mock_zone.pwr is ynca.Pwr.ON
+    assert mock_zone.inp is ynca.Input.TUNER
+    assert mock_ynca.tun.preset == 15
+
+
+async def test_mediaplayer_entity_browse_media_unsupported_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_browse_media("media_content_type", "media_content_id")
+
+
+async def test_mediaplayer_entity_browse_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    # Root
+    media = await mp_entity.async_browse_media(None, None)
+    assert media.media_class == "directory"
+    assert media.media_content_id == "presets"
+    assert media.title == "Presets"
+    assert media.can_expand is True
+    assert media.can_play is False
+
+    assert len(media.children) == 1
+    assert media.children[0].media_class == "directory"
+    assert media.children[0].media_content_id == "presets:TUNER"
+    assert media.children[0].title == "TUNER"
+    assert media.children[0].can_expand is True
+    assert media.children[0].can_play is False
+
+    # TUNER
+    media = await mp_entity.async_browse_media(None, "presets:TUNER")
+    assert media.media_class == "directory"
+    assert media.media_content_id == "presets:TUNER"
+    assert media.title == "TUNER"
+    assert media.can_expand is True
+    assert media.can_play is False
+
+    assert len(media.children) == 40
+    assert media.children[19].media_class == "music"
+    assert media.children[19].media_content_id == "preset:TUNER:20"
+    assert media.children[19].title == "Preset 20"
+    assert media.children[19].can_expand is False
+    assert media.children[19].can_play is True

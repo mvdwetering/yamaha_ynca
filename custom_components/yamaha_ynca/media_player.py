@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import ynca
 
+from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     MediaPlayerDeviceClass,
     MediaPlayerEntity,
@@ -11,9 +12,15 @@ from homeassistant.components.media_player import (
     MediaPlayerState,
     MediaType,
     RepeatMode,
+    BrowseMedia,
+    MediaClass,
+    MediaPlayerEnqueue,
+)
+from homeassistant.components.media_player.browse_media import (
+    async_process_play_media_url,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.entity import DeviceInfo
 
@@ -35,6 +42,8 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 STRAIGHT = "Straight"
+
+SUPPORTED_MEDIA_ID_TYPES = ["preset"]
 
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
@@ -85,9 +94,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._device_id = f"{receiver_unique_id}_{self._zone.id}"
 
         self._attr_unique_id = self._device_id
-        self._attr_device_info = DeviceInfo(
-            identifiers = {(DOMAIN, self._device_id)}
-        )
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
 
     def update_callback(self, function, value):
         if function == "ZONENAME":
@@ -155,9 +162,11 @@ class YamahaYncaZone(MediaPlayerEntity):
                 self._zone.vol,
                 [
                     ZONE_MIN_VOLUME,
-                    self._zone.maxvol
-                    if self._zone.maxvol is not None
-                    else ZONE_MAX_VOLUME,
+                    (
+                        self._zone.maxvol
+                        if self._zone.maxvol is not None
+                        else ZONE_MAX_VOLUME
+                    ),
                 ],
                 [0, 1],
             )
@@ -238,7 +247,9 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         # Assume power is always supported
         # I can't initialize supported_command to nothing
-        supported_commands = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
+        supported_commands = (
+            MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
+        )
 
         if self._zone.vol is not None:
             supported_commands |= MediaPlayerEntityFeature.VOLUME_SET
@@ -265,6 +276,11 @@ class YamahaYncaZone(MediaPlayerEntity):
                 supported_commands |= MediaPlayerEntityFeature.REPEAT_SET
             if getattr(input_subunit, "shuffle", None) is not None:
                 supported_commands |= MediaPlayerEntityFeature.SHUFFLE_SET
+
+        # TODO: Check if there is at least one input that supports preset
+        supported_commands |= MediaPlayerEntityFeature.BROWSE_MEDIA
+        supported_commands |= MediaPlayerEntityFeature.PLAY_MEDIA
+
         return supported_commands
 
     def turn_on(self):
@@ -426,13 +442,16 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._get_input_subunit():
             if subunit is self._ynca.tun:
                 # AM/FM Tuner
+                preset_prefix = ""
+                if subunit.preset is not None:
+                    preset_prefix = f"{subunit.preset}: "
                 if subunit.band is ynca.BandTun.AM:
-                    return f"AM {subunit.amfreq} kHz"
+                    return f"{preset_prefix}AM {subunit.amfreq} kHz"
                 if subunit.band is ynca.BandTun.FM:
                     return (
                         subunit.rdsprgservice
                         if subunit.rdsprgservice
-                        else f"FM {subunit.fmfreq:.2f} MHz"
+                        else f"{preset_prefix}FM {subunit.fmfreq:.2f} MHz"
                     )
             if subunit is self._ynca.dab:
                 # DAB/FM Tuner
@@ -453,3 +472,123 @@ class YamahaYncaZone(MediaPlayerEntity):
             if channelname := getattr(subunit, "chname", None):
                 return channelname
         return None
+
+    async def async_browse_media(
+        self, media_content_type: str | None = None, media_content_id: str | None = None
+    ) -> BrowseMedia:
+        """Implement the websocket media browsing helper."""
+
+        LOGGER.debug("media_content_id: %s, media_content_type: %s", media_content_id, media_content_type)
+
+        source_mapping = InputHelper.get_source_mapping(self._ynca)
+        filtered_inputs = {}
+        for input, name in source_mapping.items():
+            if input.value not in self._hidden_inputs:
+                if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                    if hasattr(
+                        subunit, "preset"
+                    ):  # Need hasattr because can't read value for all subunits
+                        filtered_inputs[input] = name
+
+        if media_content_id is None or media_content_id == "presets":
+            return BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id="presets",
+                media_content_type=MediaType.CHANNELS,
+                title=f"Presets",
+                can_play=False,
+                can_expand=True,
+                children=[self.browse_media_input_item(input, name, []) for input, name in filtered_inputs.items()],
+                children_media_class=MediaClass.DIRECTORY,
+            )
+
+        parts = media_content_id.split(":", 1)
+
+        if len(parts) == 2 and parts[0] == "presets":
+            input = ynca.Input(parts[1])
+            if input in filtered_inputs:
+                presets = self.browse_media_presets_list(input)
+                return self.browse_media_input_item(input, filtered_inputs[input], presets)
+
+        raise HomeAssistantError(
+            f"Media content id could not be resolved: {media_content_id}"
+        )
+
+    def browse_media_input_item(self, input, name, presets):
+        return BrowseMedia(
+            media_class=MediaClass.DIRECTORY,
+            media_content_id=f"presets:{input.value}",
+            media_content_type=MediaType.CHANNEL,
+            title=name,
+            can_play=False,
+            can_expand=True,
+            children=presets,
+            children_media_class=MediaClass.MUSIC,
+        )
+
+    def browse_media_presets_list(self, input):
+        return [
+            BrowseMedia(
+                media_class=MediaClass.MUSIC,
+                media_content_id=f"preset:{input.value}:{i+1}",
+                media_content_type=MediaType.CHANNEL,
+                title=f"Preset {i+1}",
+                can_play=True,
+                can_expand=False,
+            )
+            for i in range(40)
+        ]
+
+    async def async_play_media(
+        self,
+        media_type: str,
+        media_id: str,
+        enqueue: MediaPlayerEnqueue | None = None,
+        announce: bool | None = None,
+        **kwargs: Any,
+    ) -> None:
+        LOGGER.debug("media type, id: %s, %s", media_type, media_id)
+
+        """Play a piece of media."""
+        if media_source.is_media_source_id(media_id):
+            raise HomeAssistantError(
+                f"Media sources are not supported by this media player: {media_id}"
+            )
+
+        # Parse and validate media id
+        parts = media_id.split(":")
+        if parts[0] not in SUPPORTED_MEDIA_ID_TYPES:
+            raise HomeAssistantError(
+                f"Media id not supported: {media_id}"
+            )
+
+        media_id_type = parts[0]
+
+        if media_id_type == "preset" and len(parts) == 3:
+            media_id_input = parts[1]
+            media_id_preset_id = parts[2]
+
+            input = ynca.Input(media_id_input)
+
+            try:
+                preset = int(media_id_preset_id)
+                if preset < 1 or preset > 40:
+                    raise ValueError
+            except ValueError:
+                raise HomeAssistantError(
+                    f"Malformed preset or out of range: {media_id}"
+                )
+
+            if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                if self._zone.pwr is ynca.Pwr.STANDBY:
+                    self._zone.pwr = ynca.Pwr.ON
+
+                if self._zone.inp is not input:
+                    self._zone.inp = input
+
+                subunit.preset = preset
+                return
+
+        raise HomeAssistantError(
+            f"Malformed media id: {media_id}"
+        )
