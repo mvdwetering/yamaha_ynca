@@ -438,13 +438,16 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._get_input_subunit():
             if subunit is self._ynca.tun:
                 # AM/FM Tuner
+                preset_prefix = ""
+                if subunit.preset is not None:
+                    preset_prefix = f"{subunit.preset}: "
                 if subunit.band is ynca.BandTun.AM:
-                    return f"AM {subunit.amfreq} kHz"
+                    return f"{preset_prefix}AM {subunit.amfreq} kHz"
                 if subunit.band is ynca.BandTun.FM:
                     return (
                         subunit.rdsprgservice
                         if subunit.rdsprgservice
-                        else f"FM {subunit.fmfreq:.2f} MHz"
+                        else f"{preset_prefix}FM {subunit.fmfreq:.2f} MHz"
                     )
             if subunit is self._ynca.dab:
                 # DAB/FM Tuner
