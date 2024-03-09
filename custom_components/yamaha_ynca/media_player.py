@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import ynca
 
+from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     MediaPlayerDeviceClass,
     MediaPlayerEntity,
@@ -11,9 +12,15 @@ from homeassistant.components.media_player import (
     MediaPlayerState,
     MediaType,
     RepeatMode,
+    BrowseMedia,
+    MediaClass,
+    MediaPlayerEnqueue,
+)
+from homeassistant.components.media_player.browse_media import (
+    async_process_play_media_url,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.entity import DeviceInfo
 
@@ -265,6 +272,11 @@ class YamahaYncaZone(MediaPlayerEntity):
                 supported_commands |= MediaPlayerEntityFeature.REPEAT_SET
             if getattr(input_subunit, "shuffle", None) is not None:
                 supported_commands |= MediaPlayerEntityFeature.SHUFFLE_SET
+
+        # TODO: Check if there is at least one input that supports preset
+        supported_commands |= MediaPlayerEntityFeature.BROWSE_MEDIA
+        supported_commands |= MediaPlayerEntityFeature.PLAY_MEDIA
+
         return supported_commands
 
     def turn_on(self):
@@ -453,3 +465,112 @@ class YamahaYncaZone(MediaPlayerEntity):
             if channelname := getattr(subunit, "chname", None):
                 return channelname
         return None
+
+    async def async_browse_media(
+        self, media_content_type: str | None = None, media_content_id: str | None = None
+    ) -> BrowseMedia:
+        """Implement the websocket media browsing helper."""
+
+        print(media_content_id, media_content_type)
+
+        source_mapping = InputHelper.get_source_mapping(self._ynca)
+        filtered_inputs = {}
+        for input, name in source_mapping.items():
+            if input.value not in self._hidden_inputs:
+                if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                    if hasattr(
+                        subunit, "preset"
+                    ):  # Need hasattr because can't read value for most subunits
+                        filtered_inputs[input] = name
+
+        if media_content_id is None or media_content_id == "presets":
+            return BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id="presets",
+                media_content_type=MediaType.CHANNELS,
+                title=f"Presets",
+                can_play=False,
+                can_expand=True,
+                children=[self.browse_media_input_item(input, name, []) for input, name in filtered_inputs.items()],
+                children_media_class=MediaClass.DIRECTORY,
+            )
+
+        parts = media_content_id.split(":", 1)
+
+        if len(parts) == 2 and parts[0] == "presets":
+            try:
+                input = ynca.Input(parts[1])
+                if input in filtered_inputs:
+                    presets = self.browse_media_presets_list(input)
+                    return self.browse_media_input_item(input, filtered_inputs[input], presets)
+            except ValueError:
+                raise HomeAssistantError(
+                    f"Media content id could not be resolved: {media_content_id}"
+                )
+
+        raise HomeAssistantError(
+            f"Media content id could not be resolved: {media_content_id}"
+        )
+
+    def browse_media_input_item(self, input, name, presets):
+        return BrowseMedia(
+            media_class=MediaClass.DIRECTORY,
+            media_content_id=f"presets:{input.value}",
+            media_content_type=MediaType.CHANNEL,
+            title=name,
+            can_play=False,
+            can_expand=True,
+            children=presets,
+            children_media_class=MediaClass.CHANNEL,
+        )
+
+    def browse_media_presets_list(self, input):
+        return [
+            BrowseMedia(
+                media_class=MediaClass.CHANNEL,
+                media_content_id=f"preset:{input.value}:{i+1}",
+                media_content_type=MediaType.CHANNEL,
+                title=f"Preset {i+1}",
+                can_play=True,
+                can_expand=False,
+            )
+            for i in range(40)
+        ]
+
+    async def async_play_media(
+        self,
+        media_type: str,
+        media_id: str,
+        enqueue: MediaPlayerEnqueue | None = None,
+        announce: bool | None = None,
+        **kwargs: Any,
+    ) -> None:
+        print("async_play_media", media_type, media_id)
+
+        """Play a piece of media."""
+        if media_source.is_media_source_id(media_id):
+            raise HomeAssistantError(
+                f"Media sources are not supported by this media player: {media_id}"
+            )
+
+        print("--", media_id)
+
+        parts = media_id.split(":")
+
+        if len(parts) == 3 and parts[0] == "preset":
+            input = ynca.Input(parts[1])
+            preset = int(parts[2])
+
+            if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                if self._zone.pwr is ynca.Pwr.STANDBY:
+                    self._zone.pwr = ynca.Pwr.ON
+
+                if self._zone.inp is not input:
+                    self._zone.inp = input
+
+                subunit.preset = preset
+                return
+
+        raise HomeAssistantError(
+            f"Could not resolve media id: {media_id}"
+        )
