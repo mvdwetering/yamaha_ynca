@@ -14,3 +14,18 @@ send_raw_ynca:
       selector:
         text:
           multiline: true
+
+store_preset:
+  target:
+    entity:
+      integration: yamaha_ynca
+      domain: media_player
+  fields:
+    preset_id:
+      example: "12"
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 40
+          mode: box

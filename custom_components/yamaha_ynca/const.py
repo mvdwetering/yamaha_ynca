@@ -16,7 +16,11 @@ CONF_PORT = "port"
 DATA_MODELNAME = "modelname"
 DATA_ZONES = "zones"
 
+SERVICE_SEND_RAW_YNCA = "send_raw_ynca"
+SERVICE_STORE_PRESET = "store_preset"
+
 ATTR_COMMANDS = "commands"
+ATTR_PRESET_ID = "preset_id"
 
 MANUFACTURER_NAME = "Yamaha"
 

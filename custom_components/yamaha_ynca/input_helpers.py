@@ -62,7 +62,7 @@ input_mappings: List[Mapping] = [
 
 class InputHelper:
     @staticmethod
-    def get_subunit_for_input(api: ynca.YncaApi, input: ynca.Input):
+    def get_subunit_for_input(api: ynca.YncaApi, input: ynca.Input | None):
         """Returns Subunit of the current provided input if possible, otherwise None"""
         for mapping in input_mappings:
             if mapping.ynca_input is input:

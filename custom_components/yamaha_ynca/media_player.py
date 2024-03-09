@@ -2,34 +2,38 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List, Optional
 
+import voluptuous as vol  # type: ignore[import]
 import ynca
 
 from homeassistant.components import media_source
 from homeassistant.components.media_player import (
+    BrowseMedia,
+    MediaClass,
     MediaPlayerDeviceClass,
+    MediaPlayerEnqueue,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
     RepeatMode,
-    BrowseMedia,
-    MediaClass,
-    MediaPlayerEnqueue,
-)
-from homeassistant.components.media_player.browse_media import (
-    async_process_play_media_url,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import (
+    config_validation as cv,
+    device_registry,
+    entity_platform,
+)
 from homeassistant.helpers.entity import DeviceInfo
 
 from . import build_devicename
 from .const import (
+    ATTR_PRESET_ID,
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
     DOMAIN,
     LOGGER,
+    SERVICE_STORE_PRESET,
     ZONE_ATTRIBUTE_NAMES,
     ZONE_MAX_VOLUME,
     ZONE_MIN_VOLUME,
@@ -48,6 +52,15 @@ SUPPORTED_MEDIA_ID_TYPES = ["preset"]
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
+
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_STORE_PRESET,
+        {
+            vol.Required(ATTR_PRESET_ID): cv.positive_int,
+        },
+        "store_preset",
+    )
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
@@ -478,7 +491,11 @@ class YamahaYncaZone(MediaPlayerEntity):
     ) -> BrowseMedia:
         """Implement the websocket media browsing helper."""
 
-        LOGGER.debug("media_content_id: %s, media_content_type: %s", media_content_id, media_content_type)
+        LOGGER.debug(
+            "media_content_id: %s, media_content_type: %s",
+            media_content_id,
+            media_content_type,
+        )
 
         source_mapping = InputHelper.get_source_mapping(self._ynca)
         filtered_inputs = {}
@@ -494,11 +511,14 @@ class YamahaYncaZone(MediaPlayerEntity):
             return BrowseMedia(
                 media_class=MediaClass.DIRECTORY,
                 media_content_id="presets",
-                media_content_type=MediaType.CHANNELS,
+                media_content_type="",
                 title=f"Presets",
                 can_play=False,
                 can_expand=True,
-                children=[self.browse_media_input_item(input, name, []) for input, name in filtered_inputs.items()],
+                children=[
+                    self.browse_media_input_item(input, name, [])
+                    for input, name in filtered_inputs.items()
+                ],
                 children_media_class=MediaClass.DIRECTORY,
             )
 
@@ -508,7 +528,9 @@ class YamahaYncaZone(MediaPlayerEntity):
             input = ynca.Input(parts[1])
             if input in filtered_inputs:
                 presets = self.browse_media_presets_list(input)
-                return self.browse_media_input_item(input, filtered_inputs[input], presets)
+                return self.browse_media_input_item(
+                    input, filtered_inputs[input], presets
+                )
 
         raise HomeAssistantError(
             f"Media content id could not be resolved: {media_content_id}"
@@ -518,7 +540,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return BrowseMedia(
             media_class=MediaClass.DIRECTORY,
             media_content_id=f"presets:{input.value}",
-            media_content_type=MediaType.CHANNEL,
+            media_content_type="",
             title=name,
             can_play=False,
             can_expand=True,
@@ -531,7 +553,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             BrowseMedia(
                 media_class=MediaClass.MUSIC,
                 media_content_id=f"preset:{input.value}:{i+1}",
-                media_content_type=MediaType.CHANNEL,
+                media_content_type=MediaType.MUSIC,
                 title=f"Preset {i+1}",
                 can_play=True,
                 can_expand=False,
@@ -558,9 +580,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         # Parse and validate media id
         parts = media_id.split(":")
         if parts[0] not in SUPPORTED_MEDIA_ID_TYPES:
-            raise HomeAssistantError(
-                f"Media id not supported: {media_id}"
-            )
+            raise HomeAssistantError(f"Media id not supported: {media_id}")
 
         media_id_type = parts[0]
 
@@ -589,6 +609,12 @@ class YamahaYncaZone(MediaPlayerEntity):
                 subunit.preset = preset
                 return
 
-        raise HomeAssistantError(
-            f"Malformed media id: {media_id}"
-        )
+        raise HomeAssistantError(f"Malformed media id: {media_id}")
+
+    def store_preset(self, preset_id: int) -> None:
+        if subunit := InputHelper.get_subunit_for_input(self._ynca, self._zone.inp):
+            if hasattr(subunit, "mem"):
+                subunit.mem(preset_id)
+                return
+
+        LOGGER.warn("Unable to store preset %s for current input %s", preset_id, self._zone.inp.value if self._zone.inp else "None")
