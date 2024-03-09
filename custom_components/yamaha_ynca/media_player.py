@@ -43,6 +43,8 @@ if TYPE_CHECKING:  # pragma: no cover
 
 STRAIGHT = "Straight"
 
+SUPPORTED_MEDIA_ID_TYPES = ["preset"]
+
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
     domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
@@ -550,7 +552,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         announce: bool | None = None,
         **kwargs: Any,
     ) -> None:
-        print("async_play_media", media_type, media_id)
+        LOGGER.debug("media type, id: %s, %s", media_type, media_id)
 
         """Play a piece of media."""
         if media_source.is_media_source_id(media_id):
@@ -558,13 +560,29 @@ class YamahaYncaZone(MediaPlayerEntity):
                 f"Media sources are not supported by this media player: {media_id}"
             )
 
-        print("--", media_id)
-
+        # Parse and validate media id
         parts = media_id.split(":")
+        if parts[0] not in SUPPORTED_MEDIA_ID_TYPES:
+            raise HomeAssistantError(
+                f"Media id not supported: {media_id}"
+            )
 
-        if len(parts) == 3 and parts[0] == "preset":
-            input = ynca.Input(parts[1])
-            preset = int(parts[2])
+        media_id_type = parts[0]
+
+        if media_id_type == "preset" and len(parts) == 3:
+            media_id_input = parts[1]
+            media_id_preset_id = parts[2]
+
+            input = ynca.Input(media_id_input)
+
+            try:
+                preset = int(media_id_preset_id)
+                if preset < 1 or preset > 40:
+                    raise ValueError
+            except ValueError:
+                raise HomeAssistantError(
+                    f"Malformed preset or out of range: {media_id}"
+                )
 
             if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
                 if self._zone.pwr is ynca.Pwr.STANDBY:
@@ -577,5 +595,5 @@ class YamahaYncaZone(MediaPlayerEntity):
                 return
 
         raise HomeAssistantError(
-            f"Could not resolve media id: {media_id}"
+            f"Malformed media id: {media_id}"
         )

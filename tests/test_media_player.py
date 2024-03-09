@@ -16,6 +16,7 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
+from homeassistant.exceptions import HomeAssistantError
 
 from tests.conftest import setup_integration
 
@@ -611,3 +612,57 @@ async def test_mediaplayer_entity_repeat(
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.NETRADIO = create_autospec(ynca.subunits.netradio.NetRadio)
     assert mp_entity.repeat is None
+
+
+async def test_mediaplayer_entity_play_media_unsupported_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    with pytest.raises(HomeAssistantError):
+        # Mediasources not supported
+        await mp_entity.async_play_media("media_type", "media-source://")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "media_id")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:TUNER")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "unsupported:TUNER:15")
+
+    # Out of range preset
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:TUNER:0")
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:TUNER:41")
+
+    # Invalid input not handles and does not change state
+    mock_zone.pwr = ynca.Pwr.STANDBY
+    mock_zone.inp = ynca.Input.USB
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "preset:invalid:15")
+    assert mock_zone.pwr is ynca.Pwr.STANDBY
+    assert mock_zone.inp is ynca.Input.USB
+
+
+async def test_mediaplayer_entity_play_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    # Different from after state
+    mock_zone.pwr = ynca.Pwr.STANDBY
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun.preset = None
+
+    await mp_entity.async_play_media("channel", "preset:TUNER:15")
+    assert mock_zone.pwr is ynca.Pwr.ON
+    assert mock_zone.inp is ynca.Input.TUNER
+    assert mock_ynca.tun.preset == 15
