@@ -1,4 +1,5 @@
-"""Test the Yamaha (YNCA) config flow."""
+"""Test the Yamaha (YNCA) media_player entitity."""
+
 from __future__ import annotations
 
 from unittest.mock import Mock, call, create_autospec, patch
@@ -43,9 +44,7 @@ async def test_async_setup_entry(
 
     yamahayncazone_mock.assert_has_calls(
         [
-            call(
-                "entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]
-            ),
+            call("entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]),
             call("entry_id", mock_ynca, mock_ynca.zone2, [], ["Adventure"]),
         ]
     )
@@ -195,9 +194,7 @@ async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
-    mp_entity = YamahaYncaZone(
-        "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
-    )
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     # Select a rename-able source
     mp_entity.select_source("Input HDMI 4")
@@ -234,9 +231,7 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
     # Tuner is hidden
-    mp_entity = YamahaYncaZone(
-        "ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], []
-    )
+    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
 
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
 
@@ -355,7 +350,12 @@ async def test_mediaplayer_entity_supported_features(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
 
-    expected_supported_features = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
+    expected_supported_features = (
+        MediaPlayerEntityFeature.TURN_ON
+        | MediaPlayerEntityFeature.TURN_OFF
+        | MediaPlayerEntityFeature.BROWSE_MEDIA
+        | MediaPlayerEntityFeature.PLAY_MEDIA
+    )
 
     # Nothing supported (still reports on/off)
     mock_zone.pwr = None
@@ -498,19 +498,25 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
 
     # AM has no station name, so name is built from band and frequency
+    mock_ynca.tun.preset = None
     mock_ynca.tun.band = ynca.BandTun.AM
     mock_ynca.tun.amfreq = 1234
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "AM 1234 kHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+    mock_ynca.tun.preset = 12  # Preset is prefixed when available
+    assert mp_entity.media_channel == "12: AM 1234 kHz"
 
     # FM can have name from RDS info or falls back to band and frequency
+    mock_ynca.tun.preset = None
     mock_ynca.tun.band = ynca.BandTun.FM
     mock_ynca.tun.fmfreq = 123.45
     mock_ynca.tun.rdsprgservice = None
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+    mock_ynca.tun.preset = 23  # Preset is prefixed when available
+    assert mp_entity.media_channel == "23: FM 123.45 MHz"
 
     mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
     assert mp_entity.media_title is None
