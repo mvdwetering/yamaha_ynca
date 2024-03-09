@@ -707,7 +707,7 @@ async def test_mediaplayer_entity_browse_media(
     assert media.can_play is False
 
     assert len(media.children) == 40
-    assert media.children[19].media_class == "channel"
+    assert media.children[19].media_class == "music"
     assert media.children[19].media_content_id == "preset:TUNER:20"
     assert media.children[19].title == "Preset 20"
     assert media.children[19].can_expand is False
