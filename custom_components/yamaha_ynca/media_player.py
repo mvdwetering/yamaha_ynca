@@ -478,7 +478,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     ) -> BrowseMedia:
         """Implement the websocket media browsing helper."""
 
-        print(media_content_id, media_content_type)
+        LOGGER.debug("media_content_id: %s, media_content_type: %s", media_content_id, media_content_type)
 
         source_mapping = InputHelper.get_source_mapping(self._ynca)
         filtered_inputs = {}
@@ -487,7 +487,7 @@ class YamahaYncaZone(MediaPlayerEntity):
                 if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
                     if hasattr(
                         subunit, "preset"
-                    ):  # Need hasattr because can't read value for most subunits
+                    ):  # Need hasattr because can't read value for all subunits
                         filtered_inputs[input] = name
 
         if media_content_id is None or media_content_id == "presets":
@@ -505,15 +505,10 @@ class YamahaYncaZone(MediaPlayerEntity):
         parts = media_content_id.split(":", 1)
 
         if len(parts) == 2 and parts[0] == "presets":
-            try:
-                input = ynca.Input(parts[1])
-                if input in filtered_inputs:
-                    presets = self.browse_media_presets_list(input)
-                    return self.browse_media_input_item(input, filtered_inputs[input], presets)
-            except ValueError:
-                raise HomeAssistantError(
-                    f"Media content id could not be resolved: {media_content_id}"
-                )
+            input = ynca.Input(parts[1])
+            if input in filtered_inputs:
+                presets = self.browse_media_presets_list(input)
+                return self.browse_media_input_item(input, filtered_inputs[input], presets)
 
         raise HomeAssistantError(
             f"Media content id could not be resolved: {media_content_id}"

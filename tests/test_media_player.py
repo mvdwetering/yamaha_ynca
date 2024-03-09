@@ -666,3 +666,49 @@ async def test_mediaplayer_entity_play_media(
     assert mock_zone.pwr is ynca.Pwr.ON
     assert mock_zone.inp is ynca.Input.TUNER
     assert mock_ynca.tun.preset == 15
+
+
+async def test_mediaplayer_entity_browse_media_unsupported_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.USB
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_browse_media("media_content_type", "media_content_id")
+
+
+async def test_mediaplayer_entity_browse_media(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    # Root
+    media = await mp_entity.async_browse_media(None, None)
+    assert media.media_class == "directory"
+    assert media.media_content_id == "presets"
+    assert media.title == "Presets"
+    assert media.can_expand is True
+    assert media.can_play is False
+
+    assert len(media.children) == 1
+    assert media.children[0].media_class == "directory"
+    assert media.children[0].media_content_id == "presets:TUNER"
+    assert media.children[0].title == "TUNER"
+    assert media.children[0].can_expand is True
+    assert media.children[0].can_play is False
+
+    # TUNER
+    media = await mp_entity.async_browse_media(None, "presets:TUNER")
+    assert media.media_class == "directory"
+    assert media.media_content_id == "presets:TUNER"
+    assert media.title == "TUNER"
+    assert media.can_expand is True
+    assert media.can_play is False
+
+    assert len(media.children) == 40
+    assert media.children[19].media_class == "channel"
+    assert media.children[19].media_content_id == "preset:TUNER:20"
+    assert media.children[19].title == "Preset 20"
+    assert media.children[19].can_expand is False
+    assert media.children[19].can_play is True
