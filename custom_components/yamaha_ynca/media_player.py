@@ -92,9 +92,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._device_id = f"{receiver_unique_id}_{self._zone.id}"
 
         self._attr_unique_id = self._device_id
-        self._attr_device_info = DeviceInfo(
-            identifiers = {(DOMAIN, self._device_id)}
-        )
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
 
     def update_callback(self, function, value):
         if function == "ZONENAME":
@@ -162,9 +160,11 @@ class YamahaYncaZone(MediaPlayerEntity):
                 self._zone.vol,
                 [
                     ZONE_MIN_VOLUME,
-                    self._zone.maxvol
-                    if self._zone.maxvol is not None
-                    else ZONE_MAX_VOLUME,
+                    (
+                        self._zone.maxvol
+                        if self._zone.maxvol is not None
+                        else ZONE_MAX_VOLUME
+                    ),
                 ],
                 [0, 1],
             )
@@ -245,7 +245,9 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         # Assume power is always supported
         # I can't initialize supported_command to nothing
-        supported_commands = MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
+        supported_commands = (
+            MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
+        )
 
         if self._zone.vol is not None:
             supported_commands |= MediaPlayerEntityFeature.VOLUME_SET
