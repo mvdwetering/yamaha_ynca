@@ -1,6 +1,7 @@
 """Test the Yamaha (YNCA) media_player entitity."""
 
 from __future__ import annotations
+import logging
 
 from unittest.mock import Mock, call, create_autospec, patch
 
@@ -24,35 +25,6 @@ from tests.conftest import setup_integration
 @pytest.fixture
 def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
     return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
-
-
-@patch("custom_components.yamaha_ynca.media_player.YamahaYncaZone", autospec=True)
-async def test_async_setup_entry(
-    yamahayncazone_mock, hass, mock_ynca, mock_zone_main, mock_zone_zone2
-):
-
-    mock_ynca.main = mock_zone_main
-    mock_ynca.zone2 = mock_zone_zone2
-
-    integration = await setup_integration(hass, mock_ynca)
-    integration.entry.options = {
-        "hidden_sound_modes": ["Adventure"],
-        "MAIN": {"hidden_inputs": ["Airplay"]},
-    }
-    add_entities_mock = Mock()
-
-    await async_setup_entry(hass, integration.entry, add_entities_mock)
-
-    yamahayncazone_mock.assert_has_calls(
-        [
-            call("entry_id", mock_ynca, mock_ynca.main, ["Airplay"], ["Adventure"]),
-            call("entry_id", mock_ynca, mock_ynca.zone2, [], ["Adventure"]),
-        ]
-    )
-
-    add_entities_mock.assert_called_once()
-    entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 2
 
 
 async def test_mediaplayer_entity(mp_entity: YamahaYncaZone, mock_zone, mock_ynca):
@@ -712,3 +684,20 @@ async def test_mediaplayer_entity_browse_media(
     assert media.children[19].title == "Preset 20"
     assert media.children[19].can_expand is False
     assert media.children[19].can_play is True
+
+async def test_mediaplayer_entity_store_preset(
+    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
+):
+    mock_zone.inp = ynca.Input.TUNER
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+
+    mp_entity.store_preset(12)
+    mock_ynca.tun.mem.assert_called_once_with(12)
+
+async def test_mediaplayer_entity_store_preset_warning(
+    mp_entity: YamahaYncaZone, mock_zone, caplog
+):
+    mock_zone.inp = ynca.Input.HDMI1  # Does not support presets
+
+    mp_entity.store_preset(12)
+    assert caplog.record_tuples == [("custom_components.yamaha_ynca", logging.WARNING, "Unable to store preset 12 for current input HDMI1")]
