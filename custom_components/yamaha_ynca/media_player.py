@@ -523,13 +523,13 @@ class YamahaYncaZone(MediaPlayerEntity):
             can_play=False,
             can_expand=True,
             children=presets,
-            children_media_class=MediaClass.CHANNEL,
+            children_media_class=MediaClass.MUSIC,
         )
 
     def browse_media_presets_list(self, input):
         return [
             BrowseMedia(
-                media_class=MediaClass.CHANNEL,
+                media_class=MediaClass.MUSIC,
                 media_content_id=f"preset:{input.value}:{i+1}",
                 media_content_type=MediaType.CHANNEL,
                 title=f"Preset {i+1}",
