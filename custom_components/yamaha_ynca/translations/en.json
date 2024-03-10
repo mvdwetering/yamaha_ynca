@@ -213,8 +213,8 @@
       "description": "Store a preset for the current input.",
       "fields": {
         "preset_id": {
-          "name": "Preset ID",
-          "description": "Preset ID to store, must be in range 1 to 40"
+          "name": "Preset number",
+          "description": "Preset number to store, must be in range 1 to 40"
         }
       }
     }
