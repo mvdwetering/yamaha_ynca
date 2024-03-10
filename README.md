@@ -5,6 +5,7 @@
 - [Installation](#installation)
 - [Volume (dB) entity](#volume-db-entity)
 - [Remote control](#remote-control)
+- [Presets](#presets)
 - [Q & A](#q--a)
 
 ## Description
@@ -30,6 +31,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Show metadata like artist, album, song (depends on source)
 * Control playback (depends on source)
 * Activate scenes
+* [Presets](#presets)
 * Send remote control commands
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
@@ -513,6 +515,19 @@ cards:
             entity_id: remote.rx_a810_main_remote
 ```
 </details>
+
+## Presets
+
+> [!WARNING]
+> Presets for DAB tuner are currently experimental. The DAB tuner uses different commands from the other inputs so I had to guess a bit on how it works and might have been wrong. I am unable to test it because my receiver does not support DAB. Please provide feedback in the [Discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) or [Issues](https://github.com/mvdwetering/yamaha_ynca/issues).
+
+Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Those presets can also be managed on the receiver itself and through the Yamaha AV controller App. 
+
+However there are many more inputs that support presets like USB. Altough I am not entirely sure how useful it is for this specific input the integration exposes all known inputs that support presets. Open the mediabrowser to see which ones.
+
+Presets can be activated through the mediabrowser of the mediaplayer.
+
+Home Assistant does not have a built-in mechanism to store presets, so a "store_preset" service call was added for that. Calling the service will store the current playing item as a preset with the provided preset number. There is unfortunately no feedback if it worked or not.
 
 ## Q & A
 
