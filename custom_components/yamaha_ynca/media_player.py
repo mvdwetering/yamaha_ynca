@@ -497,22 +497,19 @@ class YamahaYncaZone(MediaPlayerEntity):
             media_content_type,
         )
 
-        available_inputs_with_presets = {}
         source_mapping = InputHelper.get_source_mapping(self._ynca)
-        for input, name in source_mapping.items():
-            if input.value not in self._hidden_inputs:
-                if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
-                    if hasattr(
-                        subunit, "preset"
-                    ):  # Need hasattr because can't read value for all subunits
-                        available_inputs_with_presets[input] = name
 
         if media_content_id is None or media_content_id == "presets":
+            children = []
+
             # Generic presets
-            children = [
-                self.browse_media_input_item(name, f"presets:{input.value}", [])
-                for input, name in available_inputs_with_presets.items()
-            ]
+            for input, name in source_mapping.items():
+                if input.value not in self._hidden_inputs:
+                    if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                        if hasattr(
+                            subunit, "preset"
+                        ):
+                            children.append(self.browse_media_input_item(name, f"presets:{input.value}", []))
 
             # Presets for DAB Tuner, it has 2 preset lists and uses different attribute names, so add manually
             if self._ynca.dab and ynca.Input.TUNER.value not in self._hidden_inputs:
@@ -545,13 +542,9 @@ class YamahaYncaZone(MediaPlayerEntity):
             input = ynca.Input(parts[1])
 
             name = (
-                "TUNER (DAB)"
-                if media_content_id_type == "dabpresets"
-                else (
-                    "TUNER (FM)"
-                    if media_content_id_type == "fmpresets"
-                    else available_inputs_with_presets[input]
-                )
+                "TUNER (DAB)" if media_content_id_type == "dabpresets"
+                else "TUNER (FM)" if media_content_id_type == "fmpresets"
+                else source_mapping.get(input, source_mapping[input])
             )
 
             return self.browse_media_input_item(
@@ -645,7 +638,7 @@ class YamahaYncaZone(MediaPlayerEntity):
                 subunit.mem(preset_id)
                 return
 
-        LOGGER.warn(
+        LOGGER.warning(
             "Unable to store preset %s for current input %s",
             preset_id,
             self._zone.inp.value if self._zone.inp else "None",
