@@ -535,7 +535,7 @@ Home Assistant does not have a built-in mechanism to store presets, so a "store_
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
 * **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
-  The itnegration tires to autodetect as many features as possible, but it is not possible for all features on all receivers. For example supported soundmodes, available inputs, scenes or surround decoders can not always be detected. You can adjust these settings for your receiver in the integration configuration.
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example supported soundmodes, available inputs, scenes or surround decoders can not always be detected. You can adjust these for your receiver in the integration configuration.
 
 * **Q: Why are Scene buttons are not working?**  
   On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
