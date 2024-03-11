@@ -505,9 +505,15 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_ynca.dab.band = ynca.BandDab.FM
     mock_ynca.dab.fmfreq = 123.45
     mock_ynca.dab.fmrdsprgservice = None
+    mock_ynca.dab.fmpreset = None
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
+    assert mp_entity.media_channel == "FM 123.45 MHz"
+    mock_ynca.dab.fmpreset = 22
+    assert mp_entity.media_channel == "22: FM 123.45 MHz"
 
     mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
     assert mp_entity.media_title is None
