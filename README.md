@@ -32,7 +32,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Control playback (depends on source)
 * Activate scenes
 * [Presets](#presets)
-* Send remote control commands
+* Send [remote control commands](#remote-control)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
@@ -523,11 +523,19 @@ cards:
 
 Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Those presets can also be managed on the receiver itself and through the Yamaha AV controller App. 
 
-However there are many more inputs that support presets like USB. Altough I am not entirely sure how useful it is for this specific input the integration exposes all known inputs that support presets. Open the mediabrowser to see which ones.
+However there are many more inputs that support presets like USB, Napster, Pandora and several others. Altough I am not entirely sure how useful it is for those specific input the integration exposes all known inputs that support presets. 
 
-Presets can be activated through the mediabrowser of the mediaplayer.
+Presets can be activated through the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service.
 
 Home Assistant does not have a built-in mechanism to store presets, so a "store_preset" service call was added for that. Calling the service will store the current playing item as a preset with the provided preset number. There is unfortunately no feedback if it worked or not.
+
+```yaml
+service: yamaha_ynca.store_preset
+data:
+  preset_id: 12
+target:
+  entity_id: media_player.rx_a810_main
+```
 
 ## Q & A
 
