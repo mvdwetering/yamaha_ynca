@@ -326,8 +326,6 @@ async def test_mediaplayer_entity_supported_features(
     expected_supported_features = (
         MediaPlayerEntityFeature.TURN_ON
         | MediaPlayerEntityFeature.TURN_OFF
-        | MediaPlayerEntityFeature.BROWSE_MEDIA
-        | MediaPlayerEntityFeature.PLAY_MEDIA
     )
 
     # Nothing supported (still reports on/off)
@@ -360,9 +358,16 @@ async def test_mediaplayer_entity_supported_features(
     expected_supported_features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
     assert mp_entity.supported_features == expected_supported_features
 
+    # Radio supports presets
+    mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
+    mock_zone.inp = ynca.Input.TUNER
+    expected_supported_features |= MediaPlayerEntityFeature.BROWSE_MEDIA
+    expected_supported_features |= MediaPlayerEntityFeature.PLAY_MEDIA
+    assert mp_entity.supported_features == expected_supported_features
+
     # Sources with `playback` attribute support playback controls
 
-    # Radio sources only support play and stop
+    # Internet radio sources support play and stop
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_zone.inp = ynca.Input.NETRADIO
     expected_supported_features |= MediaPlayerEntityFeature.PLAY

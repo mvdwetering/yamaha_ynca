@@ -291,10 +291,28 @@ class YamahaYncaZone(MediaPlayerEntity):
                 supported_commands |= MediaPlayerEntityFeature.SHUFFLE_SET
 
         # This assumes there is at least one input that supports preset
-        supported_commands |= MediaPlayerEntityFeature.BROWSE_MEDIA
-        supported_commands |= MediaPlayerEntityFeature.PLAY_MEDIA
+        if self._has_subunit_that_supports_presets():
+            supported_commands |= MediaPlayerEntityFeature.BROWSE_MEDIA
+            supported_commands |= MediaPlayerEntityFeature.PLAY_MEDIA
 
         return supported_commands
+
+    def _has_subunit_that_supports_presets(self):
+        source_mapping = InputHelper.get_source_mapping(self._ynca)
+
+        for input in source_mapping:
+            if input.value not in self._hidden_inputs:
+                if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                    if hasattr(
+                        subunit, "preset"
+                    ):
+                        return True
+                    # also covers fmpreset since on the same subunit
+                    if hasattr(
+                        subunit, "dabpreset"  
+                    ):
+                        return True
+        return False
 
     def turn_on(self):
         """Turn the media player on."""
