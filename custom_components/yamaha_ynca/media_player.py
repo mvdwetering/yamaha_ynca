@@ -291,10 +291,28 @@ class YamahaYncaZone(MediaPlayerEntity):
                 supported_commands |= MediaPlayerEntityFeature.SHUFFLE_SET
 
         # This assumes there is at least one input that supports preset
-        supported_commands |= MediaPlayerEntityFeature.BROWSE_MEDIA
-        supported_commands |= MediaPlayerEntityFeature.PLAY_MEDIA
+        if self._has_subunit_that_supports_presets():
+            supported_commands |= MediaPlayerEntityFeature.BROWSE_MEDIA
+            supported_commands |= MediaPlayerEntityFeature.PLAY_MEDIA
 
         return supported_commands
+
+    def _has_subunit_that_supports_presets(self):
+        source_mapping = InputHelper.get_source_mapping(self._ynca)
+
+        for input in source_mapping:
+            if input.value not in self._hidden_inputs:
+                if subunit := InputHelper.get_subunit_for_input(self._ynca, input):
+                    if hasattr(
+                        subunit, "preset"
+                    ):
+                        return True
+                    # also covers fmpreset since on the same subunit
+                    if hasattr(
+                        subunit, "dabpreset"  
+                    ):
+                        return True
+        return False
 
     def turn_on(self):
         """Turn the media player on."""
@@ -455,9 +473,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit := self._get_input_subunit():
             if subunit is self._ynca.tun:
                 # AM/FM Tuner
-                preset_prefix = ""
-                if subunit.preset is not None:
-                    preset_prefix = f"{subunit.preset}: "
+                preset_prefix = f"{subunit.preset}: " if subunit.preset is not None else ""
                 if subunit.band is ynca.BandTun.AM:
                     return f"{preset_prefix}AM {subunit.amfreq} kHz"
                 if subunit.band is ynca.BandTun.FM:
@@ -469,10 +485,11 @@ class YamahaYncaZone(MediaPlayerEntity):
             if subunit is self._ynca.dab:
                 # DAB/FM Tuner
                 if subunit.band is ynca.BandDab.FM:
+                    preset_prefix = f"{subunit.fmpreset}: " if subunit.fmpreset is not None and subunit.fmpreset is not ynca.FmPreset.NO_PRESET else ""
                     return (
                         subunit.fmrdsprgservice
                         if subunit.fmrdsprgservice
-                        else f"FM {subunit.fmfreq:.2f} MHz"
+                        else f"{preset_prefix}FM {subunit.fmfreq:.2f} MHz"
                     )
                 if subunit.band is ynca.BandDab.DAB:
                     return subunit.dabservicelabel

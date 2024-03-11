@@ -326,8 +326,6 @@ async def test_mediaplayer_entity_supported_features(
     expected_supported_features = (
         MediaPlayerEntityFeature.TURN_ON
         | MediaPlayerEntityFeature.TURN_OFF
-        | MediaPlayerEntityFeature.BROWSE_MEDIA
-        | MediaPlayerEntityFeature.PLAY_MEDIA
     )
 
     # Nothing supported (still reports on/off)
@@ -360,9 +358,16 @@ async def test_mediaplayer_entity_supported_features(
     expected_supported_features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
     assert mp_entity.supported_features == expected_supported_features
 
+    # Radio supports presets
+    mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
+    mock_zone.inp = ynca.Input.TUNER
+    expected_supported_features |= MediaPlayerEntityFeature.BROWSE_MEDIA
+    expected_supported_features |= MediaPlayerEntityFeature.PLAY_MEDIA
+    assert mp_entity.supported_features == expected_supported_features
+
     # Sources with `playback` attribute support playback controls
 
-    # Radio sources only support play and stop
+    # Internet radio sources support play and stop
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_zone.inp = ynca.Input.NETRADIO
     expected_supported_features |= MediaPlayerEntityFeature.PLAY
@@ -505,9 +510,15 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_ynca.dab.band = ynca.BandDab.FM
     mock_ynca.dab.fmfreq = 123.45
     mock_ynca.dab.fmrdsprgservice = None
+    mock_ynca.dab.fmpreset = None
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
+    assert mp_entity.media_channel == "FM 123.45 MHz"
+    mock_ynca.dab.fmpreset = 22
+    assert mp_entity.media_channel == "22: FM 123.45 MHz"
 
     mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
     assert mp_entity.media_title is None
