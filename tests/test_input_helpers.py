@@ -1,4 +1,6 @@
 from __future__ import annotations
+from unittest.mock import Mock, create_autospec
+import pytest
 
 import ynca
 
@@ -212,3 +214,12 @@ def test_get_subunit_for_input(mock_ynca):
     # Unavailable subunit because not related to a subunit
     subunit = InputHelper.get_subunit_for_input(mock_ynca, ynca.Input.HDMI6)
     assert subunit is None
+
+
+def test_get_input_for_subunit_no_input():
+    t = create_autospec(ynca.subunits.tun.Tun)
+    t.id = Mock()
+    t.id.value = "test_subunit"
+
+    with pytest.raises(ValueError):
+        InputHelper.get_input_for_subunit(t)

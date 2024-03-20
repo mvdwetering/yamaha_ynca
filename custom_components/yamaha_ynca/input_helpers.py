@@ -73,6 +73,14 @@ class InputHelper:
         return None
 
     @staticmethod
+    def get_input_for_subunit(subunit: ynca.subunit.SubunitBase) -> ynca.Input:
+        """Returns input of the provided subunit, raises ValueError if not found"""
+        for mapping in input_mappings:
+            if subunit.id.value.lower() in mapping.subunit_attribute_names:
+                return mapping.ynca_input
+        raise ValueError("Could not find input for subunit")
+
+    @staticmethod
     def get_input_by_name(api: ynca.YncaApi, name: str) -> ynca.Input | None:
         """Returns input by name"""
         source_mapping = InputHelper.get_source_mapping(api)

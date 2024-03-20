@@ -324,8 +324,7 @@ async def test_mediaplayer_entity_supported_features(
 ):
 
     expected_supported_features = (
-        MediaPlayerEntityFeature.TURN_ON
-        | MediaPlayerEntityFeature.TURN_OFF
+        MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
     )
 
     # Nothing supported (still reports on/off)
@@ -614,22 +613,27 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
         await mp_entity.async_play_media("media_type", "media_id")
 
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "preset:TUNER")
+        await mp_entity.async_play_media("media_type", "tun:preset")  # Missing presetid
 
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "unsupported:TUNER:15")
+        await mp_entity.async_play_media("media_type", "unsupported:preset:15")
+
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "tun:unsupported:15")
 
     # Out of range preset
+    MIN_PRESET_ID = 1
+    MAX_PRESET_ID = 40
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "preset:TUNER:0")
+        await mp_entity.async_play_media("media_type", f"tun:preset:{MIN_PRESET_ID - 1}")
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "preset:TUNER:41")
+        await mp_entity.async_play_media("media_type", f"tun:preset:{MAX_PRESET_ID + 1}")
 
     # Invalid input not handles and does not change state
     mock_zone.pwr = ynca.Pwr.STANDBY
     mock_zone.inp = ynca.Input.USB
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "preset:invalid:15")
+        await mp_entity.async_play_media("media_type", "invalid:preset:15")
     assert mock_zone.pwr is ynca.Pwr.STANDBY
     assert mock_zone.inp is ynca.Input.USB
 
@@ -639,13 +643,14 @@ async def test_mediaplayer_entity_play_media(
 ):
     mock_zone.inp = ynca.Input.USB
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+    mock_ynca.tun.id = ynca.subunit.Subunit.TUN
 
     # Different from after state
     mock_zone.pwr = ynca.Pwr.STANDBY
     mock_zone.inp = ynca.Input.USB
     mock_ynca.tun.preset = None
 
-    await mp_entity.async_play_media("channel", "preset:TUNER:15")
+    await mp_entity.async_play_media("channel", "tun:preset:15")
     assert mock_zone.pwr is ynca.Pwr.ON
     assert mock_zone.inp is ynca.Input.TUNER
     assert mock_ynca.tun.preset == 15
@@ -653,15 +658,16 @@ async def test_mediaplayer_entity_play_media(
     # DAB and TUN have the same input, so delete the TUN subunit
     mock_ynca.tun = None
     mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
+    mock_ynca.dab.id = ynca.subunit.Subunit.DAB
     mock_ynca.dab.dabpreset = ynca.DabPreset.NO_PRESET
     mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
 
-    await mp_entity.async_play_media("channel", "dabpreset:TUNER:16")
+    await mp_entity.async_play_media("channel", "dab:dabpreset:16")
     assert mock_zone.pwr is ynca.Pwr.ON
     assert mock_zone.inp is ynca.Input.TUNER
     assert mock_ynca.dab.dabpreset == 16
 
-    await mp_entity.async_play_media("channel", "fmpreset:TUNER:17")
+    await mp_entity.async_play_media("channel", "dab:fmpreset:17")
     assert mock_zone.pwr is ynca.Pwr.ON
     assert mock_zone.inp is ynca.Input.TUNER
     assert mock_ynca.dab.fmpreset == 17
@@ -677,10 +683,9 @@ async def test_mediaplayer_entity_browse_media_unsupported_media(
         await mp_entity.async_browse_media("media_content_type", "media_content_id")
 
 
-async def test_mediaplayer_entity_browse_media(
-    mp_entity: YamahaYncaZone, mock_ynca
-):
+async def test_mediaplayer_entity_browse_media(mp_entity: YamahaYncaZone, mock_ynca):
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+    mock_ynca.tun.id = ynca.subunit.Subunit.TUN
 
     # Root
     media = await mp_entity.async_browse_media(None, None)
@@ -692,30 +697,32 @@ async def test_mediaplayer_entity_browse_media(
 
     assert len(media.children) == 1
     assert media.children[0].media_class == "directory"
-    assert media.children[0].media_content_id == "presets:TUNER"
+    assert media.children[0].media_content_id == "tun:presets"
     assert media.children[0].title == "TUNER"
     assert media.children[0].can_expand is True
     assert media.children[0].can_play is False
 
     # TUNER
-    media = await mp_entity.async_browse_media(None, "presets:TUNER")
+    media = await mp_entity.async_browse_media(None, "tun:presets")
     assert media.media_class == "directory"
-    assert media.media_content_id == "presets:TUNER"
+    assert media.media_content_id == "tun:presets"
     assert media.title == "TUNER"
     assert media.can_expand is True
     assert media.can_play is False
 
     assert len(media.children) == 40
     assert media.children[19].media_class == "music"
-    assert media.children[19].media_content_id == "preset:TUNER:20"
+    assert media.children[19].media_content_id == "tun:preset:20"
     assert media.children[19].title == "Preset 20"
     assert media.children[19].can_expand is False
     assert media.children[19].can_play is True
+
 
 async def test_mediaplayer_entity_browse_media_dab(
     mp_entity: YamahaYncaZone, mock_ynca
 ):
     mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
+    mock_ynca.dab.id = ynca.subunit.Subunit.DAB
 
     # Root
     media = await mp_entity.async_browse_media(None, None)
@@ -727,43 +734,43 @@ async def test_mediaplayer_entity_browse_media_dab(
 
     assert len(media.children) == 2
     assert media.children[0].media_class == "directory"
-    assert media.children[0].media_content_id == "dabpresets:TUNER"
+    assert media.children[0].media_content_id == "dab:dabpresets"
     assert media.children[0].title == "TUNER (DAB)"
     assert media.children[0].can_expand is True
     assert media.children[0].can_play is False
 
     assert media.children[1].media_class == "directory"
-    assert media.children[1].media_content_id == "fmpresets:TUNER"
+    assert media.children[1].media_content_id == "dab:fmpresets"
     assert media.children[1].title == "TUNER (FM)"
     assert media.children[1].can_expand is True
     assert media.children[1].can_play is False
 
     # TUNER (DAB)
-    media = await mp_entity.async_browse_media(None, "dabpresets:TUNER")
+    media = await mp_entity.async_browse_media(None, "dab:dabpresets")
     assert media.media_class == "directory"
-    assert media.media_content_id == "dabpresets:TUNER"
+    assert media.media_content_id == "dab:dabpresets"
     assert media.title == "TUNER (DAB)"
     assert media.can_expand is True
     assert media.can_play is False
 
     assert len(media.children) == 40
     assert media.children[19].media_class == "music"
-    assert media.children[19].media_content_id == "dabpreset:TUNER:20"
+    assert media.children[19].media_content_id == "dab:dabpreset:20"
     assert media.children[19].title == "Preset 20"
     assert media.children[19].can_expand is False
     assert media.children[19].can_play is True
 
     # TUNER (FM)
-    media = await mp_entity.async_browse_media(None, "fmpresets:TUNER")
+    media = await mp_entity.async_browse_media(None, "dab:fmpresets")
     assert media.media_class == "directory"
-    assert media.media_content_id == "fmpresets:TUNER"
+    assert media.media_content_id == "dab:fmpresets"
     assert media.title == "TUNER (FM)"
     assert media.can_expand is True
     assert media.can_play is False
 
     assert len(media.children) == 40
     assert media.children[39].media_class == "music"
-    assert media.children[39].media_content_id == "fmpreset:TUNER:40"
+    assert media.children[39].media_content_id == "dab:fmpreset:40"
     assert media.children[39].title == "Preset 40"
     assert media.children[39].can_expand is False
     assert media.children[39].can_play is True
@@ -778,10 +785,17 @@ async def test_mediaplayer_entity_store_preset(
     mp_entity.store_preset(12)
     mock_ynca.tun.mem.assert_called_once_with(12)
 
+
 async def test_mediaplayer_entity_store_preset_warning(
     mp_entity: YamahaYncaZone, mock_zone, caplog
 ):
     mock_zone.inp = ynca.Input.HDMI1  # Does not support presets
 
     mp_entity.store_preset(12)
-    assert caplog.record_tuples == [("custom_components.yamaha_ynca", logging.WARNING, "Unable to store preset 12 for current input HDMI1")]
+    assert caplog.record_tuples == [
+        (
+            "custom_components.yamaha_ynca",
+            logging.WARNING,
+            "Unable to store preset 12 for current input HDMI1",
+        )
+    ]
