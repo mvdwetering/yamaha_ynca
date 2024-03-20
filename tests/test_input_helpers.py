@@ -221,5 +221,5 @@ def test_get_input_for_subunit_no_input():
     t.id = Mock()
     t.id.value = "test_subunit"
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         InputHelper.get_input_for_subunit(t)

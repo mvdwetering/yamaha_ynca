@@ -622,10 +622,12 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
         await mp_entity.async_play_media("media_type", "tun:unsupported:15")
 
     # Out of range preset
+    MIN_PRESET_ID = 1
+    MAX_PRESET_ID = 40
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "tun:preset:0")
+        await mp_entity.async_play_media("media_type", f"tun:preset:{MIN_PRESET_ID - 1}")
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", "tun:preset:41")
+        await mp_entity.async_play_media("media_type", f"tun:preset:{MAX_PRESET_ID + 1}")
 
     # Invalid input not handles and does not change state
     mock_zone.pwr = ynca.Pwr.STANDBY
