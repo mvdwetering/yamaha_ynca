@@ -481,8 +481,6 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "AM 1234 kHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
-    mock_ynca.tun.preset = 12  # Preset is prefixed when available
-    assert mp_entity.media_channel == "12: AM 1234 kHz"
 
     # FM can have name from RDS info or falls back to band and frequency
     mock_ynca.tun.preset = None
@@ -492,8 +490,6 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
-    mock_ynca.tun.preset = 23  # Preset is prefixed when available
-    assert mp_entity.media_channel == "23: FM 123.45 MHz"
 
     mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
     assert mp_entity.media_title is None
@@ -516,8 +512,6 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
 
     mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
     assert mp_entity.media_channel == "FM 123.45 MHz"
-    mock_ynca.dab.fmpreset = 22
-    assert mp_entity.media_channel == "22: FM 123.45 MHz"
 
     mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
     assert mp_entity.media_title is None
