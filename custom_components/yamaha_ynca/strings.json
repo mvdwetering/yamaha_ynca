@@ -207,6 +207,16 @@
           "description": "Raw YNCA data to send. One command per line. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE"
         }
       }
+    },
+    "store_preset": {
+      "name": "Store preset",
+      "description": "Store a preset for the current input.",
+      "fields": {
+        "preset_id": {
+          "name": "Preset number",
+          "description": "Preset number to store, must be in range 1 to 40"
+        }
+      }
     }
   }
 }

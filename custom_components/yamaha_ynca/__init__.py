@@ -21,6 +21,7 @@ from .const import (
     DOMAIN,
     LOGGER,
     MANUFACTURER_NAME,
+    SERVICE_SEND_RAW_YNCA,
     ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
@@ -34,9 +35,6 @@ PLATFORMS: List[Platform] = [
     Platform.SWITCH,
     Platform.REMOTE,
 ]
-
-SERVICE_SEND_RAW_YNCA = "send_raw_ynca"
-
 
 async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi

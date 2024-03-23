@@ -5,6 +5,7 @@
 - [Installation](#installation)
 - [Volume (dB) entity](#volume-db-entity)
 - [Remote control](#remote-control)
+- [Presets](#presets)
 - [Q & A](#q--a)
 
 ## Description
@@ -13,7 +14,7 @@ Custom integration for Home Assistant to support Yamaha AV receivers with the YN
 
 According to reports of users and info found on the internet the following AV receivers should be working, there are probably more, just give it a try. If your receiver works and is not in the list please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
 
-> HTR-4065, HTR-4071, HTR-6064, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
+> HTR-4065, HTR-4071, HTR-6064, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
 
 In case of issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
@@ -30,7 +31,8 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Show metadata like artist, album, song (depends on source)
 * Control playback (depends on source)
 * Activate scenes
-* Send remote control commands
+* [Presets](#presets)
+* Send [remote control commands](#remote-control)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
@@ -514,13 +516,34 @@ cards:
 ```
 </details>
 
+## Presets
+
+> [!WARNING]
+> Presets for DAB tuner are currently experimental. The DAB tuner uses different commands from the other inputs so I had to guess a bit on how it works and might have been wrong. I am unable to test it because my receiver does not support DAB. Please provide feedback in the [Discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) or [Issues](https://github.com/mvdwetering/yamaha_ynca/issues).
+
+Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Those presets can also be managed on the receiver itself and through the Yamaha AV controller App. 
+
+However there are many more inputs that support presets like USB, Napster, Pandora and several others. Altough I am not entirely sure how useful it is for those specific input the integration exposes all known inputs that support presets. 
+
+Presets can be activated through the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service.
+
+Home Assistant does not have a built-in mechanism to store presets, so a "store_preset" service call was added for that. Calling the service will store the current playing item as a preset with the provided preset number. There is unfortunately no feedback if it worked or not.
+
+```yaml
+service: yamaha_ynca.store_preset
+data:
+  preset_id: 12
+target:
+  entity_id: media_player.rx_a810_main
+```
+
 ## Q & A
 
 * **Q: Why are entities unavailable when receiver in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
-* **Q: Why are the Scene buttons are not created automatically?**  
-  It is not possible to autodetect the amount of supported scenes on all receivers. If no scene buttons are created and the Zone does support scenes you can specify the amount of scenes manually in the integration configuration.
+* **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example supported soundmodes, available inputs, scenes or surround decoders can not always be detected. You can adjust these for your receiver in the integration configuration.
 
 * **Q: Why are Scene buttons are not working?**  
   On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
@@ -528,20 +551,9 @@ cards:
   It might be possible to send scene commands using the remote entity as a workaround.
   _Please drop a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) if this actually works as I don't have an RX-V475 to test with._
 
-* **Q: Why do the sources not match receiver zone capabilities?**  
-  It is not possible to detect which sources are supported per zone, only for the whole receiver. In the integration configuration it is possible to select which sources are avaialble per Zone.
-
-  If a source is not listed at all it might not be supported or could be a bug, [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues) in that case.
-
-* **Q: Why do the soundmodes not match the ones supported by the receiver**  
-  The list of supported soundmodes can not be detected, for some models the list is known, for the rest the whole list of known soundmodes is shown.
-  You can select the soundmodes that are supported by your receiver in the integration configuration.
-
-  If you want your receiver added to the list of models with known soundmodes start a [discussion](https://github.com/mvdwetering/yamaha_ynca/discussions) or [submit an issue](https://github.com/mvdwetering/yamaha_ynca/issues)
-
 * **Q: How can I fix the connection settings if the connection is not working?**  
   When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
 
-* **Q: How can I stream audio?**  
-  You can't with integration since the protocol does not support that. You might be able to use the "DLNA Digital Media Renderer" that comes with Home Assistant.
+* **Q: How can I stream audio from a URL?**  
+  You can't with this integration since the protocol does not support that. You might be able to use the "DLNA Digital Media Renderer" that comes with Home Assistant.
 

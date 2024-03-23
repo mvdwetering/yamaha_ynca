@@ -1,0 +1,6 @@
+{
+    "services": {
+        "send_raw_ynca": "mdi:raw",
+        "store_preset": "mdi:star"
+    }
+}
