@@ -518,16 +518,14 @@ cards:
 
 ## Presets
 
-> [!WARNING]
+> [!NOTE]
 > Presets for DAB tuner are currently experimental. The DAB tuner uses different commands from the other inputs so I had to guess a bit on how it works and might have been wrong. I am unable to test it because my receiver does not support DAB. Please provide feedback in the [Discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) or [Issues](https://github.com/mvdwetering/yamaha_ynca/issues).
 
-Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Those presets can also be managed on the receiver itself and through the Yamaha AV controller App. 
+Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. Some presets can be managed in the Yamaha AV Control app (e.g. Tuner), for others you will need to remember what was stored. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
 
-However there are many more inputs that support presets like USB, Napster, Pandora and several others. Altough I am not entirely sure how useful it is for those specific input the integration exposes all known inputs that support presets. 
+Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset the receiver will turn on and switch input if needed.
 
-Presets can be activated through the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service.
-
-Home Assistant does not have a built-in mechanism to store presets, so a "store_preset" service call was added for that. Calling the service will store the current playing item as a preset with the provided preset number. There is unfortunately no feedback if it worked or not.
+Home Assistant has no standardized way to store presets, so the store_preset service was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
 service: yamaha_ynca.store_preset
