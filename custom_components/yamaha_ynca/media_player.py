@@ -283,7 +283,8 @@ class YamahaYncaZone(MediaPlayerEntity):
                 supported_commands |= MediaPlayerEntityFeature.PLAY
                 supported_commands |= MediaPlayerEntityFeature.STOP
                 if not self._has_limited_playback_controls(input_subunit):
-                    supported_commands |= MediaPlayerEntityFeature.PAUSE
+                    if input_subunit is not self._ynca.usb:
+                        supported_commands |= MediaPlayerEntityFeature.PAUSE
                     supported_commands |= MediaPlayerEntityFeature.NEXT_TRACK
                     supported_commands |= MediaPlayerEntityFeature.PREVIOUS_TRACK
             if getattr(input_subunit, "repeat", None) is not None:

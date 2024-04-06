@@ -384,9 +384,10 @@ async def test_mediaplayer_entity_supported_features(
     expected_supported_features |= MediaPlayerEntityFeature.NEXT_TRACK
     assert mp_entity.supported_features == expected_supported_features
 
-    # USB also supports repeat and shuffle
+    # USB also supports repeat and shuffle, but not pause (only stop)
     mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
     mock_zone.inp = ynca.Input.USB
+    expected_supported_features = expected_supported_features & ~MediaPlayerEntityFeature.PAUSE
     expected_supported_features |= MediaPlayerEntityFeature.REPEAT_SET
     expected_supported_features |= MediaPlayerEntityFeature.SHUFFLE_SET
     assert mp_entity.supported_features == expected_supported_features
