@@ -535,6 +535,27 @@ target:
   entity_id: media_player.rx_a810_main
 ```
 
+### Media content format
+
+In some cases it is not possible to select presets from the UI and it is needed to provide the `media_content_id` and `media_content_type` manually.
+
+The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
+
+
+| Input         | Content ID                        |
+|---------------|-----------------------------------|
+| Napster       | napster:preset:1                  |
+| Netradio      | netradio:preset:1                 |
+| Pandora       | pandora:preset:1                  |
+| PC            | pc:preset:1                       |
+| Rhapsody      | rhap:preset:1                     |
+| Sirius        | sirius:preset:1                   |
+| SiriusIR      | siriusir:preset:1                 |
+| Tuner (AM/FM) | tun:preset:1                      |
+| Tuner (DAB), FM presets | dab:fmpreset:1          |
+| Tuner (DAB), DAB presets | dab:dabpreset:1        |
+| USB           | usb:preset:1                      |
+
 ## Q & A
 
 * **Q: Why are entities unavailable when receiver in standby?**  
