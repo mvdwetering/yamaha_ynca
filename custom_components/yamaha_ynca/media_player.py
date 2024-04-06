@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Any, List, Optional
 
 import voluptuous as vol  # type: ignore[import]
@@ -282,7 +283,8 @@ class YamahaYncaZone(MediaPlayerEntity):
                 supported_commands |= MediaPlayerEntityFeature.PLAY
                 supported_commands |= MediaPlayerEntityFeature.STOP
                 if not self._has_limited_playback_controls(input_subunit):
-                    supported_commands |= MediaPlayerEntityFeature.PAUSE
+                    if input_subunit is not self._ynca.usb:
+                        supported_commands |= MediaPlayerEntityFeature.PAUSE
                     supported_commands |= MediaPlayerEntityFeature.NEXT_TRACK
                     supported_commands |= MediaPlayerEntityFeature.PREVIOUS_TRACK
             if getattr(input_subunit, "repeat", None) is not None:
@@ -640,6 +642,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         input = InputHelper.get_input_for_subunit(subunit)
         if self._zone.inp is not input:
             self._zone.inp = input
+
+            # Tuner input needs some time before it is possible to set the preset
+            # it gets ignored otherwise
+            # see https://github.com/mvdwetering/yamaha_ynca/issues/271
+            if input == ynca.Input.TUNER:
+                await asyncio.sleep(1.0)
 
         setattr(subunit, media_id_command, int(media_id_preset_id))
 
