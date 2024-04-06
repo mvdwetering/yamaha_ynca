@@ -552,8 +552,8 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 | Sirius        | sirius:preset:1                   |
 | SiriusIR      | siriusir:preset:1                 |
 | Tuner (AM/FM) | tun:preset:1                      |
-| Tuner (FM/DAB), FM presets | dab:fmpreset:1       |
-| Tuner (FM/DAB), DAB presets | dab:dabpreset:1     |
+| Tuner (DAB), FM presets | dab:fmpreset:1          |
+| Tuner (DAB), DAB presets | dab:dabpreset:1        |
 | USB           | usb:preset:1                      |
 
 ## Q & A
