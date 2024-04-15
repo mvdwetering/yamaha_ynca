@@ -38,6 +38,7 @@ input_mappings: List[Mapping] = [
     Mapping(ynca.Input.AUDIO2, []),
     Mapping(ynca.Input.AUDIO3, []),
     Mapping(ynca.Input.AUDIO4, []),
+    Mapping(ynca.Input.AUDIO5, []),
     Mapping(ynca.Input.AV1, []),
     Mapping(ynca.Input.AV2, []),
     Mapping(ynca.Input.AV3, []),
