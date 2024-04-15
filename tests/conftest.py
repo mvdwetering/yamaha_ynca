@@ -168,7 +168,7 @@ def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
 def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
     return MockConfigEntry(
         version=7,
-        minor_version=3,
+        minor_version=4,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title=MODELNAME,
