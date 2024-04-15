@@ -49,6 +49,7 @@ ALL_INPUTS = [
     "AUDIO2",
     "AUDIO3",
     "AUDIO4",
+    "AUDIO5",
     "AV1",
     "AV2",
     "AV3",

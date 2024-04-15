@@ -74,7 +74,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     # When updating also update the one used in `setup_integration` for tests
     VERSION = 7
-    MINOR_VERSION = 3
+    MINOR_VERSION = 4
 
     reauth_entry: config_entries.ConfigEntry | None = None
 
