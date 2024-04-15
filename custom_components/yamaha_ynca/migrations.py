@@ -76,7 +76,7 @@ def migrate_v7_3_to_v7_4(hass: HomeAssistant, config_entry: ConfigEntry):
         for zone_id in config_entry.data["zones"]:
             options[zone_id] = options.get(zone_id, {})
             options[zone_id]["hidden_inputs"] = options[zone_id].get(
-                f"hidden_inputs", []
+                "hidden_inputs", []
             )
             options[zone_id]["hidden_inputs"].append("AUDIO5")
 
@@ -124,7 +124,7 @@ def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
             for zone_id in config_entry.data["zones"]:
                 options[zone_id] = options.get(zone_id, {})
                 options[zone_id]["hidden_inputs"] = options[zone_id].get(
-                    f"hidden_inputs", []
+                    "hidden_inputs", []
                 )
                 options[zone_id]["hidden_inputs"].append("AUDIO")
 
