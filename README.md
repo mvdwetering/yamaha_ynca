@@ -574,5 +574,5 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
   When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
 
 * **Q: How can I stream audio from a URL?**  
-  You can't with this integration since the protocol does not support that. You might be able to use the "DLNA Digital Media Renderer" that comes with Home Assistant.
+  You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
 
