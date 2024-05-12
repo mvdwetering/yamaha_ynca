@@ -567,8 +567,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 * **Q: Why are Scene buttons are not working?**  
   On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
 
-  It might be possible to send scene commands using the remote entity as a workaround.
-  _Please drop a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) if this actually works as I don't have an RX-V475 to test with._
+  As an alternative you can send the scene commands through the [Remote control entity](#remote-control.
 
 * **Q: How can I fix the connection settings if the connection is not working?**  
   When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
