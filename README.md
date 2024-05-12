@@ -77,13 +77,13 @@ The remote control entity allows sending remote control codes and commands to th
 
 The current list of commands is below. For the list of supported commands for a specific entity check the "commands" attribute of the remote entity. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
 
-> on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent"
+> on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
 
 More remote control commands exist, but for now the commands included are the ones that are not available on the normal entities or that are potentially useful in other ways. E.g. sending `scene_1` might be usable as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More can be added later if more use cases are discovered.
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send a code through any of the remote entities.
 
-Sending the commands is done through the `remote.send_command` service offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want send and call the service. The repeat, delay and hold options are _not_ supported. 
+Sending the commands is done through the `remote.send_command` service offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and call the service. The repeat, delay and hold options are _not_ supported. 
 
 Example:
 
@@ -96,7 +96,7 @@ target:
 ```
 
 
-In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so should work everywhere. 
+In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations. 
 
 On a dashboard add a "manual" card. Paste the code below and search and replace the `entity_id` with your own.
 
@@ -562,15 +562,15 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
 * **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example supported soundmodes, available inputs, scenes or surround decoders can not always be detected. You can adjust these for your receiver in the integration configuration.
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example, supported soundmodes, available inputs, scenes or surround decoders cannot always be detected. You can adjust these for your receiver in the integration configuration.
 
 * **Q: Why are Scene buttons are not working?**  
-  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
+  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. The non-working buttons can be disabled in the integration configuration by selecting "0" instead of "Auto detect".
 
-  As an alternative you can send the scene commands through the [Remote control entity](#remote-control.
+  As an alternative the scenes can be activated by sending the scene commands through the [Remote control entity](#remote-control).
 
 * **Q: How can I fix the connection settings if the connection is not working?**  
-  When the integration can not connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
+  When the integration cannot connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
 
 * **Q: How can I stream audio from a URL?**  
   You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
