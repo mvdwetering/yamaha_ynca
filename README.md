@@ -521,11 +521,14 @@ cards:
 > [!NOTE]
 > Presets for DAB tuner are currently experimental. The DAB tuner uses different commands from the other inputs so I had to guess a bit on how it works and might have been wrong. I am unable to test it because my receiver does not support DAB. Please provide feedback in the [Discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) or [Issues](https://github.com/mvdwetering/yamaha_ynca/issues).
 
-Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. Some presets can be managed in the Yamaha AV Control app (e.g. Tuner), for others you will need to remember what was stored. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
+Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset the receiver will turn on and switch input if needed.
 
-Home Assistant has no standardized way to store presets, so the store_preset service was added. It will store a preset with the provided number for the current playing item.
+### Store presets
+
+Some presets can be managed in the Yamaha AV Control app (e.g. Tuner). 
+Home Assistant has no standardized way to store presets, so the `store_preset` service was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
 service: yamaha_ynca.store_preset
@@ -558,7 +561,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 
 ## Q & A
 
-* **Q: Why are entities unavailable when receiver in standby?**  
+* **Q: Why are entities unavailable when receiver is in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
 * **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
