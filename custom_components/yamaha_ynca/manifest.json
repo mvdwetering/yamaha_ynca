@@ -12,7 +12,7 @@
   "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "loggers": ["ynca"],
   "requirements": [
-    "ynca==5.14.0"
+    "ynca==5.15.0"
   ],
   "version": "0.0.0"
 }
