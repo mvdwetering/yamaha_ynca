@@ -32,6 +32,7 @@ input_mappings: List[Mapping] = [
     Mapping(ynca.Input.TUNER, ["tun", "dab"]),
     Mapping(ynca.Input.UAW, ["uaw"]),
     Mapping(ynca.Input.USB, ["usb"]),
+    Mapping(ynca.Input.TV, ["tv"]),
     # Inputs with connectors on the receiver
     Mapping(ynca.Input.AUDIO, []),
     Mapping(ynca.Input.AUDIO1, []),
