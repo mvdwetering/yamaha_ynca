@@ -67,6 +67,7 @@ ALL_INPUTS = [
     "HDMI7",
     "MULTI CH",
     "PHONO",
+    "TV",
     "USB",
     "V-AUX",
 ]
