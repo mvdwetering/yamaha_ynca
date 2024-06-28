@@ -47,7 +47,7 @@
     "step": {
       "general": {
         "title": "General settings",
-        "description": "Not all options can be autodetected. Select the values that are supported by your receiver.",
+        "description": "Select the options that are supported by your receiver.",
         "data": {
           "selected_sound_modes": "Sound modes",
           "selected_surround_decoders": "Surround decoders"
@@ -55,7 +55,7 @@
       },
       "main": {
         "title": "Main zone settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable for the main zone.",
+        "description": "Select the options that are applicable for the main zone of the receiver.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
@@ -63,7 +63,7 @@
       },
       "zone2": {
         "title": "Zone 2 settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable for zone 2.",
+        "description": "Select the options that are applicable for the zone 2 of the receiver.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
@@ -71,7 +71,7 @@
       },
       "zone3": {
         "title": "Zone 3 settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable for zone 3.",
+        "description": "Select the options that are applicable for the zone 3 of the receiver.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
@@ -79,7 +79,7 @@
       },
       "zone4": {
         "title": "Zone 4 settings",
-        "description": "Not all options can be auto detected. Select the options that are applicable for zone 4.",
+        "description": "Select the options that are applicable for the zone 4 of the receiver.",
         "data": {
           "selected_inputs": "Inputs",
           "number_of_scenes": "Number of scenes"
