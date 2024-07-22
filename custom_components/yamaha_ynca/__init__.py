@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from importlib.metadata import version
 import re
 from typing import List
 
@@ -123,6 +124,14 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up Yamaha (YNCA) integration."""
+
+    # Retrieval of version information has blocking IO so run in executor
+    def print_ynca_package_info():
+        LOGGER.debug(
+            "ynca package info, version %s, location %s", version("ynca"), ynca.__file__
+        )
+
+    await hass.async_add_executor_job(print_ynca_package_info)
 
     async def async_handle_send_raw_ynca_local(call: ServiceCall):
         await async_handle_send_raw_ynca(hass, call)
