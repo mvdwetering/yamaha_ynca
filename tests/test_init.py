@@ -209,6 +209,7 @@ async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zon
             # no zones, will be added by function under test: yamaha_ynca.const.DATA_ZONES: zones,
         },
     )
+    entry.add_to_hass(hass)
 
     await yamaha_ynca.update_configentry(hass, entry, mock_ynca)
 

@@ -1,29 +1,25 @@
 """Config flow for Yamaha (YNCA) integration."""
+
 from __future__ import annotations
 
 from typing import Any, Dict
 
 import voluptuous as vol  # type: ignore
+import ynca
 
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
-
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
+from homeassistant.core import HomeAssistant, callback
 
 from .const import (
-    CONF_SERIAL_URL,
     CONF_HOST,
     CONF_PORT,
+    CONF_SERIAL_URL,
     DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
     LOGGER,
 )
 from .options_flow import OptionsFlowHandler
-
-import ynca
-
 
 STEP_ID_SERIAL = "serial"
 STEP_ID_NETWORK = "network"
@@ -69,15 +65,14 @@ async def validate_input(
     return result
 
 
-class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
     # When updating also update the one used in `setup_integration` for tests
     VERSION = 7
     MINOR_VERSION = 5
 
-    reauth_entry: config_entries.ConfigEntry | None = None
-
+    reauth_entry: ConfigEntry | None = None
 
     @staticmethod
     @callback
@@ -86,7 +81,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         return self.async_show_menu(
             step_id="user",
@@ -98,7 +93,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         step_id: str,
         data_schema: vol.Schema,
         user_input: Dict[str, Any],
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
 
         errors = {}
         try:
@@ -117,9 +112,11 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data[DATA_ZONES] = check_result.zones
 
             if self.reauth_entry:
-                self.hass.config_entries.async_update_entry(self.reauth_entry, data=data)
+                self.hass.config_entries.async_update_entry(
+                    self.reauth_entry, data=data
+                )
                 await self.hass.config_entries.async_reload(self.reauth_entry.entry_id)
-                return self.async_abort(reason="reauth_successful")            
+                return self.async_abort(reason="reauth_successful")
 
             return self.async_create_entry(title=check_result.modelname, data=data)
 
@@ -131,7 +128,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_serial(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
                 step_id=STEP_ID_SERIAL, data_schema=get_serial_url_schema({})
@@ -143,7 +140,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_network(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
                 step_id=STEP_ID_NETWORK, data_schema=get_network_schema({})
@@ -158,7 +155,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_advanced(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
                 step_id=STEP_ID_ADVANCED, data_schema=get_serial_url_schema({})
