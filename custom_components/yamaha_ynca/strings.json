@@ -150,6 +150,9 @@
       },
       "threedcinema": {
         "name": "CINEMA DSP 3D Mode"
+      },
+      "hdmiout": {
+        "name": "HDMI Out"
       }
     },
     "select": {

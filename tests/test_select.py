@@ -42,7 +42,8 @@ async def test_async_setup_entry(
     mock_zone_main: ZoneBase,
 ):
     mock_ynca.main = mock_zone_main
-    mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
+    mock_ynca.main.hdmiout = ynca.HdmiOut.OUT1_PLUS_2
+    mock_ynca.main.lipsynchdmiout2offset = 123
     mock_ynca.main.sleep = ynca.Sleep.THIRTY_MIN
     mock_ynca.main.initvollvl = ynca.InitVolLvl.MUTE
     mock_ynca.main.twochdecoder = ynca.TwoChDecoder.DolbyPl2Music

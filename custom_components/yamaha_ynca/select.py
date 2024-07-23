@@ -196,17 +196,28 @@ class YncaSelectEntityDescription(SelectEntityDescription):
         return self.supported_check(self, zone_subunit)
 
     options_fn: Callable[[ConfigEntry], List[str]] | None = None
-    """Override which optionns are supported for this entity."""
+    """Override which options are supported for this entity."""
 
 
 ENTITY_DESCRIPTIONS = [
-    # Suppress following mypy message, which seems to be not an issue as other values have defaults:
-    # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
     YncaSelectEntityDescription(  # type: ignore
         key="hdmiout",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.HdmiOut,
         icon="mdi:hdmi-port",
+        options=[
+            slugify(e.value)
+            for e in [
+                ynca.HdmiOut.OFF,
+                ynca.HdmiOut.OUT1,
+                ynca.HdmiOut.OUT2,
+                ynca.HdmiOut.OUT1_PLUS_2,
+            ]
+        ],
+        # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
+        # This select handles multiple HDMI outputs, so check if HDMI2 exists to see if it is supported
+        supported_check=lambda _, zone_subunit: zone_subunit.lipsynchdmiout2offset
+        is not None,
     ),
     YncaSelectEntityDescription(  # type: ignore
         key="sleep",
