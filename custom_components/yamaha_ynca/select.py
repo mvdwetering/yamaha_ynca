@@ -8,17 +8,19 @@ import ynca
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
+from . import YamahaYncaConfigEntry
 from .const import (
     CONF_SELECTED_SURROUND_DECODERS,
-    DOMAIN,
+    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
     TWOCHDECODER_STRINGS,
     ZONE_ATTRIBUTE_NAMES,
-    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
 )
-from .helpers import DomainEntryData, YamahaYncaSettingEntity
+from .helpers import YamahaYncaSettingEntity
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunit import SubunitBase
@@ -31,9 +33,12 @@ class InitialVolumeMode(str, Enum):
     MUTE = "mute"
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-
-    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: YamahaYncaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
+    domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
