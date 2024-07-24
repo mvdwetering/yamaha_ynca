@@ -537,7 +537,7 @@ target:
 
 ### Media content format
 
-In some cases it is not possible to select presets from the UI and it is needed to provide the `media_content_id` and `media_content_type` manually.
+In some cases it is not possible to select presets from the UI and it is needed to manually provide the `media_content_id` and `media_content_type`.
 
 The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
 
@@ -562,15 +562,22 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
 * **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example, supported soundmodes, available inputs, scenes or surround decoders cannot always be detected. You can adjust these for your receiver in the integration configuration.
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example, supported soundmodes, available inputs, scenes or surround decoders cannot always be detected. You can adjust these features for your receiver in the integration configuration.
 
-* **Q: Why are Scene buttons are not working?**  
-  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. The non-working buttons can be disabled in the integration configuration by selecting "0" instead of "Auto detect".
+* **Q: Why are Scene buttons are not working on some receivers?**  
+  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
 
-  As an alternative the scenes can be activated by sending the scene commands through the [Remote control entity](#remote-control).
+  The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-* **Q: How can I fix the connection settings if the connection is not working?**  
-  When the integration cannot connect to the receiver (e.g. due to changed IP address) you can use the "Configure" button on the integration card. A dialog will appear with a message that it can't connect. Press "Submit" in this dialog to mark the integration for reconfiguration. Home Assistant will now allow you to reconfigure the integration (reload of the page in the browser seems required to show the reconfigure card).
+  As an alternative the scenes can be activated by sending the scene commands through service calls on the [Remote control entity](#remote-control).
+
+```yaml
+service: remote.send_command
+data:
+  command: scene_1
+target:
+  entity_id: remote.rx_V475_main_remote
+```
 
 * **Q: How can I stream audio from a URL?**  
   You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
