@@ -187,8 +187,8 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
         user_input={},
     )
 
-    assert result["type"] == FlowResultType.ABORT
-    assert result["reason"] == "marked_for_reconfiguring"
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["reason"] == "no_connection"
 
 
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
