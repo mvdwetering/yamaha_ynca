@@ -5,7 +5,6 @@ from __future__ import annotations
 import voluptuous as vol  # type: ignore
 import ynca
 
-from custom_components.yamaha_ynca.input_helpers import InputHelper
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
 
@@ -18,13 +17,11 @@ from .const import (
     CONF_SELECTED_SURROUND_DECODERS,
     DATA_MODELNAME,
     DATA_ZONES,
-    DOMAIN,
-    LOGGER,
     MAX_NUMBER_OF_SCENES,
     NUMBER_OF_SCENES_AUTODETECT,
-    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
     TWOCHDECODER_STRINGS,
 )
+from .input_helpers import InputHelper
 
 STEP_ID_INIT = "init"
 STEP_ID_NO_CONNECTION = "no_connection"
@@ -75,8 +72,11 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
     async def async_step_init(self, user_input=None):
         """Basic sanity checks before configuring options."""
 
-        if runtime_data := self.config_entry.runtime_data:
-            self.api = runtime_data.api
+        # The configentry in the optionsflow is _only_ a YamahaYncaConfigEntry when there is a connection
+        # Otherwise it is a "plain" ConfigEntry, so without runtime_data
+        # A normal isinstance check does not seem to work with type alias, to check for runtime_data attribute
+        if getattr(self.config_entry, "runtime_data", None):
+            self.api = self.config_entry.runtime_data.api
             return await self.async_step_general()
 
         return await self.async_step_no_connection()
@@ -84,8 +84,11 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
     async def async_step_no_connection(self, user_input=None):
         """No connection dialog"""
         if user_input is not None:
-            self.config_entry.async_start_reauth(self.hass)
-            return self.async_abort(reason="marked_for_reconfiguring")
+            # Strangely enough there is no title on the abort box
+            # I guess because optionflows are not expected to be aborted
+            # So exit with "success" instead through the done step and it will rewrite current settings
+            # return self.async_abort(reason="no_connection")
+            return await self.async_step_done()
 
         return self.async_show_form(step_id=STEP_ID_NO_CONNECTION)
 

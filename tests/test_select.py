@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
+from homeassistant.core import HomeAssistant
 
 import ynca
 
@@ -233,11 +234,15 @@ async def test_select_surrounddecoder_entity_options_nothing_selection_in_config
 
 
 async def test_select_surrounddecoder_entity_options_some_selected_in_configentry(
-    mock_zone: ZoneBase, mock_config_entry
+    hass: HomeAssistant, mock_zone: ZoneBase, mock_config_entry
 ):
-    mock_config_entry.options = {
-        CONF_SELECTED_SURROUND_DECODERS: ["dolby_pl", "auto", "dolby_plii_movie"]
-    }
+    await hass.config_entries.async_add(mock_config_entry)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_SELECTED_SURROUND_DECODERS: ["dolby_pl", "auto", "dolby_plii_movie"]
+        },
+    )
 
     entity = YamahaYncaSelectSurroundDecoder(
         mock_config_entry,

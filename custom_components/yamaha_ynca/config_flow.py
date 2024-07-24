@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from typing import Any, Dict
+import re
 
 import voluptuous as vol  # type: ignore
 import ynca
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 
+from . import YamahaYncaConfigEntry
 from .const import (
     CONF_HOST,
     CONF_PORT,
@@ -72,7 +74,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 7
     MINOR_VERSION = 5
 
-    reauth_entry: ConfigEntry | None = None
+    reconfigure_entry: YamahaYncaConfigEntry | None = None
 
     @staticmethod
     @callback
@@ -106,17 +108,20 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             LOGGER.exception("Unhandled exception during connection.")
             errors["base"] = "unknown"
         else:
-            data = {}
-            data[CONF_SERIAL_URL] = user_input[CONF_SERIAL_URL]
-            data[DATA_MODELNAME] = check_result.modelname
-            data[DATA_ZONES] = check_result.zones
+            data = {
+                CONF_SERIAL_URL: user_input[CONF_SERIAL_URL],
+                DATA_MODELNAME: check_result.modelname,
+                DATA_ZONES: check_result.zones,
+            }
 
-            if self.reauth_entry:
+            if self.reconfigure_entry:
                 self.hass.config_entries.async_update_entry(
-                    self.reauth_entry, data=data
+                    self.reconfigure_entry, data=data
                 )
-                await self.hass.config_entries.async_reload(self.reauth_entry.entry_id)
-                return self.async_abort(reason="reauth_successful")
+                await self.hass.config_entries.async_reload(
+                    self.reconfigure_entry.entry_id
+                )
+                return self.async_abort(reason="reconfigure_successful")
 
             return self.async_create_entry(title=check_result.modelname, data=data)
 
@@ -131,7 +136,15 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
-                step_id=STEP_ID_SERIAL, data_schema=get_serial_url_schema({})
+                step_id=STEP_ID_SERIAL,
+                data_schema=get_serial_url_schema(
+                    {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
+                    if self.reconfigure_entry
+                    and not self.reconfigure_entry.data[CONF_SERIAL_URL].startswith(
+                        "socket://"
+                    )
+                    else {}
+                ),
             )
 
         return await self.async_try_connect(
@@ -142,8 +155,18 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: Dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is None:
+            data = {}
+            if self.reconfigure_entry:
+                # Get HOST and PORT from socket://HOST:PORT
+                if m := re.match(
+                    r"socket://(?P<host>.+):(?P<port>\d+)",
+                    self.reconfigure_entry.data[CONF_SERIAL_URL],
+                ):
+                    data[CONF_HOST] = m.group("host")
+                    data[CONF_PORT] = int(m.group("port"))
+
             return self.async_show_form(
-                step_id=STEP_ID_NETWORK, data_schema=get_network_schema({})
+                step_id=STEP_ID_NETWORK, data_schema=get_network_schema(data)
             )
 
         connection_data = {
@@ -158,16 +181,20 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
-                step_id=STEP_ID_ADVANCED, data_schema=get_serial_url_schema({})
+                step_id=STEP_ID_ADVANCED,
+                data_schema=get_serial_url_schema(
+                    {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
+                    if self.reconfigure_entry
+                    else {}
+                ),
             )
 
         return await self.async_try_connect(
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
 
-    async def async_step_reauth(self, user_input=None):
-        """Reauth is (ab)used to allow setting up connection settings again through the existing flow."""
-        self.reauth_entry = self.hass.config_entries.async_get_entry(
+    async def async_step_reconfigure(self, user_input=None):
+        self.reconfigure_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
 
