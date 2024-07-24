@@ -82,8 +82,10 @@ ZONE_ENTITY_DESCRIPTIONS = [
         off=ynca.HdmiOut.OFF,
         # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
         # This switch handles single HDMI output, so check if HDMI2 does NOT exist and assume there is only one HDMI output
-        supported_check=lambda _, zone_subunit: zone_subunit.lipsynchdmiout2offset
-        is None,
+        supported_check=lambda _, zone_subunit: (
+            getattr(zone_subunit, "hdmiout", None) is not None
+            and zone_subunit.lipsynchdmiout2offset is None
+        ),
     ),
 ]
 
