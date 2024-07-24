@@ -116,7 +116,6 @@ class YamahaYncaZoneRemote(RemoteEntity):
         r"^(?P<left>([0-9A-F]{2}){1,2}?)[^0-9A-F]?(?P<right>([0-9A-F]{2}){1,2})$"
     )
     _attr_has_entity_name = True
-    _attr_entity_registry_enabled_default = False
     _unrecorded_attributes = frozenset({ATTR_COMMANDS})
 
     def __init__(
@@ -177,6 +176,6 @@ class YamahaYncaZoneRemote(RemoteEntity):
         for cmd in command:
             # Use raw remotecode from mapping otherwise assume user provided raw code
             code = self._zone_codes.get(cmd, cmd)
-            code = self._format_remotecode(code)
+            formatted_code = self._format_remotecode(code)
 
-            self._api.sys.remotecode(code)  # type: ignore
+            self._api.sys.remotecode(formatted_code)  # type: ignore
