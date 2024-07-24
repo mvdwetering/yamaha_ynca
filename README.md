@@ -518,9 +518,6 @@ cards:
 
 ## Presets
 
-> [!NOTE]
-> Presets for DAB tuner are currently experimental. The DAB tuner uses different commands from the other inputs so I had to guess a bit on how it works and might have been wrong. I am unable to test it because my receiver does not support DAB. Please provide feedback in the [Discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) or [Issues](https://github.com/mvdwetering/yamaha_ynca/issues).
-
 Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset the receiver will turn on and switch input if needed.
