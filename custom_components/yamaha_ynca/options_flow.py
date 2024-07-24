@@ -1,7 +1,6 @@
 """Options flow for Yamaha (YNCA) integration."""
 
 from __future__ import annotations
-from typing import get_origin
 
 import voluptuous as vol  # type: ignore
 import ynca
@@ -9,7 +8,6 @@ import ynca
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
 
-from . import YamahaYncaConfigEntry
 from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
