@@ -108,16 +108,19 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             LOGGER.exception("Unhandled exception during connection.")
             errors["base"] = "unknown"
         else:
-            data = {}
-            data[CONF_SERIAL_URL] = user_input[CONF_SERIAL_URL]
-            data[DATA_MODELNAME] = check_result.modelname
-            data[DATA_ZONES] = check_result.zones
+            data = {
+                CONF_SERIAL_URL: user_input[CONF_SERIAL_URL],
+                DATA_MODELNAME: check_result.modelname,
+                DATA_ZONES: check_result.zones,
+            }
 
             if self.reconfigure_entry:
                 self.hass.config_entries.async_update_entry(
                     self.reconfigure_entry, data=data
                 )
-                await self.hass.config_entries.async_reload(self.reconfigure_entry.entry_id)
+                await self.hass.config_entries.async_reload(
+                    self.reconfigure_entry.entry_id
+                )
                 return self.async_abort(reason="reconfigure_successful")
 
             return self.async_create_entry(title=check_result.modelname, data=data)
@@ -136,7 +139,10 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
                 step_id=STEP_ID_SERIAL,
                 data_schema=get_serial_url_schema(
                     {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
-                    if self.reconfigure_entry and not self.reconfigure_entry.data[CONF_SERIAL_URL].startswith("socket://")
+                    if self.reconfigure_entry
+                    and not self.reconfigure_entry.data[CONF_SERIAL_URL].startswith(
+                        "socket://"
+                    )
                     else {}
                 ),
             )
@@ -152,22 +158,22 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             data = {}
             if self.reconfigure_entry:
                 # Get HOST and PORT from socket://HOST:PORT
-                if m := re.match(r"socket://(?P<host>.+):(?P<port>\d+)", self.reconfigure_entry.data[CONF_SERIAL_URL]):
+                if m := re.match(
+                    r"socket://(?P<host>.+):(?P<port>\d+)",
+                    self.reconfigure_entry.data[CONF_SERIAL_URL],
+                ):
                     data[CONF_HOST] = m.group("host")
                     data[CONF_PORT] = int(m.group("port"))
 
             return self.async_show_form(
-                step_id=STEP_ID_NETWORK,
-                data_schema=get_network_schema(data)
+                step_id=STEP_ID_NETWORK, data_schema=get_network_schema(data)
             )
 
         connection_data = {
             CONF_SERIAL_URL: f"socket://{user_input[CONF_HOST]}:{user_input[CONF_PORT]}"
         }
         return await self.async_try_connect(
-            STEP_ID_NETWORK,
-            get_network_schema(user_input),
-            connection_data
+            STEP_ID_NETWORK, get_network_schema(user_input), connection_data
         )
 
     async def async_step_advanced(
