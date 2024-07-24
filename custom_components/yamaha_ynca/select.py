@@ -221,8 +221,10 @@ ENTITY_DESCRIPTIONS = [
         ],
         # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
         # This select handles multiple HDMI outputs, so check if HDMI2 exists to see if it is supported
-        supported_check=lambda _, zone_subunit: zone_subunit.lipsynchdmiout2offset
-        is not None,
+        supported_check=lambda _, zone_subunit: (
+            getattr(zone_subunit, "hdmiout", None) is not None
+            and zone_subunit.lipsynchdmiout2offset is not None
+        ),
     ),
     YncaSelectEntityDescription(  # type: ignore
         key="sleep",
