@@ -9,13 +9,8 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry, entity_registry
 
+from .const import CONF_HIDDEN_SOUND_MODES, DOMAIN, LOGGER
 from .helpers import receiver_requires_audio_input_workaround
-
-from .const import (
-    CONF_HIDDEN_SOUND_MODES,
-    DOMAIN,
-    LOGGER,
-)
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -50,7 +45,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         if config_entry.minor_version == 3:
             migrate_v7_3_to_v7_4(hass, config_entry)
         if config_entry.minor_version == 4:
-            migrate_v7_4_to_v7_5(hass, config_entry)           
+            migrate_v7_4_to_v7_5(hass, config_entry)
 
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
@@ -65,6 +60,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     )
 
     return True
+
 
 def migrate_v7_4_to_v7_5(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get
@@ -81,8 +77,10 @@ def migrate_v7_4_to_v7_5(hass: HomeAssistant, config_entry: ConfigEntry):
             )
             options[zone_id]["hidden_inputs"].append("TV")
 
-    config_entry.minor_version = 5
-    hass.config_entries.async_update_entry(config_entry, options=options)
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=5
+    )
+
 
 def migrate_v7_3_to_v7_4(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get
@@ -99,8 +97,9 @@ def migrate_v7_3_to_v7_4(hass: HomeAssistant, config_entry: ConfigEntry):
             )
             options[zone_id]["hidden_inputs"].append("AUDIO5")
 
-    config_entry.minor_version = 4
-    hass.config_entries.async_update_entry(config_entry, options=options)
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=4
+    )
 
 
 def migrate_v7_2_to_v7_3(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -128,8 +127,9 @@ def migrate_v7_2_to_v7_3(hass: HomeAssistant, config_entry: ConfigEntry):
                 "dts_neo_6_music",
             ]
 
-    config_entry.minor_version = 3
-    hass.config_entries.async_update_entry(config_entry, options=options)
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=3
+    )
 
 
 def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -147,8 +147,9 @@ def migrate_v7_1_to_v7_2(hass: HomeAssistant, config_entry: ConfigEntry):
                 )
                 options[zone_id]["hidden_inputs"].append("AUDIO")
 
-    config_entry.minor_version = 2
-    hass.config_entries.async_update_entry(config_entry, options=options)
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=2
+    )
 
 
 def migrate_v6_to_v7(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -163,8 +164,9 @@ def migrate_v6_to_v7(hass: HomeAssistant, config_entry: ConfigEntry):
     if device_entry := registry.async_get_device(identifiers=old_identifiers):
         registry.async_update_device(device_entry.id, new_identifiers=new_identifiers)
 
-    config_entry.version = 7
-    hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
+    hass.config_entries.async_update_entry(
+        config_entry, data=config_entry.data, version=7, minor_version=1
+    )
 
 
 def migrate_v5_to_v6(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -186,9 +188,8 @@ def migrate_v5_to_v6(hass: HomeAssistant, config_entry: ConfigEntry):
     new_data = {**config_entry.data}
     new_data["modelname"] = config_entry.title
 
-    config_entry.version = 6
     hass.config_entries.async_update_entry(
-        config_entry, data=new_data, options=new_options
+        config_entry, data=new_data, options=new_options, version=6, minor_version=1
     )
 
 
@@ -215,8 +216,9 @@ def migrate_v4_to_v5(hass: HomeAssistant, config_entry: ConfigEntry):
     new = {**config_entry.data}
     new["serial_url"] = serial_url_from_user_input(config_entry.data["serial_url"])
 
-    config_entry.version = 5
-    hass.config_entries.async_update_entry(config_entry, data=new)
+    hass.config_entries.async_update_entry(
+        config_entry, data=new, version=5, minor_version=1
+    )
 
 
 def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -233,9 +235,12 @@ def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry):
                 pass
         options[CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
 
-    config_entry.version = 4
     hass.config_entries.async_update_entry(
-        config_entry, data=config_entry.data, options=options
+        config_entry,
+        data=config_entry.data,
+        options=options,
+        version=4,
+        minor_version=1,
     )
 
 
@@ -251,8 +256,9 @@ def migrate_v2_to_v3(hass: HomeAssistant, config_entry: ConfigEntry):
         if entity.domain == Platform.SCENE:
             registry.async_remove(entity.entity_id)
 
-    config_entry.version = 3
-    hass.config_entries.async_update_entry(config_entry, data=config_entry.data)
+    hass.config_entries.async_update_entry(
+        config_entry, data=config_entry.data, version=3, minor_version=1
+    )
 
 
 def migrate_v1_to_v2(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -270,5 +276,6 @@ def migrate_v1_to_v2(hass: HomeAssistant, config_entry: ConfigEntry):
     new = {**config_entry.data}
     new["serial_url"] = new.pop("serial_port")
 
-    config_entry.version = 2
-    hass.config_entries.async_update_entry(config_entry, data=new)
+    hass.config_entries.async_update_entry(
+        config_entry, data=new, version=2, minor_version=1
+    )

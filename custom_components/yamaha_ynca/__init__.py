@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from importlib.metadata import version
 import re
 from typing import List
 
