@@ -32,7 +32,7 @@ jobs:
           pytest
       - name: Check typing
         run: |
-          mypy custom_components --check-untyped-defs
+          mypy custom_components --check-untyped-defs --enable-incomplete-feature=NewGenericSyntax
       - name: Hassfest validation
         uses: "home-assistant/actions/hassfest@master"
       - name: HACS validation

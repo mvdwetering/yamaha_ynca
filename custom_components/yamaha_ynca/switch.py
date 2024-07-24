@@ -1,21 +1,23 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, List
 
 import ynca
 
-from homeassistant.components.switch import (
-    SwitchEntity,
-    SwitchEntityDescription,
-)
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
-from .helpers import DomainEntryData, YamahaYncaSettingEntity
+from . import YamahaYncaConfigEntry
+from .const import ZONE_ATTRIBUTE_NAMES
+from .helpers import YamahaYncaSettingEntity
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
+
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSwitchEntityDescription(SwitchEntityDescription):
@@ -79,8 +81,9 @@ ZONE_ENTITY_DESCRIPTIONS = [
         on=ynca.HdmiOut.OUT,
         off=ynca.HdmiOut.OFF,
         # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
-        # This switch handles single HDMI output, so check if HDMI2 does NOT exist and assume there is only one HDMI output 
-        supported_check=lambda _, zone_subunit: zone_subunit.lipsynchdmiout2offset is None
+        # This switch handles single HDMI output, so check if HDMI2 does NOT exist and assume there is only one HDMI output
+        supported_check=lambda _, zone_subunit: zone_subunit.lipsynchdmiout2offset
+        is None,
     ),
 ]
 
@@ -105,9 +108,13 @@ SYS_ENTITY_DESCRIPTIONS = [
     ),
 ]
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
 
-    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: YamahaYncaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
+    domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
@@ -121,16 +128,24 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     )
 
     # These are features on the SYS subunit, but they are tied to a zone
-    assert(domain_entry_data.api.sys is not None)
+    assert domain_entry_data.api.sys is not None
     for entity_description in SYS_ENTITY_DESCRIPTIONS:
-        assert(isinstance(entity_description.associated_zone_attr, str))
-        if getattr(domain_entry_data.api.sys, entity_description.key, None) is not None:
-            if zone_subunit := getattr(domain_entry_data.api, entity_description.associated_zone_attr):
-                entities.append(
-                    YamahaYncaSwitch(
-                        config_entry.entry_id, domain_entry_data.api.sys, entity_description, associated_zone=zone_subunit
-                    )
+        assert isinstance(entity_description.associated_zone_attr, str)
+        if (
+            getattr(domain_entry_data.api.sys, entity_description.key, None) is not None
+        ) and (
+            zone_subunit := getattr(
+                domain_entry_data.api, entity_description.associated_zone_attr
+            )
+        ):
+            entities.append(
+                YamahaYncaSwitch(
+                    config_entry.entry_id,
+                    domain_entry_data.api.sys,
+                    entity_description,
+                    associated_zone=zone_subunit,
                 )
+            )
 
     async_add_entities(entities)
 

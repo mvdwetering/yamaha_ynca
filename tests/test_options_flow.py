@@ -174,7 +174,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
     """Test optionsflow when there is no connection"""
 
     integration = await setup_integration(hass, mock_ynca)
-    hass.data[yamaha_ynca.DOMAIN] = {}  # Pretend connection failed
+    integration.entry.runtime_data = None  # Pretend connection failed
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 

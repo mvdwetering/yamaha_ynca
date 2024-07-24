@@ -4,13 +4,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from typing import Callable, Generator, NamedTuple, Type
-from unittest.mock import DEFAULT, Mock, create_autospec, patch
+from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.helpers import device_registry
 
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
@@ -192,7 +191,7 @@ def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
 
 
 class Integration(NamedTuple):
-    entry: Type[ConfigEntry]
+    entry: Type[yamaha_ynca.YamahaYncaConfigEntry]
     on_disconnect: Callable | None
     mock_ynca: Type[Mock]
 
