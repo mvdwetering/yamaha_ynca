@@ -674,7 +674,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             if preset_id < 1 or preset_id > 40:
                 raise ValueError
         except ValueError:
-            raise HomeAssistantError(f"Malformed preset or out of range: {media_id}")
+            raise HomeAssistantError(f"Malformed preset or out of range: {media_id}") from None
 
     def store_preset(self, preset_id: int) -> None:
         if subunit := InputHelper.get_subunit_for_input(self._ynca, self._zone.inp):
