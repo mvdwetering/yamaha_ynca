@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import ANY, Mock, call, patch
 
+import pytest
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
@@ -50,8 +51,8 @@ async def test_async_setup_entry(
     mock_ynca.main.maxvol = 0
     mock_ynca.main.spbass = -1
     mock_ynca.main.sptreble = 1
-    mock_ynca.main.hpbass = None
-    mock_ynca.main.hptreble = None
+    mock_ynca.main.hpbass = 2
+    mock_ynca.main.hptreble = 3
     mock_ynca.main.initvollvl = 1.0
 
     integration = await setup_integration(hass, mock_ynca)
@@ -78,7 +79,7 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 4
+    assert len(entities) == 6
 
 
 async def test_number_entity(hass, mock_ynca, mock_zone_main):
@@ -104,13 +105,14 @@ async def test_number_entity(hass, mock_ynca, mock_zone_main):
     assert mock_zone_main.maxvol == 10
 
 
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
 async def test_number_entity_volume(hass, mock_ynca, mock_zone_main):
-    entity_under_test = "number.vol"
+    entity_under_test = 'number.modelname_main_volume_db'
 
     mock_zone_main.vol = -5
     mock_zone_main.pwr = ynca.Pwr.ON
     mock_ynca.main = mock_zone_main
-    await setup_integration(hass, mock_ynca, enable_all_entities=True)
+    await setup_integration(hass, mock_ynca)
 
     # Initial value
     volume = hass.states.get(entity_under_test)
