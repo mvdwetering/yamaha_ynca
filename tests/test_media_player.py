@@ -466,7 +466,7 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_ynca.netradio.station = "StationName"
     mock_ynca.netradio.song = "SongName"
     mock_ynca.netradio.album = "AlbumName"
-    assert mp_entity.media_title is "SongName"
+    assert mp_entity.media_title == "SongName"
     assert mp_entity.media_channel == "StationName"
     assert mp_entity.media_album_name == "AlbumName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
