@@ -87,7 +87,7 @@
       },
       "no_connection": {
         "title": "No connection",
-        "description": "Can not configure receiver without active connection.\n\nUse the re-configure option to update connection settings if needed."
+        "description": "Can not configure integration without active connection to the receiver.\n\nUse the re-configure option to update connection settings if needed."
       }
     }
   },
