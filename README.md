@@ -566,6 +566,9 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 * **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
   The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported features for your receiver in the integration configuration.
 
+* **Q: How can I stream audio from a URL?**  
+  You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
+
 * **Q: Why are Scene buttons are not working on some receivers?**  
   On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
 
@@ -580,7 +583,3 @@ data:
 target:
   entity_id: remote.rx_V475_main_remote
 ```
-
-* **Q: How can I stream audio from a URL?**  
-  You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
-
