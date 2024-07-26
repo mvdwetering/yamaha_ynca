@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import YamahaYncaConfigEntry
 from .const import ZONE_ATTRIBUTE_NAMES
-from .helpers import YamahaYncaSettingEntity
+from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
@@ -32,10 +32,7 @@ class YncaSwitchEntityDescription(SwitchEntityDescription):
     Such relation is indicated here
     """
     supported_check: Callable[[YncaSwitchEntityDescription, ZoneBase], bool] = (
-        lambda entity_description, zone_subunit: getattr(
-            zone_subunit, entity_description.key, None
-        )
-        is not None
+        lambda entity_description, zone_subunit: subunit_supports_entitydescription_key(entity_description, zone_subunit)
     )
     """
     Callable to check support for this entity on the zone, default checks if attribute `key` is not None.
@@ -82,8 +79,8 @@ ZONE_ENTITY_DESCRIPTIONS = [
         off=ynca.HdmiOut.OFF,
         # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
         # This switch handles single HDMI output, so check if HDMI2 does NOT exist and assume there is only one HDMI output
-        supported_check=lambda _, zone_subunit: (
-            getattr(zone_subunit, "hdmiout", None) is not None
+        supported_check=lambda entity_description, zone_subunit: (
+            subunit_supports_entitydescription_key(entity_description, zone_subunit)
             and zone_subunit.lipsynchdmiout2offset is None
         ),
     ),
