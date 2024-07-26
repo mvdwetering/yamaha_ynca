@@ -12,7 +12,7 @@
 
 Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
 
-According to reports of users and info found on the internet the following AV receivers should be working, there are probably more, just give it a try. If your receiver works and is not in the list please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
+According to reports of users and info found on the internet the following AV receivers should be working. There are probably more receivers that work, just give it a try. If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
 
 > HTR-4065, HTR-4071, HTR-6064, RX-A2A, RX-A6A, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
 
@@ -28,9 +28,9 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Volume control and mute
 * Source selection
 * Soundmode selection
-* Show metadata like artist, album, song (depends on source)
-* Control playback (depends on source)
-* Activate scenes
+* Control playback state (depends on source)
+* Provide metadata like artist, album, song (depends on source)
+* Activate scenes (like the buttons on the front)
 * [Presets](#presets)
 * Send [remote control commands](#remote-control)
 * Several controllable settings (if supported by receiver):
@@ -56,24 +56,24 @@ HACS is a 3rd party downloader for Home Assistant to easily install and update c
 
 * Add integration within HACS (use the + button and search for "YNCA")
 * Restart Home Assistant
-* Go to the Home Assistant integrations menu and press the Add button and search for "Yamaha (YNCA)". You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
+* Go to the Home Assistant integrations menu, press the Add button and search for "Yamaha (YNCA)". You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
 
 ### Manual
 
-* Install the custom component by downloading the zipfile from the releases.
+* Download the zipfile from the releases.
 * Extract the zip and copy the contents to the `custom_components` directory.
 * Restart Home Assistant
-* Go to the Home Assistant integrations menu and press the Add button and search for "Yamaha (YNCA)". You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
+* Go to the Home Assistant integrations menu, press the Add button and search for "Yamaha (YNCA)". You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
 
 ## Volume (dB) entity
 
-The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1. The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in dB unit on the display. This integration maps the full dB range onto the 0-to-1 range in Home Assistant. But this makes setting volume in Home Assistant difficult as those Home Assistant numbers are not easily convertible to the dB numbers shown by the receiver.
+The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult as the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
 
-The "Volume (dB)" entity was added to work around this. It is basically the same as the `media_player` volume, but using the familiar dB values that the receiver shows.
+The "Volume (dB)" entity was added to simplify this. It is a number entity that controls the volume of a zone, but using the familiar dB unit.
 
 ## Remote control
 
-The remote control entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone. Some remote commands are forwarded through HDMI-CEC and can be used to control other devices that way. I guess the commands are also sent over the remote out of the receiver, but that needs to be validated by someone that has equipment connected to the remote out port.
+The remote control entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone.
 
 The current list of commands is below. For the list of supported commands for a specific entity check the "commands" attribute of the remote entity. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
 
@@ -98,12 +98,12 @@ target:
 
 In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations. 
 
-On a dashboard add a "manual" card. Paste the code below and search and replace the `entity_id` with your own.
+![image](https://github.com/mvdwetering/yamaha_ynca/assets/732514/321181e2-81c3-4a1d-8084-8efceb94f7ff)
 
 <details>
-<summary>Grid with buttons for remote control commands.</summary>
+<summary>Code for the grid with buttons for remote control commands.</summary>
 
-![image](https://github.com/mvdwetering/yamaha_ynca/assets/732514/321181e2-81c3-4a1d-8084-8efceb94f7ff)
+On a dashboard, add a "manual" card. Paste the code below and search and replace the `entity_id` with your own.
 
 ```yaml
 type: vertical-stack
@@ -518,14 +518,16 @@ cards:
 
 ## Presets
 
-Presets can be activated and stored with the integration on many inputs. The most obvious inputs that support presets are the radio inputs like AM/FM tuner. Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
+Presets can be activated and stored with the integration for several inputsources. The most obvious input that support presets is the radio inputs like AM/FM or DAB tuner. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
 
-Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset the receiver will turn on and switch input if needed.
+Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset, the receiver will turn on and switch input if needed.
+
+Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. 
 
 ### Store presets
 
-Some presets can be managed in the Yamaha AV Control app (e.g. Tuner). 
-Home Assistant has no standardized way to store presets, so the `store_preset` service was added. It will store a preset with the provided number for the current playing item.
+Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). 
+Home Assistant has no standardized way to manage presets, so the `store_preset` service was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
 service: yamaha_ynca.store_preset
@@ -562,7 +564,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
 * **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. For example, supported soundmodes, available inputs, scenes or surround decoders cannot always be detected. You can adjust these features for your receiver in the integration configuration.
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported features for your receiver in the integration configuration.
 
 * **Q: Why are Scene buttons are not working on some receivers?**  
   On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
