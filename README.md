@@ -103,7 +103,7 @@ In case you want to have buttons on a dashboard to send the commands the code be
 <details>
 <summary>Code for the grid with buttons for remote control commands.</summary>
 
-On a dashboard add a "manual" card. Paste the code below and search and replace the `entity_id` with your own.
+On a dashboard, add a "manual" card. Paste the code below and search and replace the `entity_id` with your own.
 
 ```yaml
 type: vertical-stack
