@@ -252,3 +252,38 @@ async def test_select_surrounddecoder_entity_options_some_selected_in_configentr
     )
 
     assert entity.options == ["auto", "dolby_pl", "dolby_plii_movie"]
+
+
+async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.hdmiout = None
+    mock_ynca.main.lipsynchdmiout2offset = None
+
+    await setup_integration(hass, mock_ynca)
+
+    hdmiout = hass.states.get("select.modelname_main_hdmi_out")
+    assert hdmiout is None
+
+
+async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone_main):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
+    mock_ynca.main.lipsynchdmiout2offset = None  # This indicates no HDMI2
+
+    await setup_integration(hass, mock_ynca)
+
+    hdmiout = hass.states.get("select.modelname_main_hdmi_out")
+    assert hdmiout is None
+
+
+async def test_hdmiout_supported_but_with_two_hdmi_outputs(
+    hass, mock_ynca, mock_zone_main
+):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
+    mock_ynca.main.lipsynchdmiout2offset = 123  # This indicates HDMI2
+
+    await setup_integration(hass, mock_ynca)
+
+    hdmiout = hass.states.get("select.modelname_main_hdmi_out")
+    assert hdmiout is not None

@@ -14,7 +14,6 @@ from homeassistant.helpers.entity import EntityCategory
 
 from tests.conftest import setup_integration
 
-
 TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",
     entity_category=EntityCategory.CONFIG,
@@ -28,7 +27,7 @@ TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE = YncaSwitchEntityDescription(
     name="Name",
     on=ynca.HdmiOutOnOff.ON,
     off=ynca.HdmiOutOnOff.OFF,
-    associated_zone_attr="main"
+    associated_zone_attr="main",
 )
 
 
@@ -94,7 +93,9 @@ async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
     mock_sys = mock_ynca.sys
     mock_main = mock_zone_main
 
-    entity = YamahaYncaSwitch("ReceiverUniqueId", mock_sys, TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE, mock_main)
+    entity = YamahaYncaSwitch(
+        "ReceiverUniqueId", mock_sys, TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE, mock_main
+    )
 
     assert entity.unique_id == "ReceiverUniqueId_SYS_hdmiout1"
     assert entity.device_info["identifiers"] == {
@@ -112,3 +113,38 @@ async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
     assert entity.is_on is True
     mock_sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
     assert entity.is_on is False
+
+
+async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.hdmiout = None
+    mock_ynca.main.lipsynchdmiout2offset = None
+
+    await setup_integration(hass, mock_ynca)
+
+    hdmiout = hass.states.get("switch.modelname_main_hdmi_out")
+    assert hdmiout is None
+
+
+async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone_main):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
+    mock_ynca.main.lipsynchdmiout2offset = None  # This indicates no HDMI2
+
+    await setup_integration(hass, mock_ynca)
+
+    hdmiout = hass.states.get("switch.modelname_main_hdmi_out")
+    assert hdmiout is not None
+
+
+async def test_hdmiout_supported_but_with_two_hdmi_outputs(
+    hass, mock_ynca, mock_zone_main
+):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
+    mock_ynca.main.lipsynchdmiout2offset = 123  # This indicates HDMI2
+
+    await setup_integration(hass, mock_ynca)
+
+    hdmiout = hass.states.get("switch.modelname_main_hdmi_out")
+    assert hdmiout is None

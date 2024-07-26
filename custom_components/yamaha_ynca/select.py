@@ -20,7 +20,7 @@ from .const import (
     TWOCHDECODER_STRINGS,
     ZONE_ATTRIBUTE_NAMES,
 )
-from .helpers import YamahaYncaSettingEntity
+from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunit import SubunitBase
@@ -190,10 +190,9 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     """YamahaYncaSelect class to instantiate for this entity_description"""
 
     supported_check: Callable[[YncaSelectEntityDescription, ZoneBase], bool] = (
-        lambda entity_description, zone_subunit: getattr(
-            zone_subunit, entity_description.key, None
+        lambda entity_description, zone_subunit: subunit_supports_entitydescription_key(
+            entity_description, zone_subunit
         )
-        is not None
     )
     """Callable to check support for this entity on the zone, default checks if attribute `key` is not None."""
 
@@ -221,8 +220,8 @@ ENTITY_DESCRIPTIONS = [
         ],
         # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
         # This select handles multiple HDMI outputs, so check if HDMI2 exists to see if it is supported
-        supported_check=lambda _, zone_subunit: (
-            getattr(zone_subunit, "hdmiout", None) is not None
+        supported_check=lambda entity_description, zone_subunit: (
+            subunit_supports_entitydescription_key(entity_description, zone_subunit)
             and zone_subunit.lipsynchdmiout2offset is not None
         ),
     ),
