@@ -1,18 +1,17 @@
 from __future__ import annotations
-import re
 
+import re
 from typing import TYPE_CHECKING, Any, Dict, Iterable
 
-from homeassistant.components.remote import RemoteEntity
-from homeassistant.helpers.entity import DeviceInfo
-
-from .const import (
-    ATTR_COMMANDS,
-    DOMAIN,
-    ZONE_ATTRIBUTE_NAMES,
-)
-from .helpers import DomainEntryData
 import ynca
+
+from homeassistant.components.remote import RemoteEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from . import YamahaYncaConfigEntry
+from .const import ATTR_COMMANDS, DOMAIN, ZONE_ATTRIBUTE_NAMES
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
@@ -91,8 +90,12 @@ def get_zone_codes(zone_id: str) -> Dict[str, str]:
     return codes
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: YamahaYncaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
+    domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
@@ -116,7 +119,6 @@ class YamahaYncaZoneRemote(RemoteEntity):
         r"^(?P<left>([0-9A-F]{2}){1,2}?)[^0-9A-F]?(?P<right>([0-9A-F]{2}){1,2})$"
     )
     _attr_has_entity_name = True
-    _attr_entity_registry_enabled_default = False
     _unrecorded_attributes = frozenset({ATTR_COMMANDS})
 
     def __init__(
@@ -136,7 +138,9 @@ class YamahaYncaZoneRemote(RemoteEntity):
             identifiers={(DOMAIN, f"{receiver_unique_id}_{zone.id}")}
         )
 
-        self._attr_extra_state_attributes = {ATTR_COMMANDS: list(self._zone_codes.keys())}
+        self._attr_extra_state_attributes = {
+            ATTR_COMMANDS: list(self._zone_codes.keys())
+        }
 
     def _format_remotecode(self, input_code: str) -> str:
         """
@@ -157,9 +161,11 @@ class YamahaYncaZoneRemote(RemoteEntity):
                 output_code += part
                 # Add filler byte by inverting the first byte, research NEC ir codes for more info
                 # Invert with 'xor 0xFF' because Python ~ operator makes it signed otherwise
-                output_code += int.to_bytes(
-                    int.from_bytes(bytes.fromhex(part)) ^ 0xFF
-                ).hex().upper()
+                output_code += (
+                    int.to_bytes(int.from_bytes(bytes.fromhex(part)) ^ 0xFF)
+                    .hex()
+                    .upper()
+                )
             else:
                 output_code += part
         return output_code
@@ -177,6 +183,6 @@ class YamahaYncaZoneRemote(RemoteEntity):
         for cmd in command:
             # Use raw remotecode from mapping otherwise assume user provided raw code
             code = self._zone_codes.get(cmd, cmd)
-            code = self._format_remotecode(code)
+            formatted_code = self._format_remotecode(code)
 
-            self._api.sys.remotecode(code)  # type: ignore
+            self._api.sys.remotecode(formatted_code)  # type: ignore

@@ -87,7 +87,6 @@ async def test_options_flow_navigate_all_screens(
     mock_ynca.zone4 = mock_zone_zone4
 
     integration = await setup_integration(hass, mock_ynca)
-    integration.entry.options = dict(integration.entry.options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -174,7 +173,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
     """Test optionsflow when there is no connection"""
 
     integration = await setup_integration(hass, mock_ynca)
-    hass.data[yamaha_ynca.DOMAIN] = {}  # Pretend connection failed
+    integration.entry.runtime_data = None  # Pretend connection failed
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -187,8 +186,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
         user_input={},
     )
 
-    assert result["type"] == FlowResultType.ABORT
-    assert result["reason"] == "marked_for_reconfiguring"
+    assert result["type"] == FlowResultType.CREATE_ENTRY
 
 
 async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
@@ -201,7 +199,10 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
         "Obsolete",  # Obsolete values should not break the schema
     ]
-    integration.entry.options = options
+    hass.config_entries.async_update_entry(
+        integration.entry,
+        options=options
+    )
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -252,7 +253,10 @@ async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, moc
 
     options = dict(integration.entry.options)
     # Do _not_ set options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] to test handling of absent options
-    integration.entry.options = options
+    hass.config_entries.async_update_entry(
+        integration.entry,
+        options=options
+    )
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -296,7 +300,10 @@ async def test_options_flow_zone_inputs(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"hidden_inputs": ["AV5"]}
-    integration.entry.options = options
+    hass.config_entries.async_update_entry(
+        integration.entry,
+        options=options
+    )
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"
@@ -336,7 +343,10 @@ async def test_options_flow_configure_nof_scenes(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"number_of_scenes": 5}
-    integration.entry.options = options
+    hass.config_entries.async_update_entry(
+        integration.entry,
+        options=options
+    )
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"

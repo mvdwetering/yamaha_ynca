@@ -52,6 +52,10 @@ def receiver_requires_audio_input_workaround(modelname) -> bool:
         "HTR-5065",
     ]
 
+def subunit_supports_entitydescription_key(entity_description, subunit) -> bool:
+    return getattr(
+            subunit, entity_description.key, None
+        ) is not None
 
 class YamahaYncaSettingEntity:
     """

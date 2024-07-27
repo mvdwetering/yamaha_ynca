@@ -3,14 +3,13 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-from typing import Callable, NamedTuple, Type
-from unittest.mock import DEFAULT, Mock, create_autospec, patch
+from typing import Callable, Generator, NamedTuple, Type
+from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.helpers import device_registry
 
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
@@ -49,6 +48,15 @@ INPUT_SUBUNITS = [
 def auto_enable_custom_integrations(enable_custom_integrations):
     yield
 
+# Copied from HA tests/components/conftest.py
+@pytest.fixture
+def entity_registry_enabled_by_default() -> Generator[None]:
+    """Test fixture that ensures all entities are enabled in the registry."""
+    with patch(
+        "homeassistant.helpers.entity.Entity.entity_registry_enabled_default",
+        return_value=True,
+    ):
+        yield
 
 @pytest.fixture
 def mock_zone():
@@ -96,6 +104,8 @@ def create_mock_zone(spec=None):
     zone.initvollvl = None
     zone.initvolmode = None
     zone.inp = None
+    zone.lipsynchdmiout1offset = None
+    zone.lipsynchdmiout2offset = None
     zone.maxvol = None
     zone.mute = None
     zone.puredirmode = None
@@ -181,7 +191,7 @@ def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
 
 
 class Integration(NamedTuple):
-    entry: Type[ConfigEntry]
+    entry: Type[yamaha_ynca.YamahaYncaConfigEntry]
     on_disconnect: Callable | None
     mock_ynca: Type[Mock]
 
@@ -197,7 +207,6 @@ async def setup_integration(
     mock_ynca: ynca.YncaApi,
     skip_setup=False,
     serial_url="SerialUrl",
-    enable_all_entities=False,
 ):
     zones = []
     if mock_ynca.main:
@@ -211,25 +220,6 @@ async def setup_integration(
 
     entry = create_mock_config_entry(modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url)
     entry.add_to_hass(hass)
-
-    if enable_all_entities:
-        # Pre-create registry entries for default disabled ones
-        er = entity_registry.async_get(hass)
-        for disabled_entity in [
-            DisabledEntity(Platform.NUMBER, "vol"),
-            DisabledEntity(Platform.NUMBER, "spbass"),
-            DisabledEntity(Platform.NUMBER, "sptreble"),
-            DisabledEntity(Platform.NUMBER, "hpbass"),
-            DisabledEntity(Platform.NUMBER, "hptreble"),
-        ]:
-            er.async_get_or_create(
-                disabled_entity.platform,
-                yamaha_ynca.DOMAIN,
-                f"entry_id_MAIN_{disabled_entity.key}",
-                suggested_object_id=disabled_entity.key,
-                disabled_by=None,
-                config_entry=entry,
-            )
 
     on_disconnect = None
 

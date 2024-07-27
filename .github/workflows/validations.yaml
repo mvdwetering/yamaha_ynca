@@ -14,7 +14,7 @@ jobs:
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.12"]
     steps:
       - uses: "actions/checkout@v4"
       - name: Set up Python ${{ matrix.python-version }}
@@ -32,7 +32,7 @@ jobs:
           pytest
       - name: Check typing
         run: |
-          mypy custom_components --check-untyped-defs
+          mypy custom_components --check-untyped-defs --enable-incomplete-feature=NewGenericSyntax
       - name: Hassfest validation
         uses: "home-assistant/actions/hassfest@master"
       - name: HACS validation

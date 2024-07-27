@@ -8,17 +8,19 @@ import ynca
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
+from . import YamahaYncaConfigEntry
 from .const import (
     CONF_SELECTED_SURROUND_DECODERS,
-    DOMAIN,
+    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
     TWOCHDECODER_STRINGS,
     ZONE_ATTRIBUTE_NAMES,
-    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
 )
-from .helpers import DomainEntryData, YamahaYncaSettingEntity
+from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunit import SubunitBase
@@ -31,9 +33,12 @@ class InitialVolumeMode(str, Enum):
     MUTE = "mute"
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-
-    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: YamahaYncaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
+    domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
@@ -185,10 +190,9 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     """YamahaYncaSelect class to instantiate for this entity_description"""
 
     supported_check: Callable[[YncaSelectEntityDescription, ZoneBase], bool] = (
-        lambda entity_description, zone_subunit: getattr(
-            zone_subunit, entity_description.key, None
+        lambda entity_description, zone_subunit: subunit_supports_entitydescription_key(
+            entity_description, zone_subunit
         )
-        is not None
     )
     """Callable to check support for this entity on the zone, default checks if attribute `key` is not None."""
 
@@ -196,17 +200,30 @@ class YncaSelectEntityDescription(SelectEntityDescription):
         return self.supported_check(self, zone_subunit)
 
     options_fn: Callable[[ConfigEntry], List[str]] | None = None
-    """Override which optionns are supported for this entity."""
+    """Override which options are supported for this entity."""
 
 
 ENTITY_DESCRIPTIONS = [
-    # Suppress following mypy message, which seems to be not an issue as other values have defaults:
-    # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
     YncaSelectEntityDescription(  # type: ignore
         key="hdmiout",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.HdmiOut,
         icon="mdi:hdmi-port",
+        options=[
+            slugify(e.value)
+            for e in [
+                ynca.HdmiOut.OFF,
+                ynca.HdmiOut.OUT1,
+                ynca.HdmiOut.OUT2,
+                ynca.HdmiOut.OUT1_PLUS_2,
+            ]
+        ],
+        # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
+        # This select handles multiple HDMI outputs, so check if HDMI2 exists to see if it is supported
+        supported_check=lambda entity_description, zone_subunit: (
+            subunit_supports_entitydescription_key(entity_description, zone_subunit)
+            and zone_subunit.lipsynchdmiout2offset is not None
+        ),
     ),
     YncaSelectEntityDescription(  # type: ignore
         key="sleep",

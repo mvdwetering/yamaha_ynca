@@ -35,7 +35,7 @@ async def test_async_setup_entry(
 
     assert len(mock_ynca.initialize.mock_calls) == 1
     assert (
-        mock_ynca is hass.data.get(yamaha_ynca.DOMAIN)[integration.entry.entry_id].api
+        mock_ynca is integration.entry.runtime_data.api
     )
 
     assert len(device_reg.devices.keys()) == 4
@@ -107,7 +107,6 @@ async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
         await hass.async_block_till_done()
 
     assert integration.entry.state is ConfigEntryState.SETUP_RETRY
-    assert not hass.data.get(yamaha_ynca.DOMAIN)
 
     # Unload to avoid errors about "Lingering timer" which was started to retry setup
     await hass.config_entries.async_unload(integration.entry.entry_id)
@@ -124,7 +123,6 @@ async def test_async_setup_entry_fails_with_connection_failed(hass, mock_ynca):
         await hass.async_block_till_done()
 
     assert integration.entry.state is ConfigEntryState.SETUP_RETRY
-    assert not hass.data.get(yamaha_ynca.DOMAIN)
 
     # Unload to avoid errors about "Lingering timer" which was started to retry setup
     await hass.config_entries.async_unload(integration.entry.entry_id)
@@ -145,7 +143,6 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(
         await hass.async_block_till_done()
 
     assert integration.entry.state is ConfigEntryState.SETUP_RETRY
-    assert not hass.data.get(yamaha_ynca.DOMAIN)
 
     # Unload to avoid errors about "Lingering timer" which was started to retry setup
     await hass.config_entries.async_unload(integration.entry.entry_id)
@@ -162,7 +159,6 @@ async def test_async_setup_entry_fails_unknown_reason(hass, mock_ynca):
         await hass.async_block_till_done()
 
     assert integration.entry.state is ConfigEntryState.SETUP_ERROR
-    assert not hass.data.get(yamaha_ynca.DOMAIN)
 
 
 async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
@@ -175,7 +171,6 @@ async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
 
     mock_ynca.close.assert_called_once()
     assert integration.entry.state is ConfigEntryState.NOT_LOADED
-    assert yamaha_ynca.DOMAIN not in hass.data
 
 
 @patch("homeassistant.config_entries.ConfigEntries.async_reload")
@@ -209,6 +204,7 @@ async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zon
             # no zones, will be added by function under test: yamaha_ynca.const.DATA_ZONES: zones,
         },
     )
+    entry.add_to_hass(hass)
 
     await yamaha_ynca.update_configentry(hass, entry, mock_ynca)
 

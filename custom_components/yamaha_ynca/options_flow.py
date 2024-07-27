@@ -1,16 +1,12 @@
 """Options flow for Yamaha (YNCA) integration."""
-from __future__ import annotations
 
-from typing import Any, Dict
+from __future__ import annotations
 
 import voluptuous as vol  # type: ignore
 import ynca
 
-from custom_components.yamaha_ynca.input_helpers import InputHelper
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers import selector
-from homeassistant.util import slugify
 
 from .const import (
     CONF_HIDDEN_INPUTS,
@@ -21,13 +17,11 @@ from .const import (
     CONF_SELECTED_SURROUND_DECODERS,
     DATA_MODELNAME,
     DATA_ZONES,
-    DOMAIN,
-    LOGGER,
     MAX_NUMBER_OF_SCENES,
     NUMBER_OF_SCENES_AUTODETECT,
     TWOCHDECODER_STRINGS,
-    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
 )
+from .input_helpers import InputHelper
 
 STEP_ID_INIT = "init"
 STEP_ID_NO_CONNECTION = "no_connection"
@@ -55,6 +49,7 @@ ZONE_STEPS = [
     STEP_ID_ZONE4,
 ]
 
+
 def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
     index = STEP_SEQUENCE.index(current_step)
     next_step = STEP_SEQUENCE[index + 1]
@@ -77,13 +72,11 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
     async def async_step_init(self, user_input=None):
         """Basic sanity checks before configuring options."""
 
-        if (
-            DOMAIN in self.hass.data
-            and self.config_entry.entry_id in self.hass.data[DOMAIN]
-        ):
-            self.api: ynca.YncaApi = self.hass.data[DOMAIN][
-                self.config_entry.entry_id
-            ].api
+        # The configentry in the optionsflow is _only_ a YamahaYncaConfigEntry when there is a connection
+        # Otherwise it is a "plain" ConfigEntry, so without runtime_data
+        # A normal isinstance check does not seem to work with type alias, to check for runtime_data attribute
+        if getattr(self.config_entry, "runtime_data", None):
+            self.api = self.config_entry.runtime_data.api
             return await self.async_step_general()
 
         return await self.async_step_no_connection()
@@ -91,8 +84,11 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
     async def async_step_no_connection(self, user_input=None):
         """No connection dialog"""
         if user_input is not None:
-            self.config_entry.async_start_reauth(self.hass)
-            return self.async_abort(reason="marked_for_reconfiguring")
+            # Strangely enough there is no title on the abort box
+            # I guess because optionflows are not expected to be aborted
+            # So exit with "success" instead through the done step and it will rewrite current settings
+            # return self.async_abort(reason="no_connection")
+            return await self.async_step_done()
 
         return self.async_show_form(step_id=STEP_ID_NO_CONNECTION)
 
@@ -123,7 +119,9 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
             self.options[CONF_HIDDEN_SOUND_MODES] = hidden_sound_modes
 
             if CONF_SELECTED_SURROUND_DECODERS in user_input:
-                self.options[CONF_SELECTED_SURROUND_DECODERS] = user_input[CONF_SELECTED_SURROUND_DECODERS]
+                self.options[CONF_SELECTED_SURROUND_DECODERS] = user_input[
+                    CONF_SELECTED_SURROUND_DECODERS
+                ]
 
             return await self.do_next_step(STEP_ID_GENERAL)
 
@@ -154,10 +152,16 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
                 stored_selected_surround_decoders_ids = self.options.get(
                     CONF_SELECTED_SURROUND_DECODERS, []
                 )
-                all_surround_decoders = dict(sorted(TWOCHDECODER_STRINGS.items(), key=lambda item: item[1].lower()))
+                all_surround_decoders = dict(
+                    sorted(
+                        TWOCHDECODER_STRINGS.items(), key=lambda item: item[1].lower()
+                    )
+                )
 
                 if not stored_selected_surround_decoders_ids:
-                    stored_selected_surround_decoders_ids =  list(all_surround_decoders.keys())
+                    stored_selected_surround_decoders_ids = list(
+                        all_surround_decoders.keys()
+                    )
 
                 # Could technically use translation for this in Options flow, but only by using SelectorSelect
                 # but the multiselect UI it creates is a hassle to use and since there are no translations yet
@@ -167,7 +171,7 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
                         CONF_SELECTED_SURROUND_DECODERS,
                         default=stored_selected_surround_decoders_ids,
                     )
-                ] =  cv.multi_select(all_surround_decoders)
+                ] = cv.multi_select(all_surround_decoders)
 
         return self.async_show_form(
             step_id=STEP_ID_GENERAL,

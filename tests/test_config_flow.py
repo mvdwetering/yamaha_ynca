@@ -153,17 +153,26 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "unknown"}
 
 
-async def test_reauth(hass: HomeAssistant, mock_ynca) -> None:
+async def test_reconfigure(hass: HomeAssistant, mock_ynca) -> None:
 
     integration = await setup_integration(hass, mock_ynca)
 
+    # Make sure existing data is different from what we are changing it to
+    hass.config_entries.async_update_entry(
+        integration.entry,
+        data={
+            **integration.entry.data,
+            yamaha_ynca.const.CONF_SERIAL_URL: "socket://old_hostname_or_ipaddress:12345"
+        }
+    )
+
     # Flow goes to menu with connection options
     result = await hass.config_entries.flow.async_init(
-        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_REAUTH, "entry_id": integration.entry.entry_id}
+        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_RECONFIGURE, "entry_id": integration.entry.entry_id}
     )
     assert result["type"] == FlowResultType.MENU
 
-    # Select network (could be any)
+    # Select network for this test
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         user_input={"next_step_id": "network"},
@@ -194,4 +203,4 @@ async def test_reauth(hass: HomeAssistant, mock_ynca) -> None:
     # Entry got updated and flow is aborted (as intended)
     assert integration.entry.data[yamaha_ynca.const.CONF_SERIAL_URL] == "socket://hostname_or_ipaddress:44444"
     assert result2["type"] == FlowResultType.ABORT
-    assert result2["reason"] == "reauth_successful"
+    assert result2["reason"] == "reconfigure_successful"

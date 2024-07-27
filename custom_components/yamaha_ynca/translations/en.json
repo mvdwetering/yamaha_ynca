@@ -17,7 +17,7 @@
       },
       "network": {
         "title": "Network connection",
-        "description": "Input the IP address or hostname of the receiver and the port.\n\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
+        "description": "Input the IP address or hostname of the receiver.\n\nLeave the port at default 50000 unless you have configured a different port on the receiver.",
         "data": {
           "host": "Receiver IP address or hostname e.g. 192.168.1.123",
           "port": "YNCA port; default is 50000"
@@ -32,15 +32,15 @@
       }
     },
     "error": {
-      "connection_error": "Failed to connect, check settings.",
+      "connection_error": "Failed to connect, check settings and make sure this is the _only_ application connecting to the receiver with the YNCA protocol.",
       "connection_failed_serial": "Connection failed, check serial port.",
-      "connection_failed_network": "Connection failed, check IP address and port settings and make sure this is the _only_ device using YNCA on the receiver.",
+      "connection_failed_network": "Connection failed, check IP address and port settings.",
       "connection_failed_advanced": "Connection failed, check URL handler format.",
       "unknown": "Unexpected error."
     },
     "abort": {
       "already_configured": "Device is already configured",
-      "reauth_successful": "Successfully reconfigured connection"
+      "reconfigure_successful": "Successfully re-configured the integration"
     }
   },
   "options": {
@@ -87,11 +87,8 @@
       },
       "no_connection": {
         "title": "No connection",
-        "description": "Could not connect to the receiver.\n\nClick 'Submit' to mark the integration for reconfiguration to be able to change the connection settings (or close this window to do nothing)."
+        "description": "Can not configure integration without active connection to the receiver.\n\nUse the re-configure option to update connection settings if needed."
       }
-    },
-    "abort": {
-      "marked_for_reconfiguring": "Configentry is marked for reconfiguration. You might need to refresh the browser."
     }
   },
   "entity": {
@@ -150,6 +147,9 @@
       },
       "threedcinema": {
         "name": "CINEMA DSP 3D Mode"
+      },
+      "hdmiout": {
+        "name": "HDMI Out"
       }
     },
     "select": {

@@ -1,4 +1,5 @@
 """The Yamaha (YNCA) integration."""
+
 from __future__ import annotations
 
 import asyncio
@@ -11,8 +12,9 @@ from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import config_validation as cv, device_registry
 from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
+from homeassistant.helpers.typing import ConfigType
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
@@ -35,6 +37,7 @@ PLATFORMS: List[Platform] = [
     Platform.SWITCH,
     Platform.REMOTE,
 ]
+
 
 async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
@@ -106,16 +109,37 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall):
-    config_entry_ids = await async_extract_config_entry_ids(hass, call)
-    for config_entry_id in config_entry_ids:
-        if domain_entry_info := hass.data[DOMAIN].get(config_entry_id, None):
-            for line in call.data.get("raw_data").splitlines():
-                line = line.strip()
-                if line.startswith('@'):
-                    domain_entry_info.api.send_raw(line)
+    for config_entry_id in await async_extract_config_entry_ids(hass, call):
+        if config_entry := hass.config_entries.async_get_entry(config_entry_id):
+            # Check if configentry is ours, could be others when targeting areas for example
+            if (config_entry.domain == DOMAIN) and (domain_entry_info := config_entry.runtime_data):
+                # Handle actual call
+                for line in call.data.get("raw_data").splitlines():
+                    line = line.strip()
+                    if line.startswith("@"):
+                        domain_entry_info.api.send_raw(line)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up Yamaha (YNCA) integration."""
+
+    async def async_handle_send_raw_ynca_local(call: ServiceCall):
+        await async_handle_send_raw_ynca(hass, call)
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_SEND_RAW_YNCA, async_handle_send_raw_ynca_local
+    )
+
+    return True
+
+
+type YamahaYncaConfigEntry = ConfigEntry[DomainEntryData]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
     def initialize_ynca(ynca_receiver: ynca.YncaApi):
@@ -164,44 +188,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
 
-        assert(ynca_receiver.sys is not None)
+        assert ynca_receiver.sys is not None
         if receiver_requires_audio_input_workaround(ynca_receiver.sys.modelname):
             # Pretend AUDIO provides a name like a normal input
             # This makes it work with standard code
             ynca_receiver.sys.inpnameaudio = "AUDIO"  # type: ignore
 
-        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = DomainEntryData(
+        entry.runtime_data = DomainEntryData(
             api=ynca_receiver,
             initialization_events=ynca_receiver.get_communication_log_items(),
         )
+
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-        if not hass.services.has_service(DOMAIN, SERVICE_SEND_RAW_YNCA):
-
-            async def async_handle_send_raw_ynca_local(call: ServiceCall):
-                await async_handle_send_raw_ynca(hass, call)
-
-            hass.services.async_register(
-                DOMAIN, SERVICE_SEND_RAW_YNCA, async_handle_send_raw_ynca_local
-            )
 
         entry.async_on_unload(entry.add_update_listener(async_update_options))
 
     return initialized
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -> bool:
     """Unload a config entry."""
 
     def close_ynca(ynca_receiver: ynca.YncaApi):
         ynca_receiver.close()
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        domain_entry_info = hass.data[DOMAIN].pop(entry.entry_id)
+        domain_entry_info = entry.runtime_data
         await hass.async_add_executor_job(close_ynca, domain_entry_info.api)
-
-    if not hass.data[DOMAIN]:
-        hass.data.pop(DOMAIN)
-        hass.services.async_remove(DOMAIN, SERVICE_SEND_RAW_YNCA)
 
     return unload_ok

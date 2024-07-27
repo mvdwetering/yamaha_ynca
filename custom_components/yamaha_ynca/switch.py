@@ -1,18 +1,22 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List
+from typing import TYPE_CHECKING, Any, Callable, List
 
 import ynca
 
-from homeassistant.components.switch import (
-    SwitchEntity,
-    SwitchEntityDescription,
-)
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, ZONE_ATTRIBUTE_NAMES
-from .helpers import DomainEntryData, YamahaYncaSettingEntity
+from . import YamahaYncaConfigEntry
+from .const import ZONE_ATTRIBUTE_NAMES
+from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ynca.subunits.zone import ZoneBase
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -27,6 +31,17 @@ class YncaSwitchEntityDescription(SwitchEntityDescription):
     An example is HDMIOUT1 which is a function on SYS subunit, but applies to Main zone and can only be set when Main zone is On.
     Such relation is indicated here
     """
+    supported_check: Callable[[YncaSwitchEntityDescription, ZoneBase], bool] = (
+        lambda entity_description, zone_subunit: subunit_supports_entitydescription_key(entity_description, zone_subunit)
+    )
+    """
+    Callable to check support for this entity on the zone, default checks if attribute `key` is not None.
+    This _only_ works for Zone entities, not SYS.
+    """
+
+    def is_supported(self, zone_subunit: ZoneBase):
+        return self.supported_check(self, zone_subunit)
+
 
 ZONE_ENTITY_DESCRIPTIONS = [
     # Suppress following mypy message, which seems to be not an issue as other values have defaults:
@@ -56,6 +71,19 @@ ZONE_ENTITY_DESCRIPTIONS = [
         on=ynca.PureDirMode.ON,
         off=ynca.PureDirMode.OFF,
     ),
+    YncaSwitchEntityDescription(  # type: ignore
+        key="hdmiout",
+        icon="mdi:hdmi-port",
+        entity_category=EntityCategory.CONFIG,
+        on=ynca.HdmiOut.OUT,
+        off=ynca.HdmiOut.OFF,
+        # HDMIOUT is used for receivers with multiple HDMI outputs and single HDMI output
+        # This switch handles single HDMI output, so check if HDMI2 does NOT exist and assume there is only one HDMI output
+        supported_check=lambda entity_description, zone_subunit: (
+            subunit_supports_entitydescription_key(entity_description, zone_subunit)
+            and zone_subunit.lipsynchdmiout2offset is None
+        ),
+    ),
 ]
 
 SYS_ENTITY_DESCRIPTIONS = [
@@ -79,15 +107,19 @@ SYS_ENTITY_DESCRIPTIONS = [
     ),
 ]
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
 
-    domain_entry_data: DomainEntryData = hass.data[DOMAIN][config_entry.entry_id]
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: YamahaYncaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
+    domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             for entity_description in ZONE_ENTITY_DESCRIPTIONS:
-                if getattr(zone_subunit, entity_description.key, None) is not None:
+                if entity_description.is_supported(zone_subunit):
                     entities.append(
                         YamahaYncaSwitch(
                             config_entry.entry_id, zone_subunit, entity_description
@@ -95,16 +127,24 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     )
 
     # These are features on the SYS subunit, but they are tied to a zone
-    assert(domain_entry_data.api.sys is not None)
+    assert domain_entry_data.api.sys is not None
     for entity_description in SYS_ENTITY_DESCRIPTIONS:
-        assert(isinstance(entity_description.associated_zone_attr, str))
-        if getattr(domain_entry_data.api.sys, entity_description.key, None) is not None:
-            if zone_subunit := getattr(domain_entry_data.api, entity_description.associated_zone_attr):
-                entities.append(
-                    YamahaYncaSwitch(
-                        config_entry.entry_id, domain_entry_data.api.sys, entity_description, associated_zone=zone_subunit
-                    )
+        assert isinstance(entity_description.associated_zone_attr, str)
+        if (
+            getattr(domain_entry_data.api.sys, entity_description.key, None) is not None
+        ) and (
+            zone_subunit := getattr(
+                domain_entry_data.api, entity_description.associated_zone_attr
+            )
+        ):
+            entities.append(
+                YamahaYncaSwitch(
+                    config_entry.entry_id,
+                    domain_entry_data.api.sys,
+                    entity_description,
+                    associated_zone=zone_subunit,
                 )
+            )
 
     async_add_entities(entities)
 

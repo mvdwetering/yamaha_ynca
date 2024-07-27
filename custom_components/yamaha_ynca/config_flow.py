@@ -1,29 +1,27 @@
 """Config flow for Yamaha (YNCA) integration."""
+
 from __future__ import annotations
 
 from typing import Any, Dict
+import re
 
 import voluptuous as vol  # type: ignore
+import ynca
 
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.core import HomeAssistant, callback
 
-
+from . import YamahaYncaConfigEntry
 from .const import (
-    CONF_SERIAL_URL,
     CONF_HOST,
     CONF_PORT,
+    CONF_SERIAL_URL,
     DATA_MODELNAME,
     DATA_ZONES,
     DOMAIN,
     LOGGER,
 )
 from .options_flow import OptionsFlowHandler
-
-import ynca
-
 
 STEP_ID_SERIAL = "serial"
 STEP_ID_NETWORK = "network"
@@ -69,15 +67,14 @@ async def validate_input(
     return result
 
 
-class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
     # When updating also update the one used in `setup_integration` for tests
     VERSION = 7
     MINOR_VERSION = 5
 
-    reauth_entry: config_entries.ConfigEntry | None = None
-
+    reconfigure_entry: YamahaYncaConfigEntry | None = None
 
     @staticmethod
     @callback
@@ -86,7 +83,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         return self.async_show_menu(
             step_id="user",
@@ -98,7 +95,7 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         step_id: str,
         data_schema: vol.Schema,
         user_input: Dict[str, Any],
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
 
         errors = {}
         try:
@@ -111,15 +108,20 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             LOGGER.exception("Unhandled exception during connection.")
             errors["base"] = "unknown"
         else:
-            data = {}
-            data[CONF_SERIAL_URL] = user_input[CONF_SERIAL_URL]
-            data[DATA_MODELNAME] = check_result.modelname
-            data[DATA_ZONES] = check_result.zones
+            data = {
+                CONF_SERIAL_URL: user_input[CONF_SERIAL_URL],
+                DATA_MODELNAME: check_result.modelname,
+                DATA_ZONES: check_result.zones,
+            }
 
-            if self.reauth_entry:
-                self.hass.config_entries.async_update_entry(self.reauth_entry, data=data)
-                await self.hass.config_entries.async_reload(self.reauth_entry.entry_id)
-                return self.async_abort(reason="reauth_successful")            
+            if self.reconfigure_entry:
+                self.hass.config_entries.async_update_entry(
+                    self.reconfigure_entry, data=data
+                )
+                await self.hass.config_entries.async_reload(
+                    self.reconfigure_entry.entry_id
+                )
+                return self.async_abort(reason="reconfigure_successful")
 
             return self.async_create_entry(title=check_result.modelname, data=data)
 
@@ -131,10 +133,18 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_serial(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
-                step_id=STEP_ID_SERIAL, data_schema=get_serial_url_schema({})
+                step_id=STEP_ID_SERIAL,
+                data_schema=get_serial_url_schema(
+                    {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
+                    if self.reconfigure_entry
+                    and not self.reconfigure_entry.data[CONF_SERIAL_URL].startswith(
+                        "socket://"
+                    )
+                    else {}
+                ),
             )
 
         return await self.async_try_connect(
@@ -143,10 +153,20 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_network(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         if user_input is None:
+            data = {}
+            if self.reconfigure_entry:
+                # Get HOST and PORT from socket://HOST:PORT
+                if m := re.match(
+                    r"socket://(?P<host>.+):(?P<port>\d+)",
+                    self.reconfigure_entry.data[CONF_SERIAL_URL],
+                ):
+                    data[CONF_HOST] = m.group("host")
+                    data[CONF_PORT] = int(m.group("port"))
+
             return self.async_show_form(
-                step_id=STEP_ID_NETWORK, data_schema=get_network_schema({})
+                step_id=STEP_ID_NETWORK, data_schema=get_network_schema(data)
             )
 
         connection_data = {
@@ -158,19 +178,23 @@ class YamahaYncaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_advanced(
         self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
-                step_id=STEP_ID_ADVANCED, data_schema=get_serial_url_schema({})
+                step_id=STEP_ID_ADVANCED,
+                data_schema=get_serial_url_schema(
+                    {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
+                    if self.reconfigure_entry
+                    else {}
+                ),
             )
 
         return await self.async_try_connect(
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
 
-    async def async_step_reauth(self, user_input=None):
-        """Reauth is (ab)used to allow setting up connection settings again through the existing flow."""
-        self.reauth_entry = self.hass.config_entries.async_get_entry(
+    async def async_step_reconfigure(self, user_input=None):
+        self.reconfigure_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
 
