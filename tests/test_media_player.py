@@ -121,7 +121,7 @@ async def test_mediaplayer_entity_mute_volume(mp_entity: YamahaYncaZone, mock_zo
 
     # No mute support
     mock_zone.mute = None
-    assert mp_entity.is_volume_muted == None
+    assert mp_entity.is_volume_muted is None
 
 
 async def test_mediaplayer_entity_volume_set_up_down(
@@ -158,7 +158,7 @@ async def test_mediaplayer_entity_volume_set_up_down(
 
     # No vol support
     mock_zone.vol = None
-    assert mp_entity.volume_level == None
+    assert mp_entity.volume_level is None
 
 
 async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):

@@ -206,7 +206,7 @@ async def test_select_surrounddecoder_entity_current_option(
 
     # Current value, not supported (should not happen)
     mock_zone.twochdecoder = None
-    assert entity.current_option == None
+    assert entity.current_option is None
 
 
 async def test_select_surrounddecoder_entity_options_nothing_selection_in_configentry(
