@@ -23,6 +23,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 
 * Full UI support for adding devices
 * Connect through serial cable, TCP/IP network or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+* Local Push, so updates instantly
 * Support for zones
 * Power on/off
 * Volume control and mute
