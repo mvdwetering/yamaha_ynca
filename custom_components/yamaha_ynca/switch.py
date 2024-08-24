@@ -84,6 +84,20 @@ ZONE_ENTITY_DESCRIPTIONS = [
             and zone_subunit.lipsynchdmiout2offset is None
         ),
     ),
+    YncaSwitchEntityDescription(  # type: ignore
+        key="speakera",
+        icon="mdi:speaker-multiple",
+        entity_category=EntityCategory.CONFIG,
+        on=ynca.SpeakerA.ON,
+        off=ynca.SpeakerA.OFF,
+    ),
+    YncaSwitchEntityDescription(  # type: ignore
+        key="speakerb",
+        icon="mdi:speaker-multiple",
+        entity_category=EntityCategory.CONFIG,
+        on=ynca.SpeakerB.ON,
+        off=ynca.SpeakerB.OFF,
+    ),
 ]
 
 SYS_ENTITY_DESCRIPTIONS = [
