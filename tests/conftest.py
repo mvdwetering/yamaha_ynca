@@ -18,6 +18,7 @@ from pytest_homeassistant_custom_component.common import (  # type: ignore[impor
 
 import custom_components.yamaha_ynca as yamaha_ynca
 
+from custom_components.yamaha_ynca.helpers import DomainEntryData
 import ynca
 
 MODELNAME = "ModelName"
@@ -65,7 +66,16 @@ def mock_zone():
 
 @pytest.fixture
 def mock_zone_main():
-    return create_mock_zone(ynca.subunits.zone.Main)
+    main_mock = create_mock_zone(ynca.subunits.zone.Main)
+
+    main_mock.pwrb = None
+    main_mock.speakera = None
+    main_mock.speakerb = None
+    main_mock.zonebavail = None
+    main_mock.zonebmute = None
+    main_mock.zonebvol = None
+
+    return main_mock
 
 
 @pytest.fixture
@@ -219,6 +229,10 @@ async def setup_integration(
         zones.append("ZONE4")
 
     entry = create_mock_config_entry(modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url)
+    entry.runtime_data = DomainEntryData(
+        api=mock_ynca,
+        initialization_events=[],
+    )
     entry.add_to_hass(hass)
 
     on_disconnect = None
