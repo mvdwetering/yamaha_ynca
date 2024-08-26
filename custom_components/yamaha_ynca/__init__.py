@@ -68,7 +68,7 @@ async def update_device_registry(
                 configuration_url=configuration_url,
             )
 
-    if receiver.main.zonebavail is ynca.ZoneBAvail.READY:
+    if receiver.main and receiver.main.zonebavail is ynca.ZoneBAvail.READY:
         devicename = build_zoneb_devicename(receiver)
         registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
