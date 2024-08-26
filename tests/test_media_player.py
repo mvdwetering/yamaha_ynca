@@ -3,14 +3,17 @@
 from __future__ import annotations
 import logging
 
-from unittest.mock import Mock, call, create_autospec, patch
+from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 from pytest_unordered import unordered
 import ynca
 
 import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.media_player import YamahaYncaZone, async_setup_entry
+from custom_components.yamaha_ynca.media_player import (
+    YamahaYncaZone,
+    YamahaYncaZoneB,
+)
 from homeassistant.components.media_player import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -25,6 +28,12 @@ from tests.conftest import setup_integration
 @pytest.fixture
 def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
     return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+
+
+@pytest.fixture
+def mp_entity_zoneb(mock_ynca, mock_zone_main_with_zoneb) -> YamahaYncaZoneB:
+    mock_ynca.main = mock_zone_main_with_zoneb
+    return YamahaYncaZoneB("ReceiverUniqueId", mock_ynca, [])
 
 
 async def test_mediaplayer_entity(mp_entity: YamahaYncaZone, mock_zone, mock_ynca):
@@ -96,8 +105,45 @@ async def test_mediaplayer_entity_update_callback_zonename(
     assert device_entry.name == "New Zonename"
 
 
+async def test_mediaplayer_entity_update_callback_zonebname(
+    mock_zone_main_with_zoneb, mock_ynca, hass, device_reg
+):
+    # Setup integration, device registry and entity
+    mock_ynca.main = mock_zone_main_with_zoneb
+    integration = await setup_integration(hass, mock_ynca)
+
+    device_reg.async_get_or_create(
+        config_entry_id=integration.entry.entry_id,
+        identifiers={(yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")},
+        name="Old ZoneBname",
+    )
+
+    zone_entity = YamahaYncaZoneB("ReceiverUniqueId", mock_ynca, [])
+    assert zone_entity.device_info["identifiers"] == {
+        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")
+    }
+
+    zone_entity.hass = hass  # In a real system this is done by HA
+    await zone_entity.async_added_to_hass()
+
+    zone_callback = mock_zone_main_with_zoneb.register_update_callback.call_args.args[0]
+    zone_entity.schedule_update_ha_state = Mock()
+
+    # Zonename update
+    mock_zone_main_with_zoneb.zonebname = "New ZoneBname"
+    zone_callback("ZONEBNAME", "VALUE")  # Note VALUE is not used it is read from API
+    assert zone_entity.schedule_update_ha_state.call_count == 1
+
+    # Check for name change
+    device_entry = device_reg.async_get_or_create(
+        config_entry_id=integration.entry.entry_id,
+        identifiers={(yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")},
+    )
+    assert device_entry.name == "New ZoneBname"
+
+
 async def test_mediaplayer_entity_turn_on_off(
-    mp_entity: YamahaYncaZone,
+    mp_entity,
     mock_zone,
 ):
     mp_entity.turn_on()
@@ -109,19 +155,49 @@ async def test_mediaplayer_entity_turn_on_off(
     assert mp_entity.state is MediaPlayerState.OFF
 
 
-async def test_mediaplayer_entity_mute_volume(mp_entity: YamahaYncaZone, mock_zone):
+async def test_mediaplayer_entity_zoneb_turn_on_off(
+    mp_entity_zoneb,
+    mock_zone_main_with_zoneb,
+):
+    mp_entity_zoneb.turn_on()
+    assert mock_zone_main_with_zoneb.pwrb is ynca.PwrB.ON
+    assert mp_entity_zoneb.state is MediaPlayerState.IDLE
+
+    mp_entity_zoneb.turn_off()
+    assert mock_zone_main_with_zoneb.pwrb is ynca.PwrB.STANDBY
+    assert mp_entity_zoneb.state is MediaPlayerState.OFF
+
+
+async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
 
     mp_entity.mute_volume(True)
     assert mock_zone.mute is ynca.Mute.ON
-    assert mp_entity.is_volume_muted == True
+    assert mp_entity.is_volume_muted is True
 
     mp_entity.mute_volume(False)
     assert mock_zone.mute is ynca.Mute.OFF
-    assert mp_entity.is_volume_muted == False
+    assert mp_entity.is_volume_muted is False
 
     # No mute support
     mock_zone.mute = None
     assert mp_entity.is_volume_muted is None
+
+
+async def test_mediaplayer_entity_zoneb_mute_volume(
+    mp_entity_zoneb, mock_zone_main_with_zoneb
+):
+
+    mp_entity_zoneb.mute_volume(True)
+    assert mock_zone_main_with_zoneb.zonebmute is ynca.ZoneBMute.ON
+    assert mp_entity_zoneb.is_volume_muted is True
+
+    mp_entity_zoneb.mute_volume(False)
+    assert mock_zone_main_with_zoneb.zonebmute is ynca.ZoneBMute.OFF
+    assert mp_entity_zoneb.is_volume_muted is False
+
+    # No mute support
+    mock_zone_main_with_zoneb.zonebmute = None
+    assert mp_entity_zoneb.is_volume_muted is None
 
 
 async def test_mediaplayer_entity_volume_set_up_down(
@@ -159,6 +235,29 @@ async def test_mediaplayer_entity_volume_set_up_down(
     # No vol support
     mock_zone.vol = None
     assert mp_entity.volume_level is None
+
+
+async def test_mediaplayer_entity_zoneb_volume_set_up_down(
+    mp_entity_zoneb, mock_zone_main_with_zoneb
+):
+
+    mp_entity_zoneb.set_volume_level(1)
+    assert mock_zone_main_with_zoneb.zonebvol == 16.5
+    assert mp_entity_zoneb.volume_level == 1
+
+    mp_entity_zoneb.set_volume_level(0)
+    assert mock_zone_main_with_zoneb.zonebvol == -80.5
+    assert mp_entity_zoneb.volume_level == 0
+
+    mp_entity_zoneb.volume_up()
+    assert mock_zone_main_with_zoneb.zonebvol_up.call_count == 1
+
+    mp_entity_zoneb.volume_down()
+    assert mock_zone_main_with_zoneb.zonebvol_down.call_count == 1
+
+    # No vol support
+    mock_zone_main_with_zoneb.zonebvol = None
+    assert mp_entity_zoneb.volume_level is None
 
 
 async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):
@@ -387,7 +486,9 @@ async def test_mediaplayer_entity_supported_features(
     # USB also supports repeat and shuffle, but not pause (only stop)
     mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
     mock_zone.inp = ynca.Input.USB
-    expected_supported_features = expected_supported_features & ~MediaPlayerEntityFeature.PAUSE
+    expected_supported_features = (
+        expected_supported_features & ~MediaPlayerEntityFeature.PAUSE
+    )
     expected_supported_features |= MediaPlayerEntityFeature.REPEAT_SET
     expected_supported_features |= MediaPlayerEntityFeature.SHUFFLE_SET
     assert mp_entity.supported_features == expected_supported_features
@@ -620,9 +721,13 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
     MIN_PRESET_ID = 1
     MAX_PRESET_ID = 40
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", f"tun:preset:{MIN_PRESET_ID - 1}")
+        await mp_entity.async_play_media(
+            "media_type", f"tun:preset:{MIN_PRESET_ID - 1}"
+        )
     with pytest.raises(HomeAssistantError):
-        await mp_entity.async_play_media("media_type", f"tun:preset:{MAX_PRESET_ID + 1}")
+        await mp_entity.async_play_media(
+            "media_type", f"tun:preset:{MAX_PRESET_ID + 1}"
+        )
 
     # Invalid input not handles and does not change state
     mock_zone.pwr = ynca.Pwr.STANDBY
@@ -633,9 +738,7 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
     assert mock_zone.inp is ynca.Input.USB
 
 
-async def test_mediaplayer_entity_play_media(
-    mp_entity: YamahaYncaZone, mock_zone, mock_ynca
-):
+async def test_mediaplayer_entity_play_media(mp_entity, mock_zone, mock_ynca):
     mock_zone.inp = ynca.Input.USB
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.tun.id = ynca.subunit.Subunit.TUN
@@ -666,6 +769,26 @@ async def test_mediaplayer_entity_play_media(
     assert mock_zone.pwr is ynca.Pwr.ON
     assert mock_zone.inp is ynca.Input.TUNER
     assert mock_ynca.dab.fmpreset == 17
+
+
+async def test_mediaplayer_entity_zoneb_play_media(
+    mp_entity_zoneb, mock_zone_main_with_zoneb, mock_ynca
+):
+    mock_zone = mock_zone_main_with_zoneb
+
+    mock_zone.inp = ynca.Input.TUNER
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
+    mock_ynca.usb.id = ynca.subunit.Subunit.USB
+
+    # Different from after state
+    mock_zone.pwrb = ynca.PwrB.STANDBY
+    mock_zone.inp = ynca.Input.TUNER
+    mock_ynca.usb.preset = None
+
+    await mp_entity_zoneb.async_play_media("channel", "usb:preset:23")
+    assert mock_zone.pwrb is ynca.PwrB.ON
+    assert mock_zone.inp is ynca.Input.USB
+    assert mock_ynca.usb.preset == 23
 
 
 async def test_mediaplayer_entity_browse_media_unsupported_media(

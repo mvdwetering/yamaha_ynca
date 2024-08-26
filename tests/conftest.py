@@ -72,10 +72,20 @@ def mock_zone_main():
     main_mock.speakera = None
     main_mock.speakerb = None
     main_mock.zonebavail = None
+    main_mock.zonebname = None
     main_mock.zonebmute = None
     main_mock.zonebvol = None
 
     return main_mock
+
+@pytest.fixture
+def mock_zone_main_with_zoneb(mock_zone_main):
+    main_mock_with_zoneb = mock_zone_main
+    main_mock_with_zoneb.pwrb = ynca.PwrB.ON
+    main_mock_with_zoneb.zonebavail = ynca.ZoneBAvail.READY
+    main_mock_with_zoneb.zonebmute = ynca.ZoneBMute.OFF
+    main_mock_with_zoneb.zonebvol = -34.5
+    return main_mock_with_zoneb
 
 
 @pytest.fixture
