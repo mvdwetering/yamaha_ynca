@@ -90,6 +90,12 @@ ZONE_ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         on=ynca.SpeakerA.ON,
         off=ynca.SpeakerA.OFF,
+        # On receivers with ZoneB the Speaker A/B functions are linked to zonepower is undesired
+        # So avoid showing switches in that case
+        supported_check=lambda entity_description, zone_subunit: (
+            subunit_supports_entitydescription_key(entity_description, zone_subunit)
+            and getattr(zone_subunit, "zonebavail", None) is not ynca.ZoneBAvail.READY
+        ),
     ),
     YncaSwitchEntityDescription(  # type: ignore
         key="speakerb",
@@ -97,6 +103,12 @@ ZONE_ENTITY_DESCRIPTIONS = [
         entity_category=EntityCategory.CONFIG,
         on=ynca.SpeakerB.ON,
         off=ynca.SpeakerB.OFF,
+        # On receivers with ZoneB the Speaker A/B functions are linked to zonepower is undesired
+        # So avoid showing switches in that case
+        supported_check=lambda entity_description, zone_subunit: (
+            subunit_supports_entitydescription_key(entity_description, zone_subunit)
+            and getattr(zone_subunit, "zonebavail", None) is not ynca.ZoneBAvail.READY
+        ),
     ),
 ]
 
