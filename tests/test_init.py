@@ -17,13 +17,13 @@ async def test_async_setup_entry(
     hass,
     device_reg,
     mock_ynca,
-    mock_zone_main,
+    mock_zone_main_with_zoneb,
     mock_zone_zone2,
     mock_zone_zone3,
     mock_zone_zone4,
 ):
     """Test a successful setup entry."""
-    mock_ynca.main = mock_zone_main
+    mock_ynca.main = mock_zone_main_with_zoneb
     mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone3 = mock_zone_zone3
     mock_ynca.zone4 = mock_zone_zone4
@@ -38,7 +38,7 @@ async def test_async_setup_entry(
         mock_ynca is integration.entry.runtime_data.api
     )
 
-    assert len(device_reg.devices.keys()) == 4
+    assert len(device_reg.devices.keys()) == 5
 
     for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
         device = device_reg.async_get_device(
@@ -51,6 +51,17 @@ async def test_async_setup_entry(
         assert device.sw_version == "Version"
         assert device.name == f"ModelName {zone_id}"
         assert device.configuration_url is None
+
+    device = device_reg.async_get_device(
+        identifiers={
+            (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")
+        }
+    )
+    assert device.manufacturer == "Yamaha"
+    assert device.model == "ModelName"
+    assert device.sw_version == "Version"
+    assert device.name == "ModelName ZoneB"
+    assert device.configuration_url is None
 
 
 async def test_async_setup_entry_socket_has_configuration_url(
