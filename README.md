@@ -575,7 +575,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As an alternative the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
+  As an alternative, the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
 
 ```yaml
 service: remote.send_command
