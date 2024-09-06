@@ -21,6 +21,7 @@ from homeassistant.components.media_player import (
     RepeatMode,
 )
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 
 from tests.conftest import setup_integration
 
@@ -66,6 +67,25 @@ async def test_mediaplayer_entity(mp_entity: YamahaYncaZone, mock_zone, mock_ync
     mock_ynca.netradio.unregister_update_callback.assert_called_once_with(
         netradio_callback
     )
+
+
+async def test_mediaplayer_entity_default_entity_name(
+    mock_zone_main_with_zoneb, mock_ynca, hass, device_reg
+):
+    # Setup integration, device registry and entity
+    mock_ynca.main = mock_zone_main_with_zoneb
+    await setup_integration(hass, mock_ynca)
+    reg = er.async_get(hass)
+
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+    assert entity_id == "media_player.modelname_main"
+
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_ZONEB"
+    )
+    assert entity_id == "media_player.modelname_zoneb"
 
 
 async def test_mediaplayer_entity_update_callback_zonename(
@@ -118,21 +138,21 @@ async def test_mediaplayer_entity_update_callback_zonebname(
         name="Old ZoneBname",
     )
 
-    zone_entity = YamahaYncaZoneB("ReceiverUniqueId", mock_ynca, [])
-    assert zone_entity.device_info["identifiers"] == {
+    zoneb_entity = YamahaYncaZoneB("ReceiverUniqueId", mock_ynca, [])
+    assert zoneb_entity.device_info["identifiers"] == {
         (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")
     }
 
-    zone_entity.hass = hass  # In a real system this is done by HA
-    await zone_entity.async_added_to_hass()
+    zoneb_entity.hass = hass  # In a real system this is done by HA
+    await zoneb_entity.async_added_to_hass()
 
     zone_callback = mock_zone_main_with_zoneb.register_update_callback.call_args.args[0]
-    zone_entity.schedule_update_ha_state = Mock()
+    zoneb_entity.schedule_update_ha_state = Mock()
 
     # Zonename update
     mock_zone_main_with_zoneb.zonebname = "New ZoneBname"
     zone_callback("ZONEBNAME", "VALUE")  # Note VALUE is not used it is read from API
-    assert zone_entity.schedule_update_ha_state.call_count == 1
+    assert zoneb_entity.schedule_update_ha_state.call_count == 1
 
     # Check for name change
     device_entry = device_reg.async_get_or_create(

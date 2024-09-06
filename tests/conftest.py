@@ -84,6 +84,7 @@ def mock_zone_main_with_zoneb(mock_zone_main):
     main_mock_with_zoneb.pwrb = ynca.PwrB.ON
     main_mock_with_zoneb.zonebavail = ynca.ZoneBAvail.READY
     main_mock_with_zoneb.zonebmute = ynca.ZoneBMute.OFF
+    main_mock_with_zoneb.zonebname = "ZoneB"
     main_mock_with_zoneb.zonebvol = -34.5
     return main_mock_with_zoneb
 
