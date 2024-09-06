@@ -94,7 +94,7 @@ def build_zoneb_devicename(receiver):
     devicename = f"{receiver.sys.modelname} ZoneB"
     if (
         receiver.main.zonebname
-        and receiver.main.zonebname.lower() != "ZoneB".lower
+        and receiver.main.zonebname.lower() != "ZoneB".lower()
     ):
         # Prefer user defined name over "MODEL ZONE" naming
         devicename = receiver.main.zonebname
