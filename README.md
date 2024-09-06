@@ -84,7 +84,7 @@ More remote control commands exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send a code through any of the remote entities.
 
-Sending the commands is done through the `remote.send_command` service offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and call the service. The repeat, delay and hold options are _not_ supported. 
+Sending the commands is done through the `remote.send_command` action offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The repeat, delay and hold options are _not_ supported. 
 
 Example:
 
@@ -521,14 +521,14 @@ cards:
 
 Presets can be activated and stored with the integration for several inputsources. The most obvious input that support presets is the radio inputs like AM/FM or DAB tuner. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
 
-Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset, the receiver will turn on and switch input if needed.
+Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
 Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. 
 
 ### Store presets
 
 Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). 
-Home Assistant has no standardized way to manage presets, so the `store_preset` service was added. It will store a preset with the provided number for the current playing item.
+Home Assistant has no standardized way to manage presets, so the `store_preset` action was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
 service: yamaha_ynca.store_preset
@@ -564,18 +564,18 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 * **Q: Why are entities unavailable when receiver is in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
-* **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported features for your receiver in the integration configuration.
+* **Q: Why does the integration not show all features mentioned in the README?**  
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported some features for your receiver in the integration configuration. It can also be that your receiver does not expose that feature, you can make an issue if you believe it is supposed to be supported on your receiver.
 
 * **Q: How can I stream audio from a URL?**  
   You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
 
-* **Q: Why are Scene buttons are not working on some receivers?**  
-  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
+* **Q: Why are Scene buttons are not working for my receiver?**  
+  On some receivers (e.g. RX-V475) the command to activate the scenes does not work even though the receiver seems to indicate support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As an alternative the scenes can be activated by sending the scene commands through service calls on the [Remote control entity](#remote-control).
+  As an alternative the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
 
 ```yaml
 service: remote.send_command
