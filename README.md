@@ -528,7 +528,7 @@ Due to limitations on the protocol the integration can only show the preset numb
 ### Store presets
 
 Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). 
-Home Assistant has no standardized way to manage presets, so the `store_preset` action was added. It will store a preset with the provided number for the current playing item.
+Home Assistant does not have a standardized way to manage presets, so the `store_preset` action was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
 service: yamaha_ynca.store_preset
