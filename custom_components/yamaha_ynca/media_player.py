@@ -28,7 +28,7 @@ from homeassistant.helpers import (
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import YamahaYncaConfigEntry, build_devicename
+from . import YamahaYncaConfigEntry, build_zone_devicename, build_zoneb_devicename
 from .const import (
     ATTR_PRESET_ID,
     CONF_HIDDEN_INPUTS,
@@ -44,7 +44,7 @@ from .helpers import scale
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ynca.subunits.zone import ZoneBase
+    from ynca.subunits.zone import ZoneBase, Main
 
 
 STRAIGHT = "Straight"
@@ -58,6 +58,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ):
     domain_entry_data = config_entry.runtime_data
+    api = domain_entry_data.api
 
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
@@ -68,9 +69,9 @@ async def async_setup_entry(
         "store_preset",
     )
 
-    entities = []
+    entities: List[MediaPlayerEntity] = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
-        if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
+        if zone_subunit := getattr(api, zone_attr_name):
             hidden_inputs = config_entry.options.get(zone_subunit.id, {}).get(
                 CONF_HIDDEN_INPUTS, []
             )
@@ -86,6 +87,14 @@ async def async_setup_entry(
                 )
             )
 
+            if (
+                zone_subunit == api.main
+                and api.main.zonebavail is ynca.ZoneBAvail.READY
+            ):
+                entities.append(
+                    YamahaYncaZoneB(config_entry.entry_id, api, hidden_inputs)
+                )
+
     async_add_entities(entities)
 
 
@@ -97,6 +106,8 @@ class YamahaYncaZone(MediaPlayerEntity):
     _attr_has_entity_name = True
     _attr_name = None
 
+    _ZONENAME_FUNCTION = "ZONENAME"
+
     def __init__(
         self,
         receiver_unique_id: str,
@@ -104,25 +115,37 @@ class YamahaYncaZone(MediaPlayerEntity):
         zone: ZoneBase,
         hidden_inputs: List[str],
         hidden_sound_modes: List[str],
+        is_zone_b: bool = False,
     ):
         self._ynca = ynca
         self._zone = zone
         self._hidden_inputs = hidden_inputs
         self._hidden_sound_modes = hidden_sound_modes
+        self._is_zone_b = is_zone_b
 
-        self._device_id = f"{receiver_unique_id}_{self._zone.id}"
+        if TYPE_CHECKING and is_zone_b:  # pragma: no cover
+            assert isinstance(self._zone, Main)
+
+        self._device_id = (
+            f"{receiver_unique_id}_{self._zone.id if not is_zone_b else 'ZONEB'}"
+        )
 
         self._attr_unique_id = self._device_id
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
 
     def update_callback(self, function, value):
-        if function == "ZONENAME":
+        if function == self._ZONENAME_FUNCTION:
             # Note that the mediaplayer does not have a name since it uses the devicename
             # So update the device name when the zonename changes to keep names as expected
             registry = device_registry.async_get(self.hass)
             device = registry.async_get_device(identifiers={(DOMAIN, self._device_id)})
             if device:
-                devicename = build_devicename(self._ynca, self._zone)
+                devicename = (
+                    build_zoneb_devicename(self._ynca)
+                    if self._is_zone_b
+                    else build_zone_devicename(self._ynca, self._zone)
+                )
+
                 registry.async_update_device(device.id, name=devicename)
 
         self.schedule_update_ha_state()
@@ -159,8 +182,12 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def state(self):
         """Return the state of the entity."""
-        if self._zone.pwr is ynca.Pwr.STANDBY:
-            return MediaPlayerState.OFF
+        if self._is_zone_b:
+            if self._zone.pwrb is ynca.PwrB.STANDBY:  # type: ignore[attr-defined]
+                return MediaPlayerState.OFF
+        else:
+            if self._zone.pwr is ynca.Pwr.STANDBY:
+                return MediaPlayerState.OFF
 
         if input_subunit := self._get_input_subunit():
             playbackinfo = getattr(input_subunit, "playbackinfo", None)
@@ -176,23 +203,35 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        if self._zone.vol is not None:
-            return scale(
-                self._zone.vol,
-                [
-                    ZONE_MIN_VOLUME,
-                    (
-                        self._zone.maxvol
-                        if self._zone.maxvol is not None
-                        else ZONE_MAX_VOLUME
-                    ),
-                ],
-                [0, 1],
-            )
+        if self._is_zone_b:
+            if self._zone.zonebvol is not None:  # type: ignore[attr-defined]
+                return scale(
+                    self._zone.zonebvol,  # type: ignore[attr-defined]
+                    [ZONE_MIN_VOLUME, ZONE_MAX_VOLUME],
+                    [0, 1],
+                )
+        else:
+            if self._zone.vol is not None:
+                return scale(
+                    self._zone.vol,
+                    [
+                        ZONE_MIN_VOLUME,
+                        (
+                            self._zone.maxvol
+                            if self._zone.maxvol is not None
+                            else ZONE_MAX_VOLUME
+                        ),
+                    ],
+                    [0, 1],
+                )
 
     @property
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
+        if self._is_zone_b:
+            if self._zone.zonebmute is not None:  # type: ignore[attr-defined]
+                return self._zone.zonebmute != ynca.ZoneBMute.OFF  # type: ignore[attr-defined]
+
         if self._zone.mute is not None:
             return self._zone.mute != ynca.Mute.OFF
 
@@ -280,7 +319,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.inp is not None:
             supported_commands |= MediaPlayerEntityFeature.SELECT_SOURCE
 
-        if self._zone.soundprg is not None:
+        if self._zone.soundprg is not None and not self._is_zone_b:
             supported_commands |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
 
         if input_subunit := self._get_input_subunit():
@@ -319,34 +358,60 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def turn_on(self):
         """Turn the media player on."""
-        self._zone.pwr = ynca.Pwr.ON
+        if self._is_zone_b:
+            self._zone.pwrb = ynca.PwrB.ON  # type: ignore[attr-defined]
+        else:
+            self._zone.pwr = ynca.Pwr.ON
 
     def turn_off(self):
         """Turn off media player."""
-        self._zone.pwr = ynca.Pwr.STANDBY
+        if self._is_zone_b:
+            self._zone.pwrb = ynca.PwrB.STANDBY  # type: ignore[attr-defined]
+        else:
+            self._zone.pwr = ynca.Pwr.STANDBY
 
     def set_volume_level(self, volume):
         """Set volume level, convert range from 0..1."""
-        self._zone.vol = scale(
-            volume,
-            [0, 1],
-            [
-                ZONE_MIN_VOLUME,
-                self._zone.maxvol if self._zone.maxvol is not None else ZONE_MAX_VOLUME,
-            ],
-        )
+        if self._is_zone_b:
+            self._zone.zonebvol = scale(  # type: ignore[attr-defined]
+                volume,
+                [0, 1],
+                [ZONE_MIN_VOLUME, ZONE_MAX_VOLUME],
+            )
+        else:
+            self._zone.vol = scale(
+                volume,
+                [0, 1],
+                [
+                    ZONE_MIN_VOLUME,
+                    (
+                        self._zone.maxvol
+                        if self._zone.maxvol is not None
+                        else ZONE_MAX_VOLUME
+                    ),
+                ],
+            )
 
     def volume_up(self):
         """Volume up media player."""
-        self._zone.vol_up()
+        if self._is_zone_b:
+            self._zone.zonebvol_up()  # type: ignore[attr-defined]
+        else:
+            self._zone.vol_up()
 
     def volume_down(self):
         """Volume down media player."""
-        self._zone.vol_down()
+        if self._is_zone_b:
+            self._zone.zonebvol_down()  # type: ignore[attr-defined]
+        else:
+            self._zone.vol_down()
 
     def mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
-        self._zone.mute = ynca.Mute.ON if mute else ynca.Mute.OFF
+        if self._is_zone_b:
+            self._zone.zonebmute = ynca.ZoneBMute.ON if mute else ynca.ZoneBMute.OFF  # type: ignore[attr-defined]
+        else:
+            self._zone.mute = ynca.Mute.ON if mute else ynca.Mute.OFF
 
     def select_source(self, source):
         """Select input source."""
@@ -562,7 +627,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             media_class=MediaClass.DIRECTORY,
             media_content_id="presets",
             media_content_type="",
-            title=f"Presets",
+            title="Presets",
             can_play=False,
             can_expand=True,
             children=children,
@@ -644,9 +709,16 @@ class YamahaYncaZone(MediaPlayerEntity):
         )
 
         # Apply media_id to receiver
-        if self._zone.pwr is ynca.Pwr.STANDBY:
-            self._zone.pwr = ynca.Pwr.ON
 
+        # First turn on if needed
+        if self._is_zone_b:
+            if self._zone.pwrb is ynca.PwrB.STANDBY:  # type: ignore[attr-defined]
+                self._zone.pwrb = ynca.PwrB.ON  # type: ignore[attr-defined]
+        else:
+            if self._zone.pwr is ynca.Pwr.STANDBY:
+                self._zone.pwr = ynca.Pwr.ON
+
+        # Switch input if needed
         subunit = getattr(self._ynca, media_id_subunit)
         input = InputHelper.get_input_for_subunit(subunit)
         if self._zone.inp is not input:
@@ -674,7 +746,9 @@ class YamahaYncaZone(MediaPlayerEntity):
             if preset_id < 1 or preset_id > 40:
                 raise ValueError
         except ValueError:
-            raise HomeAssistantError(f"Malformed preset or out of range: {media_id}") from None
+            raise HomeAssistantError(
+                f"Malformed preset or out of range: {media_id}"
+            ) from None
 
     def store_preset(self, preset_id: int) -> None:
         if subunit := InputHelper.get_subunit_for_input(self._ynca, self._zone.inp):
@@ -687,3 +761,33 @@ class YamahaYncaZone(MediaPlayerEntity):
             preset_id,
             self._zone.inp.value if self._zone.inp else "None",
         )
+
+
+class YamahaYncaZoneB(YamahaYncaZone):
+    """
+    ZoneB is a limited subset of a normal zone.
+    Basically it only supports volume and mute.
+    Input is same as MAIN zone.
+
+    Since it uses same Input it also provides control and state for that input
+    so it seems easier to build the zoneb specific parts into the normal mediaplayer
+    which will also make it less likely that ZonB implementations are forgotten when updating features
+    """
+
+    _ZONENAME_FUNCTION = "ZONEBNAME"
+
+    def __init__(
+        self,
+        receiver_unique_id: str,
+        ynca: ynca.YncaApi,
+        hidden_inputs: List[str],
+    ):
+        assert ynca.main is not None
+        super().__init__(
+            receiver_unique_id, ynca, ynca.main, hidden_inputs, [], is_zone_b=True
+        )
+
+    def update_callback(self, function, value):
+        # Just forward to normal zone handling for now
+        # Might result in a few too many updates, but should not be a lot
+        super().update_callback(function, value)

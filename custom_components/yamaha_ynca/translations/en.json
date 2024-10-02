@@ -145,6 +145,12 @@
       "puredirmode": {
         "name": "Pure Direct"
       },
+      "speakera": {
+        "name": "Zone A speakers"
+      },
+      "speakerb": {
+        "name": "Zone B speakers"
+      },
       "threedcinema": {
         "name": "CINEMA DSP 3D Mode"
       },

@@ -57,7 +57,7 @@ async def update_device_registry(
 
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(receiver, zone_attr_name):
-            devicename = build_devicename(receiver, zone_subunit)
+            devicename = build_zone_devicename(receiver, zone_subunit)
             registry.async_get_or_create(
                 config_entry_id=config_entry.entry_id,
                 identifiers={(DOMAIN, f"{config_entry.entry_id}_{zone_subunit.id}")},
@@ -68,8 +68,19 @@ async def update_device_registry(
                 configuration_url=configuration_url,
             )
 
+    if receiver.main and receiver.main.zonebavail is ynca.ZoneBAvail.READY:
+        devicename = build_zoneb_devicename(receiver)
+        registry.async_get_or_create(
+            config_entry_id=config_entry.entry_id,
+            identifiers={(DOMAIN, f"{config_entry.entry_id}_ZONEB")},
+            manufacturer=MANUFACTURER_NAME,
+            name=devicename,
+            model=receiver.sys.modelname,
+            sw_version=receiver.sys.version,
+            configuration_url=configuration_url,
+        )
 
-def build_devicename(receiver, zone_subunit):
+def build_zone_devicename(receiver, zone_subunit):
     devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
     if (
         zone_subunit.zonename
@@ -77,6 +88,16 @@ def build_devicename(receiver, zone_subunit):
     ):
         # Prefer user defined name over "MODEL ZONE" naming
         devicename = zone_subunit.zonename
+    return devicename
+
+def build_zoneb_devicename(receiver):
+    devicename = f"{receiver.sys.modelname} ZoneB"
+    if (
+        receiver.main.zonebname
+        and receiver.main.zonebname.lower() != "ZoneB".lower()
+    ):
+        # Prefer user defined name over "MODEL ZONE" naming
+        devicename = receiver.main.zonebname
     return devicename
 
 

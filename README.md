@@ -14,7 +14,7 @@ Custom integration for Home Assistant to support Yamaha AV receivers with the YN
 
 According to reports of users and info found on the internet the following AV receivers should be working. There are probably more receivers that work, just give it a try. If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
 
-> HTR-4065, HTR-4071, HTR-6064, RX-A2A, RX-A6A, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
+> HTR-4065, HTR-4071, HTR-6064, RX-A2A, RX-A6A, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V573, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
 
 In case of issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
@@ -22,7 +22,8 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 ## Features
 
 * Full UI support for adding devices
-* Connect through serial, IP or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+* Connect through serial cable, TCP/IP network or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+* Local Push, so updates instantly
 * Support for zones
 * Power on/off
 * Volume control and mute
@@ -83,7 +84,7 @@ More remote control commands exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send a code through any of the remote entities.
 
-Sending the commands is done through the `remote.send_command` service offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and call the service. The repeat, delay and hold options are _not_ supported. 
+Sending the commands is done through the `remote.send_command` action offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The repeat, delay and hold options are *not* supported. 
 
 Example:
 
@@ -520,14 +521,14 @@ cards:
 
 Presets can be activated and stored with the integration for several inputsources. The most obvious input that support presets is the radio inputs like AM/FM or DAB tuner. Inputs that support presets are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, Tuner and USB. 
 
-Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` service. When selecting a preset, the receiver will turn on and switch input if needed.
+Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
 Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. 
 
 ### Store presets
 
 Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). 
-Home Assistant has no standardized way to manage presets, so the `store_preset` service was added. It will store a preset with the provided number for the current playing item.
+Home Assistant does not have a standardized way to manage presets, so the `store_preset` action was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
 service: yamaha_ynca.store_preset
@@ -563,18 +564,18 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 * **Q: Why are entities unavailable when receiver is in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
-* **Q: Why does the integration shows too many or not enough features that are available on my receiver?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported features for your receiver in the integration configuration.
+* **Q: Why does the integration not show all features mentioned in the README?**  
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported some features for your receiver in the integration configuration. It can also be that your receiver does not expose that feature, you can make an issue if you believe it is supposed to be supported on your receiver.
 
 * **Q: How can I stream audio from a URL?**  
   You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
 
-* **Q: Why are Scene buttons are not working on some receivers?**  
-  On some receivers (e.g. RX-V475 with firmware 1.34/2.06) the command to activate the scenes does not work even though the receiver indicates support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
+* **Q: Why are Scene buttons are not working for my receiver?**  
+  On some receivers (e.g. RX-V475) the command to activate the scenes does not work even though the receiver seems to indicate support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As an alternative the scenes can be activated by sending the scene commands through service calls on the [Remote control entity](#remote-control).
+  As an alternative, the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
 
 ```yaml
 service: remote.send_command
