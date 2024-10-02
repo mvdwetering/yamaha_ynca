@@ -351,8 +351,8 @@ def main(args):
             Git.push_to_origin(MASTER)
         Git.push_to_origin(release_branch_name)
         Git.push_to_origin(tag_name)
+    else:
         print("Don't forget to push later or revert changes!")
-
 
     print("Done!")
     print(f"Currently on branch: {Git.get_current_branch().name}")
