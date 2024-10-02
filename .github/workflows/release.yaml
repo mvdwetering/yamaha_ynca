@@ -1,45 +1,38 @@
+name: Create release from tag
+
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
-name: Create Release
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  build:
-    name: Create Release
-    runs-on: ubuntu-latest
+  release:
+    runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - run: |
+          echo Checkout done for $GITHUB_REF
+
+      - name: Figure out integration name
+        run: |
+          INTEGRATION_SUBDIR=$(ls -d custom_components/*/)
+          echo "INTEGRATION_NAME=$(echo $INTEGRATION_SUBDIR | cut -d'/' -f2)" >> $GITHUB_ENV
+          echo Integration name: ${{ env.INTEGRATION_NAME }}
 
       - name: Zip custom components dir
-        working-directory: "custom_components"
-        run: zip -r yamaha_ynca.zip yamaha_ynca/*
+        working-directory: "custom_components/${{ env.INTEGRATION_NAME }}"
+        run: zip -r ${{ env.INTEGRATION_NAME }}.zip ./*
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1  # Official Github action
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-#          body: |
-#            Changes in this Release
-#            - First Change
-#            - Second Change
-          draft: true
-          prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
+        # Started from: https://stackoverflow.com/questions/75679683/how-can-i-auto-generate-a-release-note-and-create-a-release-using-github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./custom_components/yamaha_ynca.zip
-          asset_name: yamaha_ynca.zip
-          asset_content_type: application/zip
+          tag: ${{ github.ref_name }}
+        # --discussion-category "General" not possible for draft releases :/
+        run: |
+          gh release create "$tag" "./custom_components/${{ env.INTEGRATION_NAME }}/${{ env.INTEGRATION_NAME }}.zip" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="$tag" \
+              --generate-notes \
+              --draft
