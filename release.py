@@ -57,40 +57,39 @@ class Git:
 
     @staticmethod
     def checkout(branch):
-        subprocess.run(["git", "checkout", branch])
+        subprocess.run(["git", "checkout", branch], check=True)
 
     @staticmethod
     def add_changes():
-        subprocess.run(["git", "add", "--all"])
+        subprocess.run(["git", "add", "--all"], check=True)
 
     @staticmethod
     def commit_changes(message):
-        subprocess.run(["git", "commit", "-m", message])
+        subprocess.run(["git", "commit", "-m", message], check=True)
 
     @staticmethod
     def pull():
-        subprocess.run(["git", "pull"])
+        subprocess.run(["git", "pull"], check=True)
 
     @staticmethod
     def delete_branch(name):
-        subprocess.run(["git", "branch", "-D", name])
+        subprocess.run(["git", "branch", "-D", name], check=True)
 
     @staticmethod
     def create_branch(name):
-        subprocess.run(["git", "branch", name])
+        subprocess.run(["git", "branch", name], check=True)
 
     @staticmethod
     def create_tag(name):
-        subprocess.run(["git", "tag", name])
+        subprocess.run(["git", "tag", name], check=True)
 
     @staticmethod
     def push_to_origin(name):
-        subprocess.run(["git", "push", "origin", name])
+        subprocess.run(["git", "push", "origin", name], check=True)
 
     @staticmethod
     def fetch_tags():
-        subprocess.run(["git", "fetch", "--tags"])
-
+        subprocess.run(["git", "fetch", "--tags"], check=True)
 
 def menu(title, choices):
     while True:
