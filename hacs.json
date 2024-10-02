@@ -1,5 +1,7 @@
 {
     "name": "Yamaha (YNCA)",
+    "homeassistant": "2024.7.0",
     "render_readme": true,
-    "homeassistant": "2024.7.0"
+    "zip_release": true,
+    "filename": "yamaha_ynca.zip"    
 }
