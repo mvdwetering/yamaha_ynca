@@ -1,7 +1,7 @@
-# This file is copied from Home Assistant and might be out of date
+# This file is copied from Home Assistant and will be out of date
 
 [tool.black]
-target-version = ["py39", "py310"]
+target-version = ["py312"]
 exclude = 'generated'
 
 [tool.isort]
