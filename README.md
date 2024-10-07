@@ -28,6 +28,7 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Power on/off
 * Volume control and mute
 * Source selection
+* Source names are taken from receiver (if supported by receiver)
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
