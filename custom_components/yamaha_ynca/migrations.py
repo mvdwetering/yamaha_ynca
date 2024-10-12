@@ -76,12 +76,11 @@ def migrate_v7_5_to_v7_6(hass: HomeAssistant, config_entry: ConfigEntry):
             options[zone_id]["hidden_inputs"] = options[zone_id].get(
                 "hidden_inputs", []
             )
-            options[zone_id]["hidden_inputs"].append("OPTICAL1").append("OPTICAL2")
+            options[zone_id]["hidden_inputs"].extend(["OPTICAL1", "OPTICAL2"])
 
     hass.config_entries.async_update_entry(
-        config_entry, options=options, minor_version=5
+        config_entry, options=options, minor_version=6
     )
-
 
 def migrate_v7_4_to_v7_5(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get
