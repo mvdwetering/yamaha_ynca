@@ -43,7 +43,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 7
-    assert new_entry.minor_version == 5
+    assert new_entry.minor_version == 6
 
 
 async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
@@ -558,7 +558,7 @@ async def test_async_migration_entry_version_v7_5_to_v7_6(
     assert new_entry.version == 7
     assert new_entry.minor_version == 6
     assert len(new_entry.options.keys()) == 1
-    assert len(new_entry.options["ZONE2"]["hidden_inputs"]) == 2
+    assert len(new_entry.options["ZONE2"]["hidden_inputs"]) == 3
     assert "OPTICAL1" in new_entry.options["ZONE2"]["hidden_inputs"]
     assert "OPTICAL2" in new_entry.options["ZONE2"]["hidden_inputs"]
     assert "SOME INPUT" in new_entry.options["ZONE2"]["hidden_inputs"]
