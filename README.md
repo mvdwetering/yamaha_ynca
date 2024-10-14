@@ -26,7 +26,10 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Local Push, so updates instantly
 * Support for zones
 * Power on/off
-* Volume control and mute
+* Mute/Unmute
+* Volume control
+  * Standard Home Assistant media player
+  * Separate number entity with Volume in dB like on the receiver
 * Source selection
 * Source names are taken from receiver (if supported by receiver)
 * Soundmode selection
@@ -43,16 +46,16 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * Initial volume
   * Max volume
   * Sleep timer
-  * Speaker bass/treble (default disabled)
-  * Headphone bass/treble (default disabled)
   * Surround Decoder
   * Pure Direct
+  * Speaker bass/treble (default disabled)
+  * Headphone bass/treble (default disabled)
 
 ## Installation
 
 ### Home Assistant Community Store (HACS)
 
-*Recommended as you get notified of updates.*
+*Recommended because you get notified of updates.*
 
 HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site https://hacs.xyz/
 
@@ -69,9 +72,11 @@ HACS is a 3rd party downloader for Home Assistant to easily install and update c
 
 ## Volume (dB) entity
 
-The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult as the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
+The "Volume (dB)" entity was added to simplify volume control in Home Assistant. It is a number entity that controls the volume of a zone, like the volume in the media_player, but using the familiar dB unit instead of the percent numbers.
 
-The "Volume (dB)" entity was added to simplify this. It is a number entity that controls the volume of a zone, but using the familiar dB unit.
+### Background
+
+The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
 
 ## Remote control
 
