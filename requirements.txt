@@ -1,2 +1,2 @@
 # Also update manifest.json!
-ynca==5.17.0
+ynca==5.17.1

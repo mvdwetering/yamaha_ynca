@@ -55,10 +55,12 @@ input_mappings: List[Mapping] = [
     Mapping(ynca.Input.HDMI6, []),
     Mapping(ynca.Input.HDMI7, []),
     Mapping(ynca.Input.MULTICH, []),
+    Mapping(ynca.Input.OPTICAL1, []),
+    Mapping(ynca.Input.OPTICAL2, []),
     Mapping(ynca.Input.PHONO, []),
     Mapping(ynca.Input.TV, []),
-    Mapping(ynca.Input.VAUX, []),
     Mapping(ynca.Input.USB, []),
+    Mapping(ynca.Input.VAUX, []),
 ]
 
 
