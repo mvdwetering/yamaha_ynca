@@ -72,7 +72,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # When updating also update the one used in `setup_integration` for tests
     VERSION = 7
-    MINOR_VERSION = 5
+    MINOR_VERSION = 6
 
     reconfigure_entry: YamahaYncaConfigEntry | None = None
 

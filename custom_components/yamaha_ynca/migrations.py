@@ -46,6 +46,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             migrate_v7_3_to_v7_4(hass, config_entry)
         if config_entry.minor_version == 4:
             migrate_v7_4_to_v7_5(hass, config_entry)
+        if config_entry.minor_version == 5:
+            migrate_v7_5_to_v7_6(hass, config_entry)
 
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
@@ -61,6 +63,24 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     return True
 
+def migrate_v7_5_to_v7_6(hass: HomeAssistant, config_entry: ConfigEntry):
+    options = dict(config_entry.options)  # Convert to dict to be able to use .get
+
+    # Hide new TV input for existing users
+    # Code is robust against unsupported inputs being listed in "hidden_input"s
+
+    # Upgrading from _really_ old version might not have zones key
+    if "zones" in config_entry.data:
+        for zone_id in config_entry.data["zones"]:
+            options[zone_id] = options.get(zone_id, {})
+            options[zone_id]["hidden_inputs"] = options[zone_id].get(
+                "hidden_inputs", []
+            )
+            options[zone_id]["hidden_inputs"].extend(["OPTICAL1", "OPTICAL2"])
+
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=6
+    )
 
 def migrate_v7_4_to_v7_5(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get

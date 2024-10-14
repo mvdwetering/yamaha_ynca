@@ -12,11 +12,11 @@
 
 Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
 
-According to reports of users and info found on the internet the following AV receivers should be working. There are probably more receivers that work, just give it a try. If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
+According to reports of users the following AV receivers are working. There are probably more receivers that work, just give it a try. If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
 
-> HTR-4065, HTR-4071, HTR-6064, RX-A2A, RX-A6A, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V573, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
+> HTR-4065, HTR-4071, HTR-6064, R-N500, RX-A2A, RX-A4A, RX-A6A, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V573, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
 
-In case of issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
+For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
 
 ## Features
@@ -26,8 +26,12 @@ In case of issues or feature requests please [submit an issue on Github](https:/
 * Local Push, so updates instantly
 * Support for zones
 * Power on/off
-* Volume control and mute
+* Mute/Unmute
+* Volume control
+  * Standard Home Assistant media player
+  * Separate number entity with Volume in dB like on the receiver
 * Source selection
+* Source names are taken from receiver (if supported by receiver)
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
@@ -42,35 +46,50 @@ In case of issues or feature requests please [submit an issue on Github](https:/
   * Initial volume
   * Max volume
   * Sleep timer
-  * Speaker bass/treble (default disabled)
-  * Headphone bass/treble (default disabled)
   * Surround Decoder
   * Pure Direct
+  * Speaker bass/treble (default disabled)
+  * Headphone bass/treble (default disabled)
 
 ## Installation
 
 ### Home Assistant Community Store (HACS)
 
-*Recommended as you get notified of updates.*
+*Recommended because you get notified of updates.*
 
 HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site https://hacs.xyz/
 
-* Add integration within HACS (use the + button and search for "YNCA")
+* Open the HACS page
+* Search for "Yamaha (YNCA)" in the HACS search bar
+* Press the Download button and wait for it to download
 * Restart Home Assistant
-* Go to the Home Assistant integrations menu, press the Add button and search for "Yamaha (YNCA)". You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
+
+Then install the integration as usual:
+* Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
+* Press the "Add Integration" button
+* Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
+* Follow the instructions
 
 ### Manual
 
-* Download the zipfile from the releases.
-* Extract the zip and copy the contents to the `custom_components` directory.
+* Go to the releases section and download the zip file.
+* Extract the zip
+* Copy the contents to the `custom_components` directory in your `config` directory.
 * Restart Home Assistant
-* Go to the Home Assistant integrations menu, press the Add button and search for "Yamaha (YNCA)". You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
+
+Then install the integration as usual:
+* Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
+* Press the "Add Integration" button
+* Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
+* Follow the instructions
 
 ## Volume (dB) entity
 
-The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult as the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
+The "Volume (dB)" entity was added to simplify volume control in Home Assistant. It is a number entity that controls the volume of a zone, like the volume in the media_player, but using the familiar dB unit instead of the percent numbers.
 
-The "Volume (dB)" entity was added to simplify this. It is a number entity that controls the volume of a zone, but using the familiar dB unit.
+### Background
+
+The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
 
 ## Remote control
 
@@ -564,18 +583,18 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 * **Q: Why are entities unavailable when receiver is in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
-* **Q: Why does the integration not show all features mentioned in the README?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported some features for your receiver in the integration configuration. It can also be that your receiver does not expose that feature, you can make an issue if you believe it is supposed to be supported on your receiver.
+* **Q: Why does the integration not show all features mentioned in the README even when my receiver supports them?**  
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported some features for your receiver in the integration configuration. It can also be that your receiver does not expose that feature. You can make an issue if you believe it is supposed to be supported on your receiver.
 
 * **Q: How can I stream audio from a URL?**  
-  You can't with this integration since the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
+  You can't with this integration because the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
 
 * **Q: Why are Scene buttons are not working for my receiver?**  
   On some receivers (e.g. RX-V475) the command to activate the scenes does not work even though the receiver seems to indicate support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As an alternative, the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
+  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
 
 ```yaml
 service: remote.send_command
