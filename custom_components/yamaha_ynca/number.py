@@ -57,7 +57,6 @@ ENTITY_DESCRIPTIONS = [
         native_max_value_fn=volume_native_max_value_fn,
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
-        entity_registry_enabled_default=False,
         function_names=["VOL", "MAXVOL"],
     ),
     YncaNumberEntityDescription(  # type: ignore
