@@ -65,7 +65,7 @@ If your receiver works and is not in the list, please post a message in the [dis
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
 * Activate scenes (like the buttons on the front)
-* [Presets](#presets)
+* [Presets](#presets) for radio or other sources
 * Send [remote control commands](#remote-control)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
