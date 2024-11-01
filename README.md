@@ -18,9 +18,13 @@ For issues or feature requests please [submit an issue on Github](https://github
 
 ## Models
 
-Unfortunately Yamaha does not document which models support the YNCA protocol that this integration uses. So the list of working receivers below is based on reports from users and info found on the internet.
+Unfortunately Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses. 
 
-There are probably more receivers that work, just give it a try. If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
+The list of working models below is based on reports from users and info found on the internet. 
+
+Based on this info it seems that receivers in the mentioned series from 2010 onwards are likely to work. So even if your models is not listed, just give it a try. 
+
+If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
 
 | Series | Models |
 | --- | --- |
@@ -29,19 +33,19 @@ There are probably more receivers that work, just give it a try. If your receive
 || RX-A700, RX-A710, RX-A720, RX-A740, RX-A750 |
 || RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870 |
 || RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040 |
-|| RX-A2000, RX-A2010, RX-A2020, RX-A2070 |
-|| RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070 |
+|| RX-A2000, RX-A2010, RX-A2020, RX-A2030, RX-A2040, RX-A2070 |
+|| RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3040, RX-A3070 |
 | RX-V | RX-V475, RX-V477, RX-V481D, RX-V483 |
 || RX-V500D, RX-V573, RX-V575 |
 || RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685 |
 || RX-V771, RX-V773, RX-V775, RX-V777 |
 || RX-V867, RX-V871 |
-|| RX-V1067, RX-V1071, RX-V1085 |
-|| RX-V2067, RX-V2071 |
-|| RX-V3067, RX-V3071 |
+|| RX-V1067, RX-V1071, RX-V1075, RX-V1077, RX-V1085 |
+|| RX-V2067, RX-V2071, RX-V2075, RX-V2077  |
+|| RX-V3067, RX-V3071, RX-V3075, RX-V3077 |
 | HTR | HTR-6064 , HTR-4065, HTR-4071 |
 | TSR | TSR-700, TSR-7850 |
-| Other | R-N500, RX-S600D |
+| Other | CX-A5000, R-N500, RX-S600D |
 
 
 ## Features
