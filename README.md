@@ -22,7 +22,7 @@ Unfortunately, Yamaha does not mention in the manuals if a model supports the YN
 
 The list of working models below is based on reports from users and info found on the internet. 
 
-Based on this info, it seems that receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try. 
+Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try. 
 
 If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
 
