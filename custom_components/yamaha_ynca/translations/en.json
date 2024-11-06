@@ -133,8 +133,14 @@
       "adaptivedrc": {
         "name": "Adaptive DRC"
       },
+      "dirmode": {
+        "name": "Direct"
+      },
       "enhancer": {
         "name": "Compressed Music Enhancer"
+      },
+      "hdmiout": {
+        "name": "HDMI Out"
       },
       "hdmiout1": {
         "name": "HDMI Out 1"
@@ -153,9 +159,6 @@
       },
       "threedcinema": {
         "name": "CINEMA DSP 3D Mode"
-      },
-      "hdmiout": {
-        "name": "HDMI Out"
       }
     },
     "select": {
