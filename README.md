@@ -1,6 +1,7 @@
 # Yamaha YNCA
 
 - [Description](#description)
+- [Models](#models)
 - [Features](#features)
 - [Installation](#installation)
 - [Volume (dB) entity](#volume-db-entity)
@@ -12,31 +13,59 @@
 
 Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
 
-According to reports of users the following AV receivers are working. There are probably more receivers that work, just give it a try. If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so the list can be updated.
-
-> HTR-4065, HTR-4071, HTR-6064, R-N500, RX-A2A, RX-A4A, RX-A6A, RX-A660, RX-A700, RX-A710, RX-A720, RX-A740, RX-A750, RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870, RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040, RX-A2000, RX-A2010, RX-A2020, RX-A2070, RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3070, RX-S600D, RX-V475, RX-V477, RX-V481D, RX-V483, RX-V500D, RX-V573, RX-V575, RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685, RX-V771, RX-V773, RX-V775, RX-V777, RX-V867, RX-V871, RX-V1067, RX-V1071, RX-V1085, RX-V2067, RX-V2071, RX-V3067, RX-V3071, TSR-700, TSR-7850
-
 For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
+
+
+## Models
+
+Unfortunately, Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses. 
+
+The list of working models below is based on reports from users and info found on the internet. 
+
+Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try. 
+
+If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
+
+| Series | Models |
+| --- | --- |
+| AVANTAGE | RX-A2A, RX-A4A, RX-A6A |
+|| RX-A660 |
+|| RX-A700, RX-A710, RX-A720, RX-A740, RX-A750 |
+|| RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870 |
+|| RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040 |
+|| RX-A2000, RX-A2010, RX-A2020, RX-A2030, RX-A2040, RX-A2070 |
+|| RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3040, RX-A3070 |
+| RX-V | RX-V475, RX-V477, RX-V481D, RX-V483 |
+|| RX-V500D, RX-V573, RX-V575 |
+|| RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685 |
+|| RX-V771, RX-V773, RX-V775, RX-V777 |
+|| RX-V867, RX-V871 |
+|| RX-V1067, RX-V1071, RX-V1075, RX-V1077, RX-V1085 |
+|| RX-V2067, RX-V2071, RX-V2075, RX-V2077  |
+|| RX-V3067, RX-V3071, RX-V3075, RX-V3077 |
+| HTR | HTR-6064 , HTR-4065, HTR-4071 |
+| TSR | TSR-700, TSR-7850 |
+| Other | CX-A5000, R-N500, RX-S600D |
 
 
 ## Features
 
 * Full UI support for adding devices
 * Connect through serial cable, TCP/IP network or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
-* Local Push, so updates instantly
+* Local Push, so updates are instant
 * Support for zones
 * Power on/off
 * Mute/Unmute
 * Volume control
   * Standard Home Assistant media player
-  * Separate number entity with Volume in dB like on the receiver
+  * Separate [number entity with Volume in dB](#volume-db-entity) like on the receiver
 * Source selection
 * Source names are taken from receiver (if supported by receiver)
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
 * Activate scenes (like the buttons on the front)
-* [Presets](#presets)
+* [Presets](#presets) for radio or other sources
 * Send [remote control commands](#remote-control)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
@@ -47,7 +76,7 @@ For issues or feature requests please [submit an issue on Github](https://github
   * Max volume
   * Sleep timer
   * Surround Decoder
-  * Pure Direct
+  * Direct / Pure Direct
   * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
 

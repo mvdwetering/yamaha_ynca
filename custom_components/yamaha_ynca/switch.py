@@ -47,29 +47,22 @@ ZONE_ENTITY_DESCRIPTIONS = [
     # Suppress following mypy message, which seems to be not an issue as other values have defaults:
     # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
     YncaSwitchEntityDescription(  # type: ignore
-        key="enhancer",
-        entity_category=EntityCategory.CONFIG,
-        on=ynca.Enhancer.ON,
-        off=ynca.Enhancer.OFF,
-    ),
-    YncaSwitchEntityDescription(  # type: ignore
         key="adaptivedrc",
         entity_category=EntityCategory.CONFIG,
         on=ynca.AdaptiveDrc.AUTO,
         off=ynca.AdaptiveDrc.OFF,
     ),
     YncaSwitchEntityDescription(  # type: ignore
-        key="threedcinema",
+        key="dirmode",
         entity_category=EntityCategory.CONFIG,
-        function_names=["3DCINEMA"],
-        on=ynca.ThreeDeeCinema.AUTO,
-        off=ynca.ThreeDeeCinema.OFF,
+        on=ynca.DirMode.ON,
+        off=ynca.DirMode.OFF,
     ),
     YncaSwitchEntityDescription(  # type: ignore
-        key="puredirmode",
+        key="enhancer",
         entity_category=EntityCategory.CONFIG,
-        on=ynca.PureDirMode.ON,
-        off=ynca.PureDirMode.OFF,
+        on=ynca.Enhancer.ON,
+        off=ynca.Enhancer.OFF,
     ),
     YncaSwitchEntityDescription(  # type: ignore
         key="hdmiout",
@@ -83,6 +76,12 @@ ZONE_ENTITY_DESCRIPTIONS = [
             subunit_supports_entitydescription_key(entity_description, zone_subunit)
             and zone_subunit.lipsynchdmiout2offset is None
         ),
+    ),
+    YncaSwitchEntityDescription(  # type: ignore
+        key="puredirmode",
+        entity_category=EntityCategory.CONFIG,
+        on=ynca.PureDirMode.ON,
+        off=ynca.PureDirMode.OFF,
     ),
     YncaSwitchEntityDescription(  # type: ignore
         key="speakera",
@@ -109,6 +108,13 @@ ZONE_ENTITY_DESCRIPTIONS = [
             subunit_supports_entitydescription_key(entity_description, zone_subunit)
             and getattr(zone_subunit, "zonebavail", None) is not ynca.ZoneBAvail.READY
         ),
+    ),
+    YncaSwitchEntityDescription(  # type: ignore
+        key="threedcinema",
+        entity_category=EntityCategory.CONFIG,
+        function_names=["3DCINEMA"],
+        on=ynca.ThreeDeeCinema.AUTO,
+        off=ynca.ThreeDeeCinema.OFF,
     ),
 ]
 
