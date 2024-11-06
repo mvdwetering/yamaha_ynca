@@ -38,7 +38,7 @@ async def test_async_setup_entry(
     mock_ynca.main = mock_zone_main
     mock_ynca.main.adaptivedrc = ynca.AdaptiveDrc.OFF
     mock_ynca.main.enhancer = ynca.Enhancer.OFF
-    mock_ynca.main.dirmode = ynca.PureDirMode.ON
+    mock_ynca.main.dirmode = ynca.DirMode.ON
     mock_ynca.main.hdmiout = ynca.HdmiOut.OUT
     mock_ynca.main.lipsynchdmiout2offset = None
     mock_ynca.main.puredirmode = ynca.PureDirMode.OFF
