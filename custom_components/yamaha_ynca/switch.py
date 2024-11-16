@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, List
 
@@ -201,3 +202,20 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         setattr(self._subunit, self.entity_description.key, self.entity_description.off)
+
+    def update_callback(self, function, value):
+        super().update_callback(function, value)
+        
+        # DIRMODE does not (always?) report changes
+        # but it does report STRAIGHT when DIRMODE changes, even when STRAIGHT did not change
+        # So manually request an update for DIRMODE when STRAIGHT is reported
+        if self.entity_description.key == "dirmode" and function == "STRAIGHT":
+
+            # But because STRAIGHT also gets reported on GET we need to avoid an infinite loop
+            if hasattr(self, "_dirmode_get_sent") and (datetime.now() - self._dirmode_get_sent < timedelta(seconds=0.5)):
+                return
+
+            # There is no API in `ynca` to explicitly do a GET
+            # So use internal knowledge for now and ignore the typing issue
+            self._associated_zone._connection.get(self._associated_zone.id, "DIRMODE") # type: ignore[union-attr]
+            self._dirmode_get_sent:datetime = datetime.now()
