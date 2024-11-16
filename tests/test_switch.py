@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from unittest.mock import ANY, Mock, call, patch
 
 import ynca
@@ -28,6 +29,13 @@ TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE = YncaSwitchEntityDescription(
     on=ynca.HdmiOutOnOff.ON,
     off=ynca.HdmiOutOnOff.OFF,
     associated_zone_attr="main",
+)
+
+TEST_ENTITY_DESCRIPTION_DIRMODE = YncaSwitchEntityDescription(
+    key="dirmode",
+    entity_category=EntityCategory.CONFIG,
+    on=ynca.DirMode.ON,
+    off=ynca.DirMode.OFF,
 )
 
 
@@ -141,9 +149,7 @@ async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone
     assert hdmiout is not None
 
 
-async def test_hdmiout_supported_but_with_two_hdmi_outputs(
-    hass, mock_ynca, mock_zone_main
-):
+async def test_hdmiout_supported_with_two_hdmi_outputs(hass, mock_ynca, mock_zone_main):
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = 123  # This indicates HDMI2
@@ -152,3 +158,46 @@ async def test_hdmiout_supported_but_with_two_hdmi_outputs(
 
     hdmiout = hass.states.get("switch.modelname_main_hdmi_out")
     assert hdmiout is None
+
+
+async def test_dirmode(hass, mock_ynca, mock_zone_main):
+    entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE)
+
+    mock_zone_main._connection = Mock()
+    mock_zone_main._connection.get = Mock()
+
+    # Check handling of updates from YNCA
+    await entity.async_added_to_hass()
+    mock_zone_main.register_update_callback.assert_called_once()
+    callback = mock_zone_main.register_update_callback.call_args.args[0]
+    entity.schedule_update_ha_state = Mock()
+
+    # Dirmode triggers update
+    callback("DIRMODE", None)
+    entity.schedule_update_ha_state.assert_called_once()
+    mock_zone_main._connection.get.assert_not_called()
+
+    # Straight does not trigger update, but requests update for DIRMODE
+    entity.schedule_update_ha_state.reset_mock()
+
+    callback("STRAIGHT", None)
+    entity.schedule_update_ha_state.assert_not_called()
+
+    mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
+
+    # Receiving STRAIGHT again within 500ms does not request an update
+    mock_zone_main._connection.get.reset_mock()
+
+    callback("STRAIGHT", None)
+    entity.schedule_update_ha_state.assert_not_called()
+    mock_zone_main._connection.get.assert_not_called()
+
+    # But after the cooldown expires it requests again
+    time.sleep(0.51)
+    callback("STRAIGHT", None)
+    entity.schedule_update_ha_state.assert_not_called()
+    mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
+
+    # Cleanup on exit
+    await entity.async_will_remove_from_hass()
+    mock_zone_main.unregister_update_callback.assert_called_once()
