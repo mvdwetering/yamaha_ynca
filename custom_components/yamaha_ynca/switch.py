@@ -18,7 +18,7 @@ from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
-
+    from ynca.subunit import SubunitBase
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSwitchEntityDescription(SwitchEntityDescription):
@@ -187,6 +187,16 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
 
     entity_description: YncaSwitchEntityDescription
 
+    def __init__(
+        self,
+        receiver_unique_id: str,
+        subunit: SubunitBase,
+        description: YncaSwitchEntityDescription,
+        associated_zone: ZoneBase | None = None,
+    ):
+        super().__init__(receiver_unique_id, subunit, description, associated_zone)
+        self._dirmode_get_sent = datetime.fromtimestamp(0)
+
     @property
     def is_on(self) -> bool | None:
         """Return True if entity is on."""
@@ -212,10 +222,10 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
         if self.entity_description.key == "dirmode" and function == "STRAIGHT":
 
             # But because STRAIGHT also gets reported on GET we need to avoid an infinite loop
-            if hasattr(self, "_dirmode_get_sent") and (datetime.now() - self._dirmode_get_sent < timedelta(seconds=0.5)):
+            if self._dirmode_get_sent and (datetime.now() - self._dirmode_get_sent < timedelta(seconds=0.5)):
                 return
 
             # There is no API in `ynca` to explicitly do a GET
             # So use internal knowledge for now and ignore the typing issue
             self._associated_zone._connection.get(self._associated_zone.id, "DIRMODE") # type: ignore[union-attr]
-            self._dirmode_get_sent:datetime = datetime.now()
+            self._dirmode_get_sent = datetime.now()
