@@ -43,7 +43,7 @@ If your receiver works and is not in the list, please post a message in the [dis
 || RX-V1067, RX-V1071, RX-V1075, RX-V1077, RX-V1085 |
 || RX-V2067, RX-V2071, RX-V2075, RX-V2077  |
 || RX-V3067, RX-V3071, RX-V3075, RX-V3077 |
-| HTR | HTR-6064 , HTR-4065, HTR-4071 |
+| HTR | HTR-6064 , HTR-4065, HTR-4066, HTR-4071 |
 | TSR | TSR-700, TSR-7850 |
 | Other | CX-A5000, R-N500, RX-S600D |
 
