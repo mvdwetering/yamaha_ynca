@@ -118,6 +118,7 @@ def create_mock_zone(spec=None):
 
     # Disable all features (is there an easier way with less maintenance?)
     zone.adaptivedrc = None
+    zone.dirmode = None
     zone.enhancer = None
     zone.hdmiout = None
     zone.hpbass = None
