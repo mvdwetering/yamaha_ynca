@@ -30,7 +30,7 @@ If your receiver works and is not in the list, please post a message in the [dis
 | --- | --- |
 | AVANTAGE | RX-A2A, RX-A4A, RX-A6A |
 || RX-A660 |
-|| RX-A700, RX-A710, RX-A720, RX-A740, RX-A750 |
+|| RX-A700, RX-A710, RX-A720, RX-A730, RX-A740, RX-A750 |
 || RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870 |
 || RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040 |
 || RX-A2000, RX-A2010, RX-A2020, RX-A2030, RX-A2040, RX-A2070 |
