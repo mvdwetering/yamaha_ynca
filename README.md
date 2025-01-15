@@ -67,7 +67,7 @@ If your receiver works and is not in the list, please post a message in the [dis
 * Provide metadata like artist, album, song (depends on source)
 * Activate scenes (like the buttons on the front)
 * [Presets](#presets) for radio or other sources
-* Send [remote control commands](#remote-control)
+* Send [remote control commands](#remote-entity)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
@@ -624,7 +624,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
+  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote entity](#remote-entity).
 
 ```yaml
 service: remote.send_command
