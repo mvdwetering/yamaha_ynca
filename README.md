@@ -5,7 +5,7 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Volume (dB) entity](#volume-db-entity)
-- [Remote control](#remote-control)
+- [Remote entity](#remote-entity)
 - [Presets](#presets)
 - [Q & A](#q--a)
 
@@ -121,9 +121,9 @@ The "Volume (dB)" entity was added to simplify volume control in Home Assistant.
 
 The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
 
-## Remote control
+## Remote entity
 
-The remote control entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone.
+The remote entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone.
 
 The current list of commands is below. For the list of supported commands for a specific entity check the "commands" attribute of the remote entity. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
 
