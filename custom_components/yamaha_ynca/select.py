@@ -54,6 +54,27 @@ async def async_setup_entry(
                         )
                     )
 
+    # These are features on the SYS subunit, but they are tied to a zone
+    assert domain_entry_data.api.sys is not None
+    for entity_description in SYS_ENTITY_DESCRIPTIONS:
+        assert isinstance(entity_description.associated_zone_attr, str)
+        if (
+            getattr(domain_entry_data.api.sys, entity_description.key, None) is not None
+        ) and (
+            zone_subunit := getattr(
+                domain_entry_data.api, entity_description.associated_zone_attr
+            )
+        ):
+            entities.append(
+                YamahaYncaSelect(
+                    config_entry,
+                    config_entry.entry_id,
+                    domain_entry_data.api.sys,
+                    entity_description,
+                    associated_zone=zone_subunit,
+                )
+            )
+
     async_add_entities(entities)
 
 
@@ -202,6 +223,13 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     options_fn: Callable[[ConfigEntry], List[str]] | None = None
     """Override which options are supported for this entity."""
 
+    associated_zone_attr: str | None = None
+    """
+    When entity is linked to a function on a subunit that is not a Zone, but should still be part of the Zone
+    An example is SPPATTERN which is a function on SYS subunit, but I want to display as part of MAIN zone
+    Such relation is indicated here
+    """
+
 
 ENTITY_DESCRIPTIONS = [
     YncaSelectEntityDescription(  # type: ignore
@@ -251,5 +279,15 @@ ENTITY_DESCRIPTIONS = [
             )
         ),
         function_names=["2CHDECODER"],
+    ),
+]
+
+SYS_ENTITY_DESCRIPTIONS = [
+    YncaSelectEntityDescription(  # type: ignore
+        key="sppattern",
+        entity_category=EntityCategory.CONFIG,
+        enum=ynca.SpPattern,
+        icon="mdi:speaker-multiple",
+        associated_zone_attr="main",
     ),
 ]

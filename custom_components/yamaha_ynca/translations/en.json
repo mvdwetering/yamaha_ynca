@@ -189,6 +189,13 @@
           "120_min": "120 Minutes"
         }
       },
+      "sppattern": {
+        "name": "Speaker pattern",
+        "state": {
+          "pattern_1": "Pattern 1",
+          "pattern_2": "Pattern 2"
+        }
+      },
       "twochdecoder": {
         "name": "Surround Decoder",
         "state": {
