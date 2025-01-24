@@ -183,6 +183,7 @@ def mock_ynca(hass):
     mock_ynca.sys.hdmiout1 = None
     mock_ynca.sys.hdmiout2 = None
     mock_ynca.sys.hdmiout3 = None
+    mock_ynca.sys.sppattern = None
 
     for attribute in dir(mock_ynca.sys):
         if attribute.startswith("inpname"):

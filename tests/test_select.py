@@ -49,6 +49,8 @@ async def test_async_setup_entry(
     mock_ynca.main.initvollvl = ynca.InitVolLvl.MUTE
     mock_ynca.main.twochdecoder = ynca.TwoChDecoder.DolbyPl2Music
 
+    mock_ynca.sys.sppattern = ynca.SpPattern.PATTERN_1
+
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
 
@@ -56,7 +58,7 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 4
+    assert len(entities) == 5
 
 
 async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):

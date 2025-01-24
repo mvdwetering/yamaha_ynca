@@ -1,20 +1,19 @@
 # Yamaha YNCA
 
-- [Description](#description)
-- [Models](#models)
-- [Features](#features)
-- [Installation](#installation)
-- [Volume (dB) entity](#volume-db-entity)
-- [Remote control](#remote-control)
-- [Presets](#presets)
-- [Q & A](#q--a)
+* [Description](#description)
+* [Models](#models)
+* [Features](#features)
+* [Installation](#installation)
+* [Volume (dB) entity](#volume-db-entity)
+* [Remote entity](#remote-entity)
+* [Presets](#presets)
+* [Q & A](#q--a)
 
 ## Description
 
 Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
 
 For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
-
 
 ## Models
 
@@ -34,20 +33,19 @@ If your receiver works and is not in the list, please post a message in the [dis
 || RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870 |
 || RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040 |
 || RX-A2000, RX-A2010, RX-A2020, RX-A2030, RX-A2040, RX-A2070 |
-|| RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3040, RX-A3070, RX-A3080 |
+|| RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3040, RX-A3050, RX-A3070, RX-A3080 |
 | RX-V | RX-V4A |
 || RX-V475, RX-V477, RX-V481D, RX-V483 |
 || RX-V500D, RX-V573, RX-V575, RX-V585 |
-|| RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685 |
+|| RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V683, RX-V685 |
 || RX-V771, RX-V773, RX-V775, RX-V777 |
 || RX-V867, RX-V871 |
 || RX-V1067, RX-V1071, RX-V1075, RX-V1077, RX-V1085 |
 || RX-V2067, RX-V2071, RX-V2075, RX-V2077  |
 || RX-V3067, RX-V3071, RX-V3075, RX-V3077 |
-| HTR | HTR-6064 , HTR-4065, HTR-4066, HTR-4071 |
+| HTR | HTR-4065, HTR-4066, HTR-4071, HTR-4072, HTR-6064 |
 | TSR | TSR-700, TSR-7850 |
-| Other | CX-A5000, R-N500, RX-S600D |
-
+| Other | CX-A5000, R-N500, RX-S600D, RX-S601D |
 
 ## Features
 
@@ -67,7 +65,7 @@ If your receiver works and is not in the list, please post a message in the [dis
 * Provide metadata like artist, album, song (depends on source)
 * Activate scenes (like the buttons on the front)
 * [Presets](#presets) for radio or other sources
-* Send [remote control commands](#remote-control)
+* Send [remote control commands](#remote-entity)
 * Several controllable settings (if supported by receiver):
   * CINEMA DSP 3D mode
   * Adaptive DRC
@@ -78,6 +76,7 @@ If your receiver works and is not in the list, please post a message in the [dis
   * Sleep timer
   * Surround Decoder
   * Direct / Pure Direct
+  * Speaker pattern selection
   * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
 
@@ -94,7 +93,8 @@ HACS is a 3rd party downloader for Home Assistant to easily install and update c
 * Press the Download button and wait for it to download
 * Restart Home Assistant
 
-Then install the integration as usual:
+Then configure the integration in Home Assistant as usual:
+
 * Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
 * Press the "Add Integration" button
 * Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
@@ -107,7 +107,8 @@ Then install the integration as usual:
 * Copy the contents to the `custom_components` directory in your `config` directory.
 * Restart Home Assistant
 
-Then install the integration as usual:
+Then configure the integration in Home Assistant as usual:
+
 * Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
 * Press the "Add Integration" button
 * Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
@@ -121,9 +122,9 @@ The "Volume (dB)" entity was added to simplify volume control in Home Assistant.
 
 The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
 
-## Remote control
+## Remote entity
 
-The remote control entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone.
+The remote entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone.
 
 The current list of commands is below. For the list of supported commands for a specific entity check the "commands" attribute of the remote entity. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
 
@@ -564,6 +565,7 @@ cards:
           target:
             entity_id: remote.rx_a810_main_remote
 ```
+
 </details>
 
 ## Presets
@@ -592,7 +594,6 @@ target:
 In some cases it is not possible to select presets from the UI and it is needed to manually provide the `media_content_id` and `media_content_type`.
 
 The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
-
 
 | Input         | Content ID                        |
 |---------------|-----------------------------------|
@@ -624,7 +625,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote control entity](#remote-control).
+  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote entity](#remote-entity).
 
 ```yaml
 service: remote.send_command
