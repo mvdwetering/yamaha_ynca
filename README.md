@@ -1,20 +1,19 @@
 # Yamaha YNCA
 
-- [Description](#description)
-- [Models](#models)
-- [Features](#features)
-- [Installation](#installation)
-- [Volume (dB) entity](#volume-db-entity)
-- [Remote entity](#remote-entity)
-- [Presets](#presets)
-- [Q & A](#q--a)
+* [Description](#description)
+* [Models](#models)
+* [Features](#features)
+* [Installation](#installation)
+* [Volume (dB) entity](#volume-db-entity)
+* [Remote entity](#remote-entity)
+* [Presets](#presets)
+* [Q & A](#q--a)
 
 ## Description
 
 Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
 
 For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
-
 
 ## Models
 
@@ -47,7 +46,6 @@ If your receiver works and is not in the list, please post a message in the [dis
 | HTR | HTR-4065, HTR-4066, HTR-4071, HTR-4072, HTR-6064 |
 | TSR | TSR-700, TSR-7850 |
 | Other | CX-A5000, R-N500, RX-S600D, RX-S601D |
-
 
 ## Features
 
@@ -95,7 +93,8 @@ HACS is a 3rd party downloader for Home Assistant to easily install and update c
 * Press the Download button and wait for it to download
 * Restart Home Assistant
 
-Then install the integration as usual:
+Then configure the integration in Home Assistant as usual:
+
 * Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
 * Press the "Add Integration" button
 * Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
@@ -108,7 +107,8 @@ Then install the integration as usual:
 * Copy the contents to the `custom_components` directory in your `config` directory.
 * Restart Home Assistant
 
-Then install the integration as usual:
+Then configure the integration in Home Assistant as usual:
+
 * Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
 * Press the "Add Integration" button
 * Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
@@ -565,6 +565,7 @@ cards:
           target:
             entity_id: remote.rx_a810_main_remote
 ```
+
 </details>
 
 ## Presets
@@ -593,7 +594,6 @@ target:
 In some cases it is not possible to select presets from the UI and it is needed to manually provide the `media_content_id` and `media_content_type`.
 
 The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
-
 
 | Input         | Content ID                        |
 |---------------|-----------------------------------|
