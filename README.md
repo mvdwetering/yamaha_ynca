@@ -38,7 +38,7 @@ If your receiver works and is not in the list, please post a message in the [dis
 | RX-V | RX-V4A |
 || RX-V475, RX-V477, RX-V481D, RX-V483 |
 || RX-V500D, RX-V573, RX-V575, RX-V585 |
-|| RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V685 |
+|| RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V683, RX-V685 |
 || RX-V771, RX-V773, RX-V775, RX-V777 |
 || RX-V867, RX-V871 |
 || RX-V1067, RX-V1071, RX-V1075, RX-V1077, RX-V1085 |
