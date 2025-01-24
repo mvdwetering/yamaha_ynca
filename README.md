@@ -78,6 +78,7 @@ If your receiver works and is not in the list, please post a message in the [dis
   * Sleep timer
   * Surround Decoder
   * Direct / Pure Direct
+  * Speaker pattern selection
   * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
 
