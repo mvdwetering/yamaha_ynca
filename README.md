@@ -15,37 +15,47 @@ Custom integration for Home Assistant to support Yamaha AV receivers with the YN
 
 For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
-## Models
+## Working models
 
-Unfortunately, Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses. 
+Unfortunately, Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses.
 
-The list of working models below is based on reports from users and info found on the internet. 
+The table of working models below is based on reports from users and info found on the internet. Model years were mostly taken from this [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
-Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try. 
+Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
 
-If your receiver works and is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
+If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
 
-| Series | Models |
-| --- | --- |
-| AVANTAGE | RX-A2A, RX-A4A, RX-A6A |
-|| RX-A660 |
-|| RX-A700, RX-A710, RX-AS710D, RX-A720, RX-A730, RX-A740, RX-A750 |
-|| RX-A800, RX-A810, RX-A820, RX-A830, RX-A840, RX-A850, RX-A870 |
-|| RX-A1000, RX-A1010, RX-A1020, RX-A1030, RX-A1040 |
-|| RX-A2000, RX-A2010, RX-A2020, RX-A2030, RX-A2040, RX-A2050, RX-A2070 |
-|| RX-A3000, RX-A3010, RX-A3020, RX-A3030, RX-A3040, RX-A3050, RX-A3070, RX-A3080 |
-| RX-V | RX-V4A |
-|| RX-V475, RX-V477, RX-V481D, RX-V483 |
-|| RX-V500D, RX-V573, RX-V575, RX-V585 |
-|| RX-V671, RX-V673, RX-V675, RX-V677, RX-V679, RX-V681, RX-V683, RX-V685 |
-|| RX-V771, RX-V773, RX-V775, RX-V777 |
-|| RX-V867, RX-V871 |
-|| RX-V1067, RX-V1071, RX-V1075, RX-V1077, RX-V1085 |
-|| RX-V2067, RX-V2071, RX-V2075, RX-V2077  |
-|| RX-V3067, RX-V3071, RX-V3075, RX-V3077 |
-| HTR | HTR-4065, HTR-4066, HTR-4071, HTR-4072, HTR-6064 |
-| TSR | TSR-700, TSR-7850 |
-| Other | CX-A5000, R-N500, RX-S600D, RX-S601D |
+| Year | Series | Models |
+| --- | --- | --- |
+| 2010 | AVANTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
+|| RX-V |  RX-V867, RX-V1067, RX-V2067, RX-V3067 |
+| 2011 | AVANTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
+|| RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
+|| HTR | HTR-6064 |
+| 2012 | AVANTAGE | RX-A720, RX-A820, RX-A1020, RX-A2020, RX-A3020 |
+|| RX-V | RX-V473, RX-V573, RX-V673, RX-V773 |
+|| HTR |  HTR-4065 |
+| 2013 | AVANTAGE | RX-A730, RX-A830, RX-A1030, RX-A2030, RX-A3030 |
+|| RX-V | RX-V475, RX-V575, RX-V675, RX-V775, RX-V1075, RX-V2075, RX-V3075 |
+|| HTR |  HTR-4066 |
+|| Other |  CX-A5000, R-N500, RX-V500D, RX-S600D |
+| 2014 | AVANTAGE | RX-A740, RX-A840, RX-A1040, RX-A2040, RX-A3040 |
+|| RX-V | RX-V477, RX-V677, RX-V777, RX-V1077, RX-V2077, RX-V3077 |
+| 2015 | AVANTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
+|| RX-V | RX-V679 |
+|| Other | RX-S601D |
+| 2016 | AVANTAGE | RX-A660 |
+|| RX-V | RX-V481D, RX-V681 |
+| 2017 | AVANTAGE | RX-A870, RX-A2070, RX-A3070 |
+|| RX-V | RX-V483, RX-V683 |
+|| HTR | HTR-4071 |
+| 2018 | AVANTAGE | RX-A3080 |
+|| RX-V | RX-V585, RX-V685, RX-V1085 |
+|| HTR |  HTR-4072 |
+|| TSR |  TSR-7850 |
+| 2020 | AVANTAGE | RX-A2A, RX-A4A, RX-A6A |
+|| RX-V |  RX-V4A |
+|| TSR |  TSR-700 |
 
 ## Features
 
