@@ -1,7 +1,7 @@
 # Yamaha YNCA
 
 * [Description](#description)
-* [Models](#models)
+* [Working models](#working-models)
 * [Features](#features)
 * [Installation](#installation)
 * [Volume (dB) entity](#volume-db-entity)
