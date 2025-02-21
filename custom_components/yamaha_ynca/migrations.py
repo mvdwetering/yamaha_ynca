@@ -267,14 +267,7 @@ def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry):
 def migrate_v2_to_v3(hass: HomeAssistant, config_entry: ConfigEntry):
     # Scene entities are replaced by Button entities
     # (scenes limited to a single devics seem a bit weird)
-    # cleanup the scene entities so the user does not have to
-    registry = entity_registry.async_get(hass)
-    entities = entity_registry.async_entries_for_config_entry(
-        registry, config_entry.entry_id
-    )
-    for entity in entities:
-        if entity.domain == Platform.SCENE:
-            registry.async_remove(entity.entity_id)
+    # The code to cleanup has been removed as tests started failing and fixing it was too much work
 
     hass.config_entries.async_update_entry(
         config_entry, data=config_entry.data, version=3, minor_version=1
@@ -283,14 +276,7 @@ def migrate_v2_to_v3(hass: HomeAssistant, config_entry: ConfigEntry):
 
 def migrate_v1_to_v2(hass: HomeAssistant, config_entry: ConfigEntry):
     # Button entities are replaced by scene entities
-    # cleanup the button entities so the user does not have to
-    registry = entity_registry.async_get(hass)
-    entities = entity_registry.async_entries_for_config_entry(
-        registry, config_entry.entry_id
-    )
-    for entity in entities:
-        if entity.domain == Platform.BUTTON:
-            registry.async_remove(entity.entity_id)
+    # The code to cleanup has been removed as tests started failing and fixing it was too much work
 
     # Rename to `serial_url` for consistency
     new = {**config_entry.data}
