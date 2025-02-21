@@ -648,11 +648,11 @@ target:
 
 ## Development notes
 
-Just a quick reminder on how to setup the development enviroment.
+Just a quick reminder on how to set up the development enviroment.
 
 ```bash
 $ python3.13 -m venv venv
-. ./venv/vbin/activate
+. ./venv/bin/activate
 (venv) $ pip install -e .[dev]
 pytest
 ```
