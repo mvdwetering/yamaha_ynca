@@ -57,26 +57,11 @@ async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
     )
     old_entry.add_to_hass(hass)
 
-    mock_entity_registry = mock_registry(hass)
-    mock_button_entity_entry = mock_entity_registry.async_get_or_create(
-        Platform.BUTTON,
-        yamaha_ynca.DOMAIN,
-        "button.scene_button",
-        config_entry=old_entry,
-        device_id="device_id",
-    )
-    assert len(mock_entity_registry.entities) == 1  # Make sure entities were added
-
     # Migrate
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get",
-        return_value=mock_entity_registry,
-    ):
-        yamaha_ynca.migrations.migrate_v1_to_v2(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v1_to_v2(hass, old_entry)
     await hass.async_block_till_done()
 
-    # Button entities removed
-    assert not mock_entity_registry.entities
+    # Note that previously there was also deletion of entities here, but that is removed
 
     # Serial_port renamed to serial_url
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
@@ -96,27 +81,11 @@ async def test_async_migration_entry_version_v2_to_v3(hass: HomeAssistant):
     )
     old_entry.add_to_hass(hass)
 
-    mock_entity_registry = mock_registry(hass)
-    mock_scene_entity_entry = mock_entity_registry.async_get_or_create(
-        Platform.SCENE,
-        yamaha_ynca.DOMAIN,
-        "scene.scene_button",
-        config_entry=old_entry,
-        device_id="device_id",
-    )
-    assert len(mock_entity_registry.entities) == 1  # Make sure entities were added
-
     # Migrate
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get",
-        return_value=mock_entity_registry,
-    ):
-        yamaha_ynca.migrations.migrate_v2_to_v3(hass, old_entry)
+    yamaha_ynca.migrations.migrate_v2_to_v3(hass, old_entry)
     await hass.async_block_till_done()
 
-    # Scene entities removed
-    assert not mock_entity_registry.entities
-
+    # Migration is empty now, so just check if version got updated
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 3
