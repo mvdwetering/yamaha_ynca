@@ -652,7 +652,7 @@ Just a quick reminder on how to setup the development enviroment.
 
 ```bash
 $ python3.13 -m venv venv
-. .venv/vbin/activate
+. ./venv/vbin/activate
 (venv) $ pip install -e .[dev]
 pytest
 ```
