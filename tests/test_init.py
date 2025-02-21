@@ -238,6 +238,7 @@ async def test_service_raw_ynca_command_handler(hass, mock_ynca):
     }
 
     service_call = ServiceCall(
+        hass,
         yamaha_ynca.DOMAIN,
         yamaha_ynca.SERVICE_SEND_RAW_YNCA,
         {

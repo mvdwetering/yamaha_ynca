@@ -1,5 +1,7 @@
 # Yamaha YNCA
 
+Minimum supported Home Assistant version is: 2025.2.0
+
 * [Description](#description)
 * [Working models](#working-models)
 * [Features](#features)
@@ -8,6 +10,7 @@
 * [Remote entity](#remote-entity)
 * [Presets](#presets)
 * [Q & A](#q--a)
+* [Development notes](#development-notes)
 
 ## Description
 
@@ -643,4 +646,15 @@ data:
   command: scene_1
 target:
   entity_id: remote.rx_V475_main_remote
+```
+
+## Development notes
+
+Just a quick reminder on how to set up the development enviroment.
+
+```bash
+$ python3.13 -m venv venv
+. ./venv/bin/activate
+(venv) $ pip install -e .[dev]
+pytest
 ```

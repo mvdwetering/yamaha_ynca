@@ -1,6 +1,7 @@
 """Options flow for Yamaha (YNCA) integration."""
 
 from __future__ import annotations
+from typing import Any
 
 import voluptuous as vol  # type: ignore
 import ynca
@@ -224,7 +225,7 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
             ]
             return await self.do_next_step(step_id)
 
-        schema = {}
+        schema:dict[Any, Any] = {}
 
         # Select inputs for zone
         stored_hidden_input_ids = self.options.get(zone_id, {}).get(
