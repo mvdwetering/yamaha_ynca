@@ -8,6 +8,7 @@
 * [Remote entity](#remote-entity)
 * [Presets](#presets)
 * [Q & A](#q--a)
+* [Development notes](#development-notes)
 
 ## Description
 
@@ -643,4 +644,15 @@ data:
   command: scene_1
 target:
   entity_id: remote.rx_V475_main_remote
+```
+
+## Development notes
+
+Just a quick reminder on how to setup the development enviroment.
+
+```bash
+$ python3.13 -m venv venv
+. .venv/vbin/activate
+(venv) $ pip install -e .[dev]
+pytest
 ```
