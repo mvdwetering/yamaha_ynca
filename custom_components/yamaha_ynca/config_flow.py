@@ -113,13 +113,8 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if self.source == SOURCE_RECONFIGURE :
                 reconfigure_entry = self._get_reconfigure_entry()
-                self.hass.config_entries.async_update_entry(
-                    reconfigure_entry, data=data
-                )
-                await self.hass.config_entries.async_reload(
-                    reconfigure_entry.entry_id
-                )
-                return self.async_abort(reason="reconfigure_successful")
+                return self.async_update_reload_and_abort(
+                    reconfigure_entry, data_updates=data, reload_even_if_entry_is_unchanged=False)
 
             return self.async_create_entry(title=check_result.modelname, data=data)
 
