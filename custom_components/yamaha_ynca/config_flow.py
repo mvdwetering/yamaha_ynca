@@ -8,10 +8,9 @@ import re
 import voluptuous as vol  # type: ignore
 import ynca
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, SOURCE_RECONFIGURE
 from homeassistant.core import HomeAssistant, callback
 
-from . import YamahaYncaConfigEntry
 from .const import (
     CONF_HOST,
     CONF_PORT,
@@ -74,8 +73,6 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 7
     MINOR_VERSION = 6
 
-    reconfigure_entry: YamahaYncaConfigEntry | None = None
-
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
@@ -114,12 +111,13 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
                 DATA_ZONES: check_result.zones,
             }
 
-            if self.reconfigure_entry:
+            if self.source == SOURCE_RECONFIGURE :
+                reconfigure_entry = self._get_reconfigure_entry()
                 self.hass.config_entries.async_update_entry(
-                    self.reconfigure_entry, data=data
+                    reconfigure_entry, data=data
                 )
                 await self.hass.config_entries.async_reload(
-                    self.reconfigure_entry.entry_id
+                    reconfigure_entry.entry_id
                 )
                 return self.async_abort(reason="reconfigure_successful")
 
@@ -135,12 +133,17 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: Dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is None:
+
+            serial_url = None
+            if self.source == SOURCE_RECONFIGURE :
+                reconfigure_entry = self._get_reconfigure_entry()
+                serial_url = reconfigure_entry.data.get(CONF_SERIAL_URL)
+
             return self.async_show_form(
                 step_id=STEP_ID_SERIAL,
                 data_schema=get_serial_url_schema(
-                    {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
-                    if self.reconfigure_entry
-                    and not self.reconfigure_entry.data[CONF_SERIAL_URL].startswith(
+                    {CONF_SERIAL_URL: serial_url}
+                    if serial_url and not serial_url.startswith(
                         "socket://"
                     )
                     else {}
@@ -156,11 +159,12 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         if user_input is None:
             data = {}
-            if self.reconfigure_entry:
+            if self.source == SOURCE_RECONFIGURE :
+                reconfigure_entry = self._get_reconfigure_entry()
                 # Get HOST and PORT from socket://HOST:PORT
                 if m := re.match(
                     r"socket://(?P<host>.+):(?P<port>\d+)",
-                    self.reconfigure_entry.data[CONF_SERIAL_URL],
+                    reconfigure_entry.data[CONF_SERIAL_URL],
                 ):
                     data[CONF_HOST] = m.group("host")
                     data[CONF_PORT] = int(m.group("port"))
@@ -183,8 +187,8 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_show_form(
                 step_id=STEP_ID_ADVANCED,
                 data_schema=get_serial_url_schema(
-                    {CONF_SERIAL_URL: self.reconfigure_entry.data.get(CONF_SERIAL_URL)}
-                    if self.reconfigure_entry
+                    {CONF_SERIAL_URL: self._get_reconfigure_entry().data.get(CONF_SERIAL_URL)}
+                    if self.source == SOURCE_RECONFIGURE
                     else {}
                 ),
             )
@@ -194,8 +198,4 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reconfigure(self, user_input=None):
-        self.reconfigure_entry = self.hass.config_entries.async_get_entry(
-            self.context["entry_id"]
-        )
-
         return await self.async_step_user()
