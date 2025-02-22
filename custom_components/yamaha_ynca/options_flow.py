@@ -1,6 +1,7 @@
 """Options flow for Yamaha (YNCA) integration."""
 
 from __future__ import annotations
+from copy import deepcopy
 from typing import Any
 
 import voluptuous as vol  # type: ignore
@@ -9,6 +10,7 @@ import ynca
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
 
+from . import YamahaYncaConfigEntry
 from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
@@ -64,7 +66,10 @@ def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
     return next_step
 
 
-class OptionsFlowHandler(config_entries.OptionsFlowWithConfigEntry):
+class OptionsFlowHandler(config_entries.OptionsFlow):
+
+    def __init__(self, config_entry: YamahaYncaConfigEntry) -> None:
+        self.options = deepcopy(dict(config_entry.options))
 
     async def do_next_step(self, current_step_id: str):
         next_step_id = get_next_step_id(self, current_step_id)

@@ -78,7 +78,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(config_entry) -> OptionsFlowHandler:
         return OptionsFlowHandler(config_entry)
 
     async def async_step_user(
