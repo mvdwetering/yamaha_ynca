@@ -96,6 +96,10 @@ voluptuous = "vol"
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = [
+    "custom_components",
+    "ynca",
+]
+known-third-party = [
     "homeassistant",
 ]
 combine-as-imports = true
