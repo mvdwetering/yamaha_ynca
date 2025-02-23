@@ -67,7 +67,6 @@ def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-
     def __init__(self, config_entry: YamahaYncaConfigEntry) -> None:
         self.options = deepcopy(dict(config_entry.options))
 
@@ -230,7 +229,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ]
             return await self.do_next_step(step_id)
 
-        schema:dict[Any, Any] = {}
+        schema: dict[Any, Any] = {}
 
         # Select inputs for zone
         stored_hidden_input_ids = self.options.get(zone_id, {}).get(

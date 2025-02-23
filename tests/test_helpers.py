@@ -34,13 +34,15 @@ TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME = TestYncaEntityDescription(
 
 
 async def test_yamaha_ynca_settings_entity_update(mock_zone, mock_zone_zone3):
-
     entity = YamahaYncaSettingEntity(
         "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
 
     entity2 = YamahaYncaSettingEntity(
-        "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME, mock_zone_zone3
+        "ReceiverUniqueId",
+        mock_zone,
+        TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME,
+        mock_zone_zone3,
     )
 
     # Setup entities to handle updates

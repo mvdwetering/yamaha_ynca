@@ -17,7 +17,11 @@ from .const import (
 )
 
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: YamahaYncaConfigEntry, async_add_entities: AddEntitiesCallback):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: YamahaYncaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
     domain_entry_data = config_entry.runtime_data
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:

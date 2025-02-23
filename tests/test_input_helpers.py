@@ -10,7 +10,6 @@ from tests.conftest import INPUT_SUBUNITS
 
 
 def test_sourcemapping_inpnames_set(mock_ynca):
-
     # Setup external input names
     mock_sys = mock_ynca.sys
     for attribute in dir(mock_sys):
@@ -174,7 +173,6 @@ def test_sourcemapping_trim_whitepspace(mock_ynca):
 
 
 def test_get_name_of_input(mock_ynca):
-
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
     # Available input
@@ -187,7 +185,6 @@ def test_get_name_of_input(mock_ynca):
 
 
 def test_get_input_by_name(mock_ynca):
-
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
     # Available input
@@ -200,7 +197,6 @@ def test_get_input_by_name(mock_ynca):
 
 
 def test_get_subunit_for_input(mock_ynca):
-
     mock_ynca.usb = True
 
     # Available subunit

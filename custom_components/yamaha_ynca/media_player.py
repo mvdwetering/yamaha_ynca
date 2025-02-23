@@ -653,9 +653,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         preset_items = [
             BrowseMedia(
                 media_class=MediaClass.MUSIC,
-                media_content_id=f"{subunit_attribute_name}:{stripped_media_content_id_type}:{i+1}",
+                media_content_id=f"{subunit_attribute_name}:{stripped_media_content_id_type}:{i + 1}",
                 media_content_type=MediaType.MUSIC,
-                title=f"Preset {i+1}",
+                title=f"Preset {i + 1}",
                 can_play=True,
                 can_expand=False,
             )

@@ -63,6 +63,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     return True
 
+
 def migrate_v7_5_to_v7_6(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get
 
@@ -81,6 +82,7 @@ def migrate_v7_5_to_v7_6(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.config_entries.async_update_entry(
         config_entry, options=options, minor_version=6
     )
+
 
 def migrate_v7_4_to_v7_5(hass: HomeAssistant, config_entry: ConfigEntry):
     options = dict(config_entry.options)  # Convert to dict to be able to use .get

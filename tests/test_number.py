@@ -23,6 +23,7 @@ from tests.conftest import setup_integration
 def native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
     return 5.5
 
+
 TEST_ENTITY_DESCRIPTION = YncaNumberEntityDescription(  # type: ignore
     key="spbass",
     entity_category=EntityCategory.CONFIG,
@@ -107,7 +108,7 @@ async def test_number_entity(hass, mock_ynca, mock_zone_main):
 
 @pytest.mark.usefixtures("entity_registry_enabled_by_default")
 async def test_number_entity_volume(hass, mock_ynca, mock_zone_main):
-    entity_under_test = 'number.modelname_main_volume_db'
+    entity_under_test = "number.modelname_main_volume_db"
 
     mock_zone_main.vol = -5
     mock_zone_main.pwr = ynca.Pwr.ON
@@ -130,7 +131,6 @@ async def test_number_entity_volume(hass, mock_ynca, mock_zone_main):
 
 
 async def test_number_entity_fields(mock_zone):
-
     entity = YamahaYncaNumber("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_spbass"
@@ -151,7 +151,6 @@ async def test_number_entity_fields(mock_zone):
 
 
 async def test_initial_volume_number_entity(mock_zone):
-
     entity = YamahaYncaNumberInitialVolume(
         "ReceiverUniqueId", mock_zone, InitialVolumeValueEntityDescription
     )

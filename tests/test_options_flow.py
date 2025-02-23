@@ -1,4 +1,5 @@
 """Test the Yamaha (YNCA) config flow."""
+
 from __future__ import annotations
 
 from unittest.mock import create_autospec
@@ -201,10 +202,7 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
         "Obsolete",  # Obsolete values should not break the schema
     ]
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -248,17 +246,16 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     await hass.async_block_till_done()
 
 
-async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, mock_zone_main) -> None:
+async def test_options_flow_surrounddecoders(
+    hass: HomeAssistant, mock_ynca, mock_zone_main
+) -> None:
     mock_zone_main.twochdecoder = ynca.TwoChDecoder.Auro3d
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
 
     options = dict(integration.entry.options)
     # Do _not_ set options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] to test handling of absent options
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -269,7 +266,11 @@ async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, moc
         result["flow_id"],
         user_input={
             yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: [],
-            yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS: ["dolby_plii_movie", "auto", "dts_neural_x"],
+            yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS: [
+                "dolby_plii_movie",
+                "auto",
+                "dts_neural_x",
+            ],
         },
     )
 
@@ -285,7 +286,11 @@ async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, moc
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert result["data"][yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] == ["dolby_plii_movie", "auto", "dts_neural_x"]
+    assert result["data"][yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] == [
+        "dolby_plii_movie",
+        "auto",
+        "dts_neural_x",
+    ]
 
     # Make sure HA finishes creating entry completely
     # or it will result in errors when tearing down the test
@@ -302,10 +307,7 @@ async def test_options_flow_zone_inputs(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"hidden_inputs": ["AV5"]}
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"
@@ -345,10 +347,7 @@ async def test_options_flow_configure_nof_scenes(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"number_of_scenes": 5}
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"

@@ -49,6 +49,7 @@ INPUT_SUBUNITS = [
 def auto_enable_custom_integrations(enable_custom_integrations):
     yield
 
+
 # Copied from HA tests/components/conftest.py
 @pytest.fixture
 def entity_registry_enabled_by_default() -> Generator[None]:
@@ -58,6 +59,7 @@ def entity_registry_enabled_by_default() -> Generator[None]:
         return_value=True,
     ):
         yield
+
 
 @pytest.fixture
 def mock_zone():
@@ -77,6 +79,7 @@ def mock_zone_main():
     main_mock.zonebvol = None
 
     return main_mock
+
 
 @pytest.fixture
 def mock_zone_main_with_zoneb(mock_zone_main):
@@ -102,6 +105,7 @@ def mock_zone_zone3():
 @pytest.fixture
 def mock_zone_zone4():
     return create_mock_zone(ynca.subunits.zone.Zone4)
+
 
 @pytest.fixture
 def mock_config_entry():
@@ -241,7 +245,9 @@ async def setup_integration(
     if mock_ynca.zone4:
         zones.append("ZONE4")
 
-    entry = create_mock_config_entry(modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url)
+    entry = create_mock_config_entry(
+        modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url
+    )
     entry.runtime_data = DomainEntryData(
         api=mock_ynca,
         initialization_events=[],

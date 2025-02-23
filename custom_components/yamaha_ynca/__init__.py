@@ -30,7 +30,9 @@ from .const import (
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
 from .migrations import async_migrate_entry as migrations_async_migrate_entry
 
-LOGGER.debug("ynca package info, version %s, location %s", version("ynca"), ynca.__file__)
+LOGGER.debug(
+    "ynca package info, version %s, location %s", version("ynca"), ynca.__file__
+)
 
 PLATFORMS: List[Platform] = [
     Platform.MEDIA_PLAYER,
@@ -40,6 +42,7 @@ PLATFORMS: List[Platform] = [
     Platform.SWITCH,
     Platform.REMOTE,
 ]
+
 
 async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
@@ -82,6 +85,7 @@ async def update_device_registry(
             configuration_url=configuration_url,
         )
 
+
 def build_zone_devicename(receiver, zone_subunit):
     devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
     if (
@@ -92,12 +96,10 @@ def build_zone_devicename(receiver, zone_subunit):
         devicename = zone_subunit.zonename
     return devicename
 
+
 def build_zoneb_devicename(receiver):
     devicename = f"{receiver.sys.modelname} ZoneB"
-    if (
-        receiver.main.zonebname
-        and receiver.main.zonebname.lower() != "ZoneB".lower()
-    ):
+    if receiver.main.zonebname and receiver.main.zonebname.lower() != "ZoneB".lower():
         # Prefer user defined name over "MODEL ZONE" naming
         devicename = receiver.main.zonebname
     return devicename
@@ -135,7 +137,9 @@ async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall):
     for config_entry_id in await async_extract_config_entry_ids(hass, call):
         if config_entry := hass.config_entries.async_get_entry(config_entry_id):
             # Check if configentry is ours, could be others when targeting areas for example
-            if (config_entry.domain == DOMAIN) and (domain_entry_info := config_entry.runtime_data):
+            if (config_entry.domain == DOMAIN) and (
+                domain_entry_info := config_entry.runtime_data
+            ):
                 # Handle actual call
                 for line in call.data.get("raw_data").splitlines():
                     line = line.strip()

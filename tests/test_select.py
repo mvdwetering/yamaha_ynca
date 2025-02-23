@@ -62,7 +62,6 @@ async def test_async_setup_entry(
 
 
 async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
-
     entity = YamahaYncaSelect(
         mock_config_entry, "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
@@ -88,7 +87,6 @@ async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
 async def test_select_initial_volume_mode_entity_select_option(
     mock_zone: ZoneBase, mock_config_entry
 ):
-
     entity = YamahaYncaSelectInitialVolumeMode(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -143,7 +141,6 @@ async def test_select_initial_volume_mode_entity_select_option(
 async def test_select_initial_volume_mode_entity_current_option(
     mock_zone: ZoneBase, mock_config_entry
 ):
-
     entity = YamahaYncaSelectInitialVolumeMode(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -181,7 +178,6 @@ async def test_select_initial_volume_mode_entity_current_option(
 async def test_select_surrounddecoder_entity_current_option(
     mock_zone: ZoneBase, mock_config_entry
 ):
-
     entity = YamahaYncaSelectSurroundDecoder(
         mock_config_entry,
         "ReceiverUniqueId",
