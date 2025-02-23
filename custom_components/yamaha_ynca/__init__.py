@@ -5,8 +5,7 @@ from __future__ import annotations
 import asyncio
 import re
 from typing import List
-
-import ynca
+from importlib.metadata import version
 
 from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
 from homeassistant.const import Platform
@@ -15,6 +14,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry
 from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
 from homeassistant.helpers.typing import ConfigType
+
+import ynca
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
@@ -29,6 +30,8 @@ from .const import (
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
 from .migrations import async_migrate_entry as migrations_async_migrate_entry
 
+LOGGER.debug("ynca package info, version %s, location %s", version("ynca"), ynca.__file__)
+
 PLATFORMS: List[Platform] = [
     Platform.MEDIA_PLAYER,
     Platform.BUTTON,
@@ -37,7 +40,6 @@ PLATFORMS: List[Platform] = [
     Platform.SWITCH,
     Platform.REMOTE,
 ]
-
 
 async def update_device_registry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
