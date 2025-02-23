@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 from unittest.mock import ANY, Mock, call, patch
+
 import pytest
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.remote import (
     YamahaYncaZoneRemote,
     async_setup_entry,
 )
-
 from tests.conftest import setup_integration
+import ynca
 
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)

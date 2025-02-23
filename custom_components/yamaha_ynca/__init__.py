@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-import re
-from typing import List
 from importlib.metadata import version
+import re
 
 from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
 from homeassistant.const import Platform
@@ -34,7 +33,7 @@ LOGGER.debug(
     "ynca package info, version %s, location %s", version("ynca"), ynca.__file__
 )
 
-PLATFORMS: List[Platform] = [
+PLATFORMS: list[Platform] = [
     Platform.MEDIA_PLAYER,
     Platform.BUTTON,
     Platform.NUMBER,

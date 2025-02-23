@@ -2,22 +2,21 @@ from __future__ import annotations
 
 from unittest.mock import ANY, Mock, call, patch
 
-import pytest
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.number import (
-    InitialVolumeValueEntityDescription,
-    YncaNumberEntityDescription,
-    YamahaYncaNumber,
-    YamahaYncaNumberInitialVolume,
-    async_setup_entry,
-)
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.helpers.entity import EntityCategory
+import pytest
 
+from custom_components import yamaha_ynca
+from custom_components.yamaha_ynca.number import (
+    InitialVolumeValueEntityDescription,
+    YamahaYncaNumber,
+    YamahaYncaNumberInitialVolume,
+    YncaNumberEntityDescription,
+    async_setup_entry,
+)
 from tests.conftest import setup_integration
+import ynca
 
 
 def native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, call, patch
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry  # type: ignore[import]
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.service import ServiceCall
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,  # type: ignore[import]
+)
+
+from custom_components import yamaha_ynca
+import ynca
 
 from .conftest import setup_integration
 
@@ -194,7 +196,6 @@ async def test_reload_on_disconnect(async_reload_mock, hass, mock_ynca, mock_zon
 
 async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zone3):
     """Test successful unload of entry."""
-
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
 

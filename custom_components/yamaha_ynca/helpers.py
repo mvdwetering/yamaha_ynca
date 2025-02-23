@@ -3,22 +3,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-import ynca
+from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 
 from custom_components.yamaha_ynca.const import DOMAIN
-from homeassistant.helpers.entity import EntityDescription, DeviceInfo
+import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ynca.subunits.zone import ZoneBase
     from ynca.subunit import SubunitBase
+    from ynca.subunits.zone import ZoneBase
 
 
 @dataclass
 class DomainEntryData:
     api: ynca.YncaApi
-    initialization_events: List[str]
+    initialization_events: list[str]
 
 
 def scale(input_value, input_range, output_range):
@@ -58,8 +58,7 @@ def subunit_supports_entitydescription_key(entity_description, subunit) -> bool:
 
 
 class YamahaYncaSettingEntity:
-    """
-    Common code for YamahaYnca settings entities.
+    """Common code for YamahaYnca settings entities.
     Entities derived from this also need to derive from the standard HA entities.
     """
 

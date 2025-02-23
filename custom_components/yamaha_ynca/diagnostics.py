@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-import ynca
-
 from homeassistant.core import HomeAssistant
+
+import ynca
 
 from . import YamahaYncaConfigEntry
 

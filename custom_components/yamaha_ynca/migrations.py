@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import ynca
-
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry, entity_registry
+
+import ynca
 
 from .const import CONF_HIDDEN_SOUND_MODES, DOMAIN, LOGGER
 from .helpers import receiver_requires_audio_input_workaround

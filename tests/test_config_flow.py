@@ -4,19 +4,17 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
+import ynca
 
 
 async def test_menu_form(hass: HomeAssistant) -> None:
     """Test we get the menu form when initialized by user."""
-
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_USER}
     )

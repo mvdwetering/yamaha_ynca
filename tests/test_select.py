@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
+
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.const import CONF_SELECTED_SURROUND_DECODERS
 from custom_components.yamaha_ynca.select import (
     ENTITY_DESCRIPTIONS,
@@ -16,9 +16,8 @@ from custom_components.yamaha_ynca.select import (
     YncaSelectEntityDescription,
     async_setup_entry,
 )
-from homeassistant.helpers.entity import EntityCategory
-
 from tests.conftest import setup_integration
+import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase

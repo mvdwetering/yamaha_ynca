@@ -3,17 +3,16 @@ from __future__ import annotations
 import time
 from unittest.mock import ANY, Mock, call, patch
 
-import ynca
+from homeassistant.helpers.entity import EntityCategory
 
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.switch import (
     YamahaYncaSwitch,
     YncaSwitchEntityDescription,
     async_setup_entry,
 )
-from homeassistant.helpers.entity import EntityCategory
-
 from tests.conftest import setup_integration
+import ynca
 
 TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",

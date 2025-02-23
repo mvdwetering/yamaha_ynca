@@ -4,13 +4,12 @@ from __future__ import annotations
 
 from unittest.mock import create_autospec
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
+import ynca
 
 ALL_SOUND_MODES = [
     ynca.SoundPrg.HALL_IN_MUNICH,
@@ -174,7 +173,6 @@ async def test_options_flow_navigate_all_screens(
 
 async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
     """Test optionsflow when there is no connection"""
-
     integration = await setup_integration(hass, mock_ynca)
     integration.entry.runtime_data = None  # Pretend connection failed
 

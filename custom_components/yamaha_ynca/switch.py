@@ -1,31 +1,32 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, List
-
-import ynca
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+import ynca
+
 from . import YamahaYncaConfigEntry
 from .const import ZONE_ATTRIBUTE_NAMES
 from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ynca.subunits.zone import ZoneBase
     from ynca.subunit import SubunitBase
+    from ynca.subunits.zone import ZoneBase
 
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSwitchEntityDescription(SwitchEntityDescription):
     on: Enum | None = None
     off: Enum | None = None
-    function_names: List[str] | None = None
+    function_names: list[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
     associated_zone_attr: str | None = None
     """

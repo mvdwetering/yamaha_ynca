@@ -1,19 +1,10 @@
 """Test the Yamaha (YNCA) media_player entitity."""
 
 from __future__ import annotations
-import logging
 
+import logging
 from unittest.mock import Mock, create_autospec, patch
 
-import pytest
-from pytest_unordered import unordered
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.media_player import (
-    YamahaYncaZone,
-    YamahaYncaZoneB,
-)
 from homeassistant.components.media_player import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -22,8 +13,16 @@ from homeassistant.components.media_player import (
 )
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
+import pytest
+from pytest_unordered import unordered
 
+from custom_components import yamaha_ynca
+from custom_components.yamaha_ynca.media_player import (
+    YamahaYncaZone,
+    YamahaYncaZoneB,
+)
 from tests.conftest import setup_integration
+import ynca
 
 
 @pytest.fixture
@@ -390,7 +389,7 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, moc
     assert "Straight" in mp_entity.sound_mode_list
 
     mock_zone.straight = None
-    assert not "Straight" in mp_entity.sound_mode_list
+    assert "Straight" not in mp_entity.sound_mode_list
 
     mock_zone.soundprg = None
     assert mp_entity.sound_mode_list is None

@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 from unittest.mock import patch
-import pytest
 
-from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
-    MockConfigEntry,
-    mock_registry,
-    mock_device_registry,
-)
-
-import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES, DOMAIN
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+import pytest
+from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
+    MockConfigEntry,
+    mock_device_registry,
+    mock_registry,
+)
+
+from custom_components import yamaha_ynca
+from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES, DOMAIN
 
 
 @pytest.fixture
@@ -25,7 +25,6 @@ def device_reg(hass):
 
 async def test_async_migration_entry(hass: HomeAssistant):
     """Full chain of migrations should result in last version"""
-
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",

@@ -1,23 +1,22 @@
 """Fixtures for testing."""
 
 from __future__ import annotations
-from dataclasses import dataclass
 
-from typing import Callable, Generator, NamedTuple, Type
+from collections.abc import Callable, Generator
+from dataclasses import dataclass
+from typing import NamedTuple
 from unittest.mock import DEFAULT, Mock, patch
 
-import pytest
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry
-
+import pytest
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
     mock_device_registry,
 )
 
-import custom_components.yamaha_ynca as yamaha_ynca
-
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.helpers import DomainEntryData
 import ynca
 
@@ -47,7 +46,7 @@ INPUT_SUBUNITS = [
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
-    yield
+    return
 
 
 # Copied from HA tests/components/conftest.py
@@ -218,9 +217,9 @@ def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
 
 
 class Integration(NamedTuple):
-    entry: Type[yamaha_ynca.YamahaYncaConfigEntry]
+    entry: type[yamaha_ynca.YamahaYncaConfigEntry]
     on_disconnect: Callable | None
-    mock_ynca: Type[Mock]
+    mock_ynca: type[Mock]
 
 
 @dataclass

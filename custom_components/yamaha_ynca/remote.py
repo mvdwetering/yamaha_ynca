@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 import re
-from typing import TYPE_CHECKING, Any, Dict, Iterable
-
-import ynca
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.remote import RemoteEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+import ynca
 
 from . import YamahaYncaConfigEntry
 from .const import ATTR_COMMANDS, DOMAIN, ZONE_ATTRIBUTE_NAMES
@@ -75,7 +76,7 @@ ent,7F01-5CA3, 7F01-7C83, 7F01-9C63
 """
 
 
-def get_zone_codes(zone_id: str) -> Dict[str, str]:
+def get_zone_codes(zone_id: str) -> dict[str, str]:
     offset = ZONE_ATTRIBUTE_NAMES.index(zone_id.lower()) + 1
 
     codes = {}
@@ -126,7 +127,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
         receiver_unique_id,
         api: ynca.YncaApi,
         zone: ZoneBase,
-        zone_codes: Dict[str, str],
+        zone_codes: dict[str, str],
     ):
         self._api = api
         self._zone = zone
@@ -143,8 +144,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
         }
 
     def _format_remotecode(self, input_code: str) -> str:
-        """
-        Convert various inputs to 32bit NEC
+        """Convert various inputs to 32bit NEC
         Supported are (- can be any separator):
           AA-CC / AACC
           AA-CCCC / AACCCC

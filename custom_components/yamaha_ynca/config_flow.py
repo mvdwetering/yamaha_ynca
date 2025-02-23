@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
 import re
-
-import voluptuous as vol  # type: ignore
-import ynca
+from typing import Any
 
 from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
     ConfigFlow,
     ConfigFlowResult,
-    SOURCE_RECONFIGURE,
 )
 from homeassistant.core import HomeAssistant, callback
+import voluptuous as vol  # type: ignore
+
+import ynca
 
 from .const import (
     CONF_HOST,
@@ -53,10 +53,9 @@ def get_network_schema(user_input):
 
 
 async def validate_input(
-    hass: HomeAssistant, data: Dict[str, Any]
+    hass: HomeAssistant, data: dict[str, Any]
 ) -> ynca.YncaConnectionCheckResult:
-    """
-    Validate if the user input allows us to connect.
+    """Validate if the user input allows us to connect.
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
@@ -83,7 +82,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     async def async_step_user(
-        self, user_input: Dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step."""
         return self.async_show_menu(
@@ -95,7 +94,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         self,
         step_id: str,
         data_schema: vol.Schema,
-        user_input: Dict[str, Any],
+        user_input: dict[str, Any],
     ) -> ConfigFlowResult:
         errors = {}
         try:
@@ -131,7 +130,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_serial(
-        self, user_input: Dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is None:
             serial_url = None
@@ -153,7 +152,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_network(
-        self, user_input: Dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is None:
             data = {}
@@ -179,7 +178,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_advanced(
-        self, user_input: Dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is None:
             return self.async_show_form(
