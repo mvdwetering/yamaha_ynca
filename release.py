@@ -3,11 +3,11 @@
 
 import argparse
 from enum import Enum
-import logging
-import subprocess
 import json
+import logging
 import os
 import re
+import subprocess
 
 from awesomeversion import AwesomeVersion  # type: ignore[import]
 
@@ -40,7 +40,6 @@ class Branch:
 
 
 class Git:
-
     @staticmethod
     def get_current_branch() -> Branch:
         branch_name = subprocess.check_output(["git", "branch", "--show-current"])
@@ -91,6 +90,7 @@ class Git:
     def fetch_tags():
         subprocess.run(["git", "fetch", "--tags"], check=True)
 
+
 def menu(title, choices):
     while True:
         print(title)
@@ -104,8 +104,7 @@ def menu(title, choices):
             continue
         if choice in range(1, len(choices) + 1):
             return choices[choice - 1]
-        else:
-            print("Invalid input, please enter a valid number")
+        print("Invalid input, please enter a valid number")
 
 
 def enum_menu(title, enum_type):
@@ -182,7 +181,8 @@ def get_integration_name():
     dir_list = [
         name
         for name in os.listdir("custom_components")
-        if os.path.isdir(os.path.join("custom_components", name)) and name != "__pycache__"
+        if os.path.isdir(os.path.join("custom_components", name))
+        and name != "__pycache__"
     ]
     if len(dir_list) != 1:
         raise ValueError(
@@ -192,7 +192,7 @@ def get_integration_name():
 
 
 def update_manifest_version_number(version):
-    manifest_file = "custom_components/{}/manifest.json".format(get_integration_name())
+    manifest_file = f"custom_components/{get_integration_name()}/manifest.json"
 
     with open(manifest_file) as f:
         manifest = json.load(f)
@@ -203,7 +203,7 @@ def update_manifest_version_number(version):
 
 
 def get_version_from_manifest():
-    manifest_file = "custom_components/{}/manifest.json".format(get_integration_name())
+    manifest_file = f"custom_components/{get_integration_name()}/manifest.json"
 
     with open(manifest_file) as f:
         manifest = json.load(f)
@@ -335,7 +335,7 @@ def main(args):
                 "theirs",
                 "-m",
                 f"Release v{next_version}",
-            ]
+            ], check=False
         )
 
     Git.create_tag(tag_name)
@@ -356,6 +356,7 @@ def main(args):
 
     print("Done!")
     print(f"Currently on branch: {Git.get_current_branch().name}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

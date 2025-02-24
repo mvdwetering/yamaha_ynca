@@ -1,14 +1,15 @@
 """Options flow for Yamaha (YNCA) integration."""
 
 from __future__ import annotations
+
 from copy import deepcopy
 from typing import Any
 
-import voluptuous as vol  # type: ignore
-import ynca
-
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
+import voluptuous as vol  # type: ignore
+
+import ynca
 
 from . import YamahaYncaConfigEntry
 from .const import (
@@ -67,7 +68,6 @@ def get_next_step_id(flow: OptionsFlowHandler, current_step: str) -> str:
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-
     def __init__(self, config_entry: YamahaYncaConfigEntry) -> None:
         self.options = deepcopy(dict(config_entry.options))
 
@@ -77,7 +77,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Basic sanity checks before configuring options."""
-
         # The configentry in the optionsflow is _only_ a YamahaYncaConfigEntry when there is a connection
         # Otherwise it is a "plain" ConfigEntry, so without runtime_data
         # A normal isinstance check does not seem to work with type alias, to check for runtime_data attribute
@@ -100,7 +99,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_general(self, user_input=None):
         """General device options"""
-
         modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
 
         # Note that hidden modes are stored, but selected modes are shown in UI
@@ -113,7 +111,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         for sound_mode in ynca.SoundPrg:
             if sound_mode is ynca.SoundPrg.UNKNOWN:
                 continue
-            if modelinfo and not sound_mode in modelinfo.soundprg:
+            if modelinfo and sound_mode not in modelinfo.soundprg:
                 continue  # Skip soundmodes not supported on the model
             sound_modes.append(sound_mode.value)
         sound_modes.sort(key=str.lower)
@@ -230,7 +228,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ]
             return await self.do_next_step(step_id)
 
-        schema:dict[Any, Any] = {}
+        schema: dict[Any, Any] = {}
 
         # Select inputs for zone
         stored_hidden_input_ids = self.options.get(zone_id, {}).get(
@@ -248,7 +246,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # Number of scenes for zone
         # Use a select so we can have nice distinct values presented with Autodetect and 0-12
         number_of_scenes_list = {NUMBER_OF_SCENES_AUTODETECT: "Auto detect"}
-        for id in range(0, MAX_NUMBER_OF_SCENES + 1):
+        for id in range(MAX_NUMBER_OF_SCENES + 1):
             number_of_scenes_list[id] = str(id)
 
         schema[

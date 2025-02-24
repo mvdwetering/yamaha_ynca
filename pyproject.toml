@@ -51,6 +51,12 @@ dev = [
     "homeassistant-stubs==2025.2.0",
 ]
 
+[tool.coverage.report]
+exclude_also = [
+    # # TYPE_CHECKING block is only executed while running mypy
+    "if TYPE_CHECKING:"
+]
+
 [tool.pytest.ini_options]
 addopts = "--cov=custom_components/yamaha_ynca --cov-report=term-missing --cov-report=html"
 asyncio_mode = "auto"
@@ -65,7 +71,6 @@ src = ["custom_components/yamaha_ynca"]
 [tool.ruff.lint]
 ignore = [
   "A005", # It is just wrong
-  "ANN101", # Self... explanatory
   "ANN401", # Opiniated warning on disallowing dynamically typed expressions
   "D203", # Conflicts with other rules
   "D213", # Conflicts with other rules
@@ -97,6 +102,10 @@ voluptuous = "vol"
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = [
+    "custom_components",
+    "ynca",
+]
+known-third-party = [
     "homeassistant",
 ]
 combine-as-imports = true

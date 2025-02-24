@@ -1,8 +1,8 @@
 """Helpers for the Yamaha (YNCA) integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List
 
 import ynca
 
@@ -10,10 +10,10 @@ import ynca
 @dataclass
 class Mapping:
     ynca_input: ynca.Input
-    subunit_attribute_names: List[str]
+    subunit_attribute_names: list[str]
 
 
-input_mappings: List[Mapping] = [
+input_mappings: list[Mapping] = [
     # Inputs provided by subunits
     Mapping(ynca.Input.AIRPLAY, ["airplay"]),
     Mapping(ynca.Input.BLUETOOTH, ["bt"]),
@@ -102,7 +102,7 @@ class InputHelper:
         return None
 
     @staticmethod
-    def get_source_mapping(api: ynca.YncaApi) -> Dict[ynca.Input, str]:
+    def get_source_mapping(api: ynca.YncaApi) -> dict[ynca.Input, str]:
         """Mapping of input to sourcename for this YNCA instance."""
         source_mapping = {}
 
@@ -136,7 +136,7 @@ class InputHelper:
 
         # Trim whitespace for receivers that add spaces around names like "  HDMI4  " (presumably to center on display)
         # Having the spaces makes it hard to use for automations, especially since HA frontend does not show the spaces
-        for input in source_mapping.keys():
+        for input in source_mapping:
             source_mapping[input] = source_mapping[input].strip()
 
         return source_mapping

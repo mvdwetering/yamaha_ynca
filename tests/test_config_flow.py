@@ -1,20 +1,20 @@
 """Test the Yamaha (YNCA) config flow."""
+
 from __future__ import annotations
 
 from unittest.mock import patch
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
+import ynca
+
 
 async def test_menu_form(hass: HomeAssistant) -> None:
     """Test we get the menu form when initialized by user."""
-
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -22,20 +22,22 @@ async def test_menu_form(hass: HomeAssistant) -> None:
 
 
 async def test_network_connect(hass: HomeAssistant) -> None:
-
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": "network"}
     )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
-    with patch(
-        "ynca.YncaApi.connection_check",
-        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
-    ) as mock_setup, patch(
-        "custom_components.yamaha_ynca.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with (
+        patch(
+            "ynca.YncaApi.connection_check",
+            return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
+        ) as mock_setup,
+        patch(
+            "custom_components.yamaha_ynca.async_setup_entry",
+            return_value=True,
+        ) as mock_setup_entry,
+    ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -57,20 +59,22 @@ async def test_network_connect(hass: HomeAssistant) -> None:
 
 
 async def test_advanced_connect(hass: HomeAssistant) -> None:
-
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN, context={"source": "advanced"}
     )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
-    with patch(
-        "ynca.YncaApi.connection_check",
-        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE2"]),
-    ) as mock_setup, patch(
-        "custom_components.yamaha_ynca.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with (
+        patch(
+            "ynca.YncaApi.connection_check",
+            return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE2"]),
+        ) as mock_setup,
+        patch(
+            "custom_components.yamaha_ynca.async_setup_entry",
+            return_value=True,
+        ) as mock_setup_entry,
+    ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -154,7 +158,6 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 
 
 async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
-
     integration = await setup_integration(hass, mock_ynca)
 
     # Make sure existing data is different from what we are changing it to
@@ -162,13 +165,17 @@ async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
         integration.entry,
         data={
             **integration.entry.data,
-            yamaha_ynca.const.CONF_SERIAL_URL: "old_serial_port"
-        }
+            yamaha_ynca.const.CONF_SERIAL_URL: "old_serial_port",
+        },
     )
 
     # Flow goes to menu with connection options
     result = await hass.config_entries.flow.async_init(
-        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_RECONFIGURE, "entry_id": integration.entry.entry_id}
+        yamaha_ynca.DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": integration.entry.entry_id,
+        },
     )
     assert result["type"] == FlowResultType.MENU
 
@@ -181,13 +188,16 @@ async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
-    with patch(
-        "ynca.YncaApi.connection_check",
-        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
-    ) as mock_setup, patch(
-        "custom_components.yamaha_ynca.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with (
+        patch(
+            "ynca.YncaApi.connection_check",
+            return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
+        ) as mock_setup,
+        patch(
+            "custom_components.yamaha_ynca.async_setup_entry",
+            return_value=True,
+        ) as mock_setup_entry,
+    ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -200,13 +210,14 @@ async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
     assert len(mock_setup_entry.mock_calls) == 1
 
     # Entry got updated and flow is aborted (as intended)
-    assert integration.entry.data[yamaha_ynca.const.CONF_SERIAL_URL] == "new_serial_port"
+    assert (
+        integration.entry.data[yamaha_ynca.const.CONF_SERIAL_URL] == "new_serial_port"
+    )
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reconfigure_successful"
 
 
 async def test_reconfigure_network(hass: HomeAssistant, mock_ynca) -> None:
-
     integration = await setup_integration(hass, mock_ynca)
 
     # Make sure existing data is different from what we are changing it to
@@ -214,13 +225,17 @@ async def test_reconfigure_network(hass: HomeAssistant, mock_ynca) -> None:
         integration.entry,
         data={
             **integration.entry.data,
-            yamaha_ynca.const.CONF_SERIAL_URL: "socket://old_hostname_or_ipaddress:12345"
-        }
+            yamaha_ynca.const.CONF_SERIAL_URL: "socket://old_hostname_or_ipaddress:12345",
+        },
     )
 
     # Flow goes to menu with connection options
     result = await hass.config_entries.flow.async_init(
-        yamaha_ynca.DOMAIN, context={"source": config_entries.SOURCE_RECONFIGURE, "entry_id": integration.entry.entry_id}
+        yamaha_ynca.DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": integration.entry.entry_id,
+        },
     )
     assert result["type"] == FlowResultType.MENU
 
@@ -233,13 +248,16 @@ async def test_reconfigure_network(hass: HomeAssistant, mock_ynca) -> None:
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
-    with patch(
-        "ynca.YncaApi.connection_check",
-        return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
-    ) as mock_setup, patch(
-        "custom_components.yamaha_ynca.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with (
+        patch(
+            "ynca.YncaApi.connection_check",
+            return_value=ynca.YncaConnectionCheckResult("ModelName", ["ZONE3"]),
+        ) as mock_setup,
+        patch(
+            "custom_components.yamaha_ynca.async_setup_entry",
+            return_value=True,
+        ) as mock_setup_entry,
+    ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -253,6 +271,9 @@ async def test_reconfigure_network(hass: HomeAssistant, mock_ynca) -> None:
     assert len(mock_setup_entry.mock_calls) == 1
 
     # Entry got updated and flow is aborted (as intended)
-    assert integration.entry.data[yamaha_ynca.const.CONF_SERIAL_URL] == "socket://hostname_or_ipaddress:44444"
+    assert (
+        integration.entry.data[yamaha_ynca.const.CONF_SERIAL_URL]
+        == "socket://hostname_or_ipaddress:44444"
+    )
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reconfigure_successful"

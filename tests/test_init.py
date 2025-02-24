@@ -1,14 +1,17 @@
 """Test the Yamaha (YNCA) config flow."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, call, patch
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry # type: ignore[import]
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.service import ServiceCall
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,  # type: ignore[import]
+)
+
+from custom_components import yamaha_ynca
+import ynca
 
 from .conftest import setup_integration
 
@@ -34,9 +37,7 @@ async def test_async_setup_entry(
     assert integration.entry.state is ConfigEntryState.LOADED
 
     assert len(mock_ynca.initialize.mock_calls) == 1
-    assert (
-        mock_ynca is integration.entry.runtime_data.api
-    )
+    assert mock_ynca is integration.entry.runtime_data.api
 
     assert len(device_reg.devices.keys()) == 5
 
@@ -53,9 +54,7 @@ async def test_async_setup_entry(
         assert device.configuration_url is None
 
     device = device_reg.async_get_device(
-        identifiers={
-            (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")
-        }
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")}
     )
     assert device.manufacturer == "Yamaha"
     assert device.model == "ModelName"
@@ -87,11 +86,10 @@ async def test_async_setup_entry_audio_input_workaround_applied(
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.modelname = "RX-V475"
 
-    integration = await setup_integration(
-        hass, mock_ynca
-    )
+    integration = await setup_integration(hass, mock_ynca)
 
     assert mock_ynca.sys.inpnameaudio == "AUDIO"
+
 
 async def test_async_setup_entry_audio_input_workaround_not_applied(
     hass, device_reg, mock_ynca, mock_zone_main
@@ -100,9 +98,7 @@ async def test_async_setup_entry_audio_input_workaround_not_applied(
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.modelname = "RX-A6A"
 
-    integration = await setup_integration(
-        hass, mock_ynca
-    )
+    integration = await setup_integration(hass, mock_ynca)
 
     assert getattr(mock_ynca.sys, "inpnameaudio", None) is None
 
@@ -200,7 +196,6 @@ async def test_reload_on_disconnect(async_reload_mock, hass, mock_ynca, mock_zon
 
 async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zone3):
     """Test successful unload of entry."""
-
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
 

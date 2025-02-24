@@ -1,30 +1,32 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, List
-
-import ynca
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+import ynca
+
 from . import YamahaYncaConfigEntry
 from .const import ZONE_ATTRIBUTE_NAMES
 from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ynca.subunits.zone import ZoneBase
     from ynca.subunit import SubunitBase
+    from ynca.subunits.zone import ZoneBase
+
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSwitchEntityDescription(SwitchEntityDescription):
     on: Enum | None = None
     off: Enum | None = None
-    function_names: List[str] | None = None
+    function_names: list[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
     associated_zone_attr: str | None = None
     """
@@ -33,7 +35,9 @@ class YncaSwitchEntityDescription(SwitchEntityDescription):
     Such relation is indicated here
     """
     supported_check: Callable[[YncaSwitchEntityDescription, ZoneBase], bool] = (
-        lambda entity_description, zone_subunit: subunit_supports_entitydescription_key(entity_description, zone_subunit)
+        lambda entity_description, zone_subunit: subunit_supports_entitydescription_key(
+            entity_description, zone_subunit
+        )
     )
     """
     Callable to check support for this entity on the zone, default checks if attribute `key` is not None.
@@ -215,17 +219,18 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
 
     def update_callback(self, function, value):
         super().update_callback(function, value)
-        
+
         # DIRMODE does not (always?) report changes
         # but it does report STRAIGHT when DIRMODE changes, even when STRAIGHT did not change
         # So manually request an update for DIRMODE when STRAIGHT is reported
         if self.entity_description.key == "dirmode" and function == "STRAIGHT":
-
             # But because STRAIGHT also gets reported on GET we need to avoid an infinite loop
-            if self._dirmode_get_sent and (datetime.now() - self._dirmode_get_sent < timedelta(seconds=0.5)):
+            if self._dirmode_get_sent and (
+                datetime.now() - self._dirmode_get_sent < timedelta(seconds=0.5)
+            ):
                 return
 
             # There is no API in `ynca` to explicitly do a GET
             # So use internal knowledge for now and ignore the typing issue
-            self._associated_zone._connection.get(self._associated_zone.id, "DIRMODE") # type: ignore[union-attr]
+            self._associated_zone._connection.get(self._associated_zone.id, "DIRMODE")  # type: ignore[union-attr]
             self._dirmode_get_sent = datetime.now()

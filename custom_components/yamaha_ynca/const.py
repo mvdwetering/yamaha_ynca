@@ -60,5 +60,5 @@ TWOCHDECODER_STRINGS = {
     "auto": "Auto",
     "dolby_surround": "Dolby Surround",
     "dts_neural_x": "DTS Neural:X",
-    "auro_3d": "AURO-3D"
+    "auro_3d": "AURO-3D",
 }

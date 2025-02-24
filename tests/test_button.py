@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import Mock, call, patch
 
-import pytest
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.button import (
     YamahaYncaSceneButton,
     async_setup_entry,
@@ -49,17 +46,13 @@ async def test_async_setup_entry_autodetect_number_of_scenes(
 async def test_async_setup_entry_configured_number_of_scenes(
     yamahayncascenebutton_mock, hass, mock_ynca, mock_zone_zone2
 ):
-
     mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone2.zonename = "_ZONE2_"
 
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["ZONE2"] = {yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 11}
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     add_entities_mock = Mock()
     await async_setup_entry(hass, integration.entry, add_entities_mock)
@@ -99,7 +92,6 @@ async def test_button_entity_with_names(mock_zone):
 
 
 async def test_button_entity_no_names(mock_zone):
-
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_scene_1"
@@ -110,7 +102,6 @@ async def test_button_entity_no_names(mock_zone):
 
 
 async def test_button_entity_behavior(mock_zone):
-
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
     # Pressing button sends message

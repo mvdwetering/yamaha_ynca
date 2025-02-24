@@ -3,17 +3,16 @@ from __future__ import annotations
 import time
 from unittest.mock import ANY, Mock, call, patch
 
-import ynca
+from homeassistant.helpers.entity import EntityCategory
 
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.switch import (
     YamahaYncaSwitch,
     YncaSwitchEntityDescription,
     async_setup_entry,
 )
-from homeassistant.helpers.entity import EntityCategory
-
 from tests.conftest import setup_integration
+import ynca
 
 TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",
@@ -79,7 +78,6 @@ async def test_async_setup_entry(
 
 
 async def test_switch_entity_fields(mock_zone):
-
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
@@ -101,7 +99,6 @@ async def test_switch_entity_fields(mock_zone):
 
 
 async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
-
     mock_sys = mock_ynca.sys
     mock_main = mock_zone_main
 
@@ -161,7 +158,9 @@ async def test_hdmiout_supported_with_two_hdmi_outputs(hass, mock_ynca, mock_zon
 
 
 async def test_dirmode(hass, mock_ynca, mock_zone_main):
-    entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE)
+    entity = YamahaYncaSwitch(
+        "ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE
+    )
 
     mock_zone_main._connection = Mock()
     mock_zone_main._connection.get = Mock()

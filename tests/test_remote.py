@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 from unittest.mock import ANY, Mock, call, patch
+
 import pytest
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.remote import (
     YamahaYncaZoneRemote,
     async_setup_entry,
 )
-
 from tests.conftest import setup_integration
+import ynca
 
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)
@@ -39,7 +38,6 @@ async def test_async_setup_entry(
 
 
 async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
-
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     assert entity.unique_id == "ReceiverUniqueId_ZONE3_remote"
@@ -49,7 +47,6 @@ async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
 
 
 async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
-
     codes = {
         "code1": "12-AB",
         "code2": "12-CDEF",
@@ -80,8 +77,8 @@ async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
         else:
             assert False
 
-async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
 
+async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -93,10 +90,14 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
 
 
 async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
-
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
-    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {"on": "12345678", "standby": "90ABCDEF"})
+    entity = YamahaYncaZoneRemote(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone_zone3,
+        {"on": "12345678", "standby": "90ABCDEF"},
+    )
 
     entity.turn_on()
     mock_ynca.sys.remotecode.assert_called_with("12345678")

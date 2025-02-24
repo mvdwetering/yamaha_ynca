@@ -1,9 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, List
-
-import ynca
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -14,6 +12,8 @@ from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+import ynca
 
 from . import YamahaYncaConfigEntry
 from .const import ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME, ZONE_MIN_VOLUME
@@ -30,7 +30,7 @@ def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> 
 
 @dataclass(frozen=True, kw_only=True)
 class YncaNumberEntityDescription(NumberEntityDescription):
-    function_names: List[str] | None = None
+    function_names: list[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
     native_max_value_fn: Callable[[ynca.subunits.zone.ZoneBase], float] | None = None
     """Function that returns max value. Use when a fixed number is not enough"""
@@ -170,8 +170,7 @@ class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
 
 
 class YamahaYncaNumberInitialVolume(YamahaYncaNumber):
-    """
-    Representation Initial Volume level.
+    """Representation Initial Volume level.
     This is special as it is not always a number and can depend on InitLvlMode
     """
 

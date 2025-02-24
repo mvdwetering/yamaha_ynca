@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, List, Type
-
-import ynca
+from typing import TYPE_CHECKING
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -12,6 +11,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
+
+import ynca
 
 from . import YamahaYncaConfigEntry
 from .const import (
@@ -123,8 +124,7 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 
 
 class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
-    """
-    Representation of a select entity on a Yamaha Ynca device specifically for Initial Volume.
+    """Representation of a select entity on a Yamaha Ynca device specifically for Initial Volume.
     Initial Volume is special as it depends on 2 attributes (INITVOLLVL and/or INITVOLMODE)
     """
 
@@ -176,8 +176,7 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
 
 
 class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
-    """
-    Representation of a select entity on a Yamaha Ynca device specifically for SurroundDecoder.
+    """Representation of a select entity on a Yamaha Ynca device specifically for SurroundDecoder.
     Surround Decoder is special in that the receiver transparently translates the
     PLII/PLIIx settings to match receiver configuration.
     E.g. setting DolbyPLIIx on a receiver without presence speakers will fallback to DolbyPLII.
@@ -201,13 +200,13 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSelectEntityDescription(SelectEntityDescription):
-    enum: Type[Enum]
+    enum: type[Enum]
     """Enum is used to map and generate options (if not specified) for the select entity."""
 
-    function_names: List[str] | None = None
+    function_names: list[str] | None = None
     """Override which function names indicate updates for this entity. Default is `key.upper()`"""
 
-    entity_class: Type[YamahaYncaSelect] = YamahaYncaSelect
+    entity_class: type[YamahaYncaSelect] = YamahaYncaSelect
     """YamahaYncaSelect class to instantiate for this entity_description"""
 
     supported_check: Callable[[YncaSelectEntityDescription, ZoneBase], bool] = (
@@ -220,7 +219,7 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     def is_supported(self, zone_subunit: ZoneBase):
         return self.supported_check(self, zone_subunit)
 
-    options_fn: Callable[[ConfigEntry], List[str]] | None = None
+    options_fn: Callable[[ConfigEntry], list[str]] | None = None
     """Override which options are supported for this entity."""
 
     associated_zone_attr: str | None = None
