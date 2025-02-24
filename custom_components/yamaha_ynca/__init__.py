@@ -239,7 +239,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) 
         ynca_receiver.close()
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        domain_entry_info = entry.runtime_data
-        await hass.async_add_executor_job(close_ynca, domain_entry_info.api)
+        await hass.async_add_executor_job(close_ynca, entry.runtime_data.api)
 
     return unload_ok
