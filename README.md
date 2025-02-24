@@ -656,5 +656,11 @@ Just a quick reminder on how to set up the development enviroment.
 $ python3.13 -m venv venv
 . ./venv/bin/activate
 (venv) $ pip install -e .[dev]
-pytest
+```
+
+Some usefull commands
+
+```bash
+(venv) $ pytest
+(venv) $ ruff format
 ```
