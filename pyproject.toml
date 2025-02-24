@@ -58,6 +58,10 @@ asyncio_default_fixture_loop_scope = "function"
 testpaths = [
     "tests",
 ]
+exclude_also = [
+    # # TYPE_CHECKING block is only executed while running mypy
+    "if TYPE_CHECKING:"
+]
 
 [tool.ruff]
 src = ["custom_components/yamaha_ynca"]
