@@ -661,7 +661,7 @@ $ python3.13 -m venv venv
 Some usefull commands
 
 ```bash
-(venv) $ mypy [path]
+(venv) $ mypy --check-untyped-defs [path]
 (venv) $ pytest
 (venv) $ ruff format
 ```
