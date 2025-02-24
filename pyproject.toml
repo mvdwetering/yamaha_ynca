@@ -51,16 +51,18 @@ dev = [
     "homeassistant-stubs==2025.2.0",
 ]
 
+[tool.coverage.report]
+exclude_also = [
+    # # TYPE_CHECKING block is only executed while running mypy
+    "if TYPE_CHECKING:"
+]
+
 [tool.pytest.ini_options]
 addopts = "--cov=custom_components/yamaha_ynca --cov-report=term-missing --cov-report=html"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = [
     "tests",
-]
-exclude_also = [
-    # # TYPE_CHECKING block is only executed while running mypy
-    "if TYPE_CHECKING:"
 ]
 
 [tool.ruff]

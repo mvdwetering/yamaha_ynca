@@ -661,6 +661,7 @@ $ python3.13 -m venv venv
 Some usefull commands
 
 ```bash
+(venv) $ mypy [path]
 (venv) $ pytest
 (venv) $ ruff format
 ```
