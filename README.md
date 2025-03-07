@@ -48,7 +48,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 || RX-V | RX-V679 |
 || Other | RX-S601D |
 | 2016 | AVANTAGE | RX-A660 |
-|| RX-V | RX-V481D, RX-V681 |
+|| RX-V | RX-V481D, RX-V581, RX-V681 |
 | 2017 | AVANTAGE | RX-A870, RX-A2070, RX-A3070 |
 || RX-V | RX-V483, RX-V683 |
 || HTR | HTR-4071 |
