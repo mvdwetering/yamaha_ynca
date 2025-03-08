@@ -107,6 +107,7 @@ async def test_remote_send_delay(mock_ynca, mock_zone_zone3):
     entity.send_command(["1234ABCD"], num_repeats=2, delay_secs=0.250)
     end = time.perf_counter()
     assert end - start >= 0.250
+    assert end - start < 0.500
 
 
 async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
