@@ -7,8 +7,12 @@ name = "yamaha_ynca"
 version = "0.0.0"
 license = { text = "MIT License" }
 description = "Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network)."
-authors = [{ name = "Michel van de Wetering", email = "michel.van.de.wetering+yamaha_ynca@gmail.com"}]
-maintainers = [{ name = "Michel van de Wetering", email = "michel.van.de.wetering+yamaha_ynca@gmail.com"}]
+authors = [
+  { name = "Michel van de Wetering", email = "michel.van.de.wetering+yamaha_ynca@gmail.com" },
+]
+maintainers = [
+  { name = "Michel van de Wetering", email = "michel.van.de.wetering+yamaha_ynca@gmail.com" },
+]
 readme = "README.md"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -29,9 +33,7 @@ keywords = [
   "yamaha-receiver",
 ]
 requires-python = ">=3.13"
-dependencies = [
-    "ynca==5.19.0",
-]
+dependencies = ["ynca==5.19.0"]
 
 [project.urls]
 Documentation = "https://github.com/mvdwetering/yamaha_ynca"
@@ -41,39 +43,37 @@ Repository = "https://github.com/mvdwetering/yamaha_ynca"
 
 [project.optional-dependencies]
 dev = [
-    "mypy==1.15.0",
-    "ruff==0.9.7",
-    "pytest>=7.0.0",
-    "pytest-cov",
-    "pytest-mock",
-    "pytest-homeassistant-custom-component==0.13.210",
-    "awesomeversion>=24.0.0",
-    "homeassistant-stubs==2025.2.0",
+  "mypy==1.15.0",
+  "ruff==0.9.7",
+  "pytest>=7.0.0",
+  "pytest-cov",
+  "pytest-mock",
+  "pytest-homeassistant-custom-component==0.13.210",
+  "awesomeversion>=24.0.0",
+  "homeassistant-stubs==2025.2.0",
 ]
 
 [tool.coverage.report]
 exclude_also = [
-    # # TYPE_CHECKING block is only executed while running mypy
-    "if TYPE_CHECKING:"
+  # TYPE_CHECKING block is only executed while running mypy
+  "if TYPE_CHECKING:",
 ]
 
 [tool.pytest.ini_options]
 addopts = "--cov=custom_components/yamaha_ynca --cov-report=term-missing --cov-report=html"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 
 [tool.ruff]
 src = ["custom_components/yamaha_ynca"]
 
 [tool.ruff.lint]
 ignore = [
-  "A005", # It is just wrong
+  "A005",   # It is just wrong
   "ANN401", # Opiniated warning on disallowing dynamically typed expressions
-  "D203", # Conflicts with other rules
-  "D213", # Conflicts with other rules
+  "D203",   # Conflicts with other rules
+  "D213",   # Conflicts with other rules
   "RUF012", # Just broken
   "TID252", # Relative imports
 
@@ -101,13 +101,8 @@ voluptuous = "vol"
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
-known-first-party = [
-    "custom_components",
-    "ynca",
-]
-known-third-party = [
-    "homeassistant",
-]
+known-first-party = ["custom_components", "ynca"]
+known-third-party = ["homeassistant"]
 combine-as-imports = true
 
 [tool.pylint."MESSAGES CONTROL"]

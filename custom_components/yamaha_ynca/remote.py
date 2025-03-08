@@ -194,7 +194,6 @@ class YamahaYncaZoneRemote(RemoteEntity):
         first = True
         for _ in range(num_repeats):
             for cmd in command:
-
                 if not first:
                     time.sleep(delay_secs)
                 first = False
