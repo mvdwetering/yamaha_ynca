@@ -583,7 +583,7 @@ cards:
 
 ## Presets
 
-Presets can be activated and stored with the integration for some inputsources. The AM/FM or DAB radio input seems to work for all models. Other inputs only work on some models, probably older ones from before 2012. These input are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR and USB. 
+Presets can be activated and stored with the integration for some inputsources. The AM/FM or DAB radio input seems to work for all models. Other inputsources, which don't work on all models, are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR and USB. It seems that Presets for these inputsources work only on pre-2012 models.
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
