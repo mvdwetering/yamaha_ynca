@@ -37,7 +37,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 || HTR | HTR-6064 |
 | 2012 | AVANTAGE | RX-A720, RX-A820, RX-A1020, RX-A2020, RX-A3020 |
 || RX-V | RX-V473, RX-V573, RX-V673, RX-V773 |
-|| HTR |  HTR-4065 |
+|| HTR |  HTR-4065, HTR-7065 |
 | 2013 | AVANTAGE | RX-A730, RX-A830, RX-A1030, RX-A2030, RX-A3030 |
 || RX-V | RX-V475, RX-V575, RX-V675, RX-V775, RX-V1075, RX-V2075, RX-V3075 |
 || HTR |  HTR-4066 |
