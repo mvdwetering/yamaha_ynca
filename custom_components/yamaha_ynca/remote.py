@@ -2,9 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 import re
+import time
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.components.remote import RemoteEntity
+from homeassistant.components.remote import (
+    ATTR_DELAY_SECS,
+    ATTR_NUM_REPEATS,
+    DEFAULT_DELAY_SECS,
+    DEFAULT_NUM_REPEATS,
+    RemoteEntity,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -180,9 +187,20 @@ class YamahaYncaZoneRemote(RemoteEntity):
 
     def send_command(self, command: Iterable[str], **kwargs):
         """Send commands to a device."""
-        for cmd in command:
-            # Use raw remotecode from mapping otherwise assume user provided raw code
-            code = self._zone_codes.get(cmd, cmd)
-            formatted_code = self._format_remotecode(code)
 
-            self._api.sys.remotecode(formatted_code)  # type: ignore
+        num_repeats = kwargs.get(ATTR_NUM_REPEATS, DEFAULT_NUM_REPEATS)
+        delay_secs = kwargs.get(ATTR_DELAY_SECS, DEFAULT_DELAY_SECS)
+
+        first = True
+        for _ in range(num_repeats):
+            for cmd in command:
+                if not first:
+                    time.sleep(delay_secs)
+                first = False
+
+                # Use raw remotecode from mapping
+                # if it is not there assume user provided raw code
+                code = self._zone_codes.get(cmd, cmd)
+                formatted_code = self._format_remotecode(code)
+
+                self._api.sys.remotecode(formatted_code)  # type: ignore

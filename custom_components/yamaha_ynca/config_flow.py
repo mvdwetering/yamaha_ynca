@@ -62,10 +62,7 @@ async def validate_input(
     def validate_connection(serial_url):
         return ynca.YncaApi(serial_url).connection_check()
 
-    return await hass.async_add_executor_job(
-        validate_connection, data[CONF_SERIAL_URL]
-    )
-
+    return await hass.async_add_executor_job(validate_connection, data[CONF_SERIAL_URL])
 
 
 class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):

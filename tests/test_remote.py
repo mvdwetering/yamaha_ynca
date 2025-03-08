@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from unittest.mock import ANY, Mock, call, patch
 
 import pytest
@@ -87,6 +88,26 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
 
     with pytest.raises(ValueError):
         entity.send_command(["not a valid code"])
+
+
+async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
+    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
+
+    # Setting value
+    entity.send_command(["1234ABCD"], num_repeats=2)
+    assert mock_ynca.sys.remotecode.call_count == 2
+    mock_ynca.sys.remotecode.assert_any_call("1234ABCD")
+
+
+async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
+    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
+
+    # Setting value
+    start = time.perf_counter()
+    entity.send_command(["1234ABCD"], num_repeats=2, delay_secs=0.250)
+    end = time.perf_counter()
+    assert end - start >= 0.250
+    assert end - start < 0.500
 
 
 async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
