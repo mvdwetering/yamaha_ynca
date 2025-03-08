@@ -90,7 +90,7 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
         entity.send_command(["not a valid code"])
 
 
-async def test_remote_send_repeat(mock_ynca, mock_zone_zone3):
+async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -99,7 +99,7 @@ async def test_remote_send_repeat(mock_ynca, mock_zone_zone3):
     mock_ynca.sys.remotecode.assert_any_call("1234ABCD")
 
 
-async def test_remote_send_delay(mock_ynca, mock_zone_zone3):
+async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
