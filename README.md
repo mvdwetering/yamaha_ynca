@@ -103,7 +103,8 @@ HACS is a 3rd party downloader for Home Assistant to easily install and update c
 
 * Open the HACS page
 * Search for "Yamaha (YNCA)" in the HACS search bar
-* Press the Download button and wait for it to download
+* Click/tap on the integration to open the integration page
+* Press the Download button to download the integration
 * Restart Home Assistant
 
 Then configure the integration in Home Assistant as usual:
@@ -115,9 +116,10 @@ Then configure the integration in Home Assistant as usual:
 
 ### Manual
 
-* Go to the releases section and download the zip file.
+* Go to the releases section on Github
+* Download the zip file for the version you want to install
 * Extract the zip
-* Copy the contents to the `custom_components` directory in your `config` directory.
+* Copy the contents to the `custom_components` directory in your `config` directory
 * Restart Home Assistant
 
 Then configure the integration in Home Assistant as usual:
@@ -147,7 +149,7 @@ More remote control commands exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send a code through any of the remote entities.
 
-Sending the commands is done through the `remote.send_command` action offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The repeat, delay and hold options are *not* supported. 
+Sending the commands is done through the `remote.send_command` action offered by Home Assistant. For manualy experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it. 
 
 Example:
 
