@@ -157,6 +157,9 @@
       "speakerb": {
         "name": "Zone B speakers"
       },
+      "surroundai": {
+        "name": "Surround:AI"
+      },
       "threedcinema": {
         "name": "CINEMA DSP 3D Mode"
       }

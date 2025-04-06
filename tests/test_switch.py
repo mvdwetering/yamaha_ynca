@@ -51,6 +51,7 @@ async def test_async_setup_entry(
     mock_ynca.main.puredirmode = ynca.PureDirMode.OFF
     mock_ynca.main.speakera = ynca.SpeakerA.OFF
     mock_ynca.main.speakerb = ynca.SpeakerB.ON
+    mock_ynca.main.surroundai = ynca.SurroundAI.OFF
     mock_ynca.main.threedcinema = ynca.ThreeDeeCinema.AUTO
 
     mock_ynca.sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
@@ -74,7 +75,7 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 10
+    assert len(entities) == 11
 
 
 async def test_switch_entity_fields(mock_zone):

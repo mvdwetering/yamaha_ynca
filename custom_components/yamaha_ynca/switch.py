@@ -115,6 +115,13 @@ ZONE_ENTITY_DESCRIPTIONS = [
         ),
     ),
     YncaSwitchEntityDescription(  # type: ignore
+        key="surroundai",
+        icon="mdi:creation",
+        entity_category=EntityCategory.CONFIG,
+        on=ynca.SurroundAI.ON,
+        off=ynca.SurroundAI.OFF,
+    ),
+    YncaSwitchEntityDescription(  # type: ignore
         key="threedcinema",
         entity_category=EntityCategory.CONFIG,
         function_names=["3DCINEMA"],
