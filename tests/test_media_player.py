@@ -547,6 +547,15 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
 
+    # Empty metadata is not exposed
+    mock_ynca.usb.album = ""
+    mock_ynca.usb.artist = ""
+    mock_ynca.usb.song = ""
+    assert mp_entity.media_album_name is None
+    assert mp_entity.media_artist is None
+    assert mp_entity.media_title is None
+
+    # Available metadata is exposed
     mock_ynca.usb.album = "AlbumName"
     mock_ynca.usb.artist = "ArtistName"
     mock_ynca.usb.song = "Song title"
@@ -569,6 +578,12 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     # Netradio is a "channel" which name is exposed by the "station" attribute
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+
+    # Empty metadata is not exposed
+    mock_ynca.netradio.station = ""
+    assert mp_entity.media_channel is None
+
+    # Available metadata is exposed
     mock_ynca.netradio.station = "StationName"
     mock_ynca.netradio.song = "SongName"
     mock_ynca.netradio.album = "AlbumName"

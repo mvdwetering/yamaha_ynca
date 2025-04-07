@@ -514,22 +514,25 @@ class YamahaYncaZone(MediaPlayerEntity):
             if track := getattr(subunit, "track", None):
                 return track
             if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:
-                if subunit.dabdlslabel:
-                    return subunit.dabdlslabel
+                return subunit.dabdlslabel or None
         return None
 
     @property
     def media_artist(self) -> str | None:
         """Artist of current playing media, music track only."""
-        if subunit := self._get_input_subunit():
-            return getattr(subunit, "artist", None)
+        if (subunit := self._get_input_subunit()) and (
+            artist := getattr(subunit, "artist", None)
+        ):
+            return artist
         return None
 
     @property
     def media_album_name(self) -> str | None:
         """Album name of current playing media, music track only."""
-        if subunit := self._get_input_subunit():
-            return getattr(subunit, "album", None)
+        if (subunit := self._get_input_subunit()) and (
+            album := getattr(subunit, "album", None)
+        ):
+            return album
         return None
 
     @property
@@ -555,7 +558,7 @@ class YamahaYncaZone(MediaPlayerEntity):
                         else f"FM {subunit.fmfreq:.2f} MHz"
                     )
                 if subunit.band is ynca.BandDab.DAB:
-                    return subunit.dabservicelabel
+                    return subunit.dabservicelabel or None
 
             # Netradio
             if station := getattr(subunit, "station", None):
