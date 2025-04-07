@@ -30,33 +30,33 @@ If your receiver works but is not in the list, please post a message in the [dis
 
 | Year | Series | Models |
 | --- | --- | --- |
-| 2010 | AVANTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
+| 2010 | AVENTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
 || RX-V |  RX-V867, RX-V1067, RX-V2067, RX-V3067 |
-| 2011 | AVANTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
+| 2011 | AVENTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
 || RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
 || HTR | HTR-6064 |
-| 2012 | AVANTAGE | RX-A720, RX-A820, RX-A1020, RX-A2020, RX-A3020 |
+| 2012 | AVENTAGE | RX-A720, RX-A820, RX-A1020, RX-A2020, RX-A3020 |
 || RX-V | RX-V473, RX-V573, RX-V673, RX-V773 |
 || HTR |  HTR-4065, HTR-7065 |
-| 2013 | AVANTAGE | RX-A730, RX-A830, RX-A1030, RX-A2030, RX-A3030 |
+| 2013 | AVENTAGE | RX-A730, RX-A830, RX-A1030, RX-A2030, RX-A3030 |
 || RX-V | RX-V475, RX-V575, RX-V675, RX-V775, RX-V1075, RX-V2075, RX-V3075 |
 || HTR |  HTR-4066 |
 || Other |  CX-A5000, R-N500, RX-V500D, RX-S600D |
-| 2014 | AVANTAGE | RX-A740, RX-A840, RX-A1040, RX-A2040, RX-A3040 |
+| 2014 | AVENTAGE | RX-A740, RX-A840, RX-A1040, RX-A2040, RX-A3040 |
 || RX-V | RX-V477, RX-V677, RX-V777, RX-V1077, RX-V2077, RX-V3077 |
-| 2015 | AVANTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
+| 2015 | AVENTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
 || RX-V | RX-V679 |
 || Other | RX-S601D |
-| 2016 | AVANTAGE | RX-A660 |
+| 2016 | AVENTAGE | RX-A660 |
 || RX-V | RX-V481D, RX-V581, RX-V681 |
-| 2017 | AVANTAGE | RX-A870, RX-A2070, RX-A3070 |
+| 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
 || RX-V | RX-V483, RX-V683 |
 || HTR | HTR-4071 |
-| 2018 | AVANTAGE | RX-A3080 |
+| 2018 | AVENTAGE | RX-A3080 |
 || RX-V | RX-V585, RX-V685, RX-V1085 |
 || HTR |  HTR-4072 |
 || TSR |  TSR-7850 |
-| 2020 | AVANTAGE | RX-A2A, RX-A4A, RX-A6A |
+| 2020 | AVENTAGE | RX-A2A, RX-A4A, RX-A6A |
 || RX-V |  RX-V4A |
 || TSR |  TSR-700 |
 
@@ -99,7 +99,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 
 *Recommended because you get notified of updates.*
 
-HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site https://hacs.xyz/
+HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site <https://hacs.xyz/>
 
 * Open the HACS page
 * Search for "Yamaha (YNCA)" in the HACS search bar
@@ -149,7 +149,7 @@ More remote control commands exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send a code through any of the remote entities.
 
-Sending the commands is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it. 
+Sending the commands is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
 
 Example:
 
@@ -161,8 +161,7 @@ target:
   entity_id: remote.rx_a810_main_remote
 ```
 
-
-In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations. 
+In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations.
 
 ![image](https://github.com/mvdwetering/yamaha_ynca/assets/732514/321181e2-81c3-4a1d-8084-8efceb94f7ff)
 
@@ -589,11 +588,11 @@ Presets can be activated and stored with the integration for some inputsources. 
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
-Due to limitations on the protocol the integration can only show the preset number, no name or what is stored. 
+Due to limitations on the protocol the integration can only show the preset number, no name or what is stored.
 
 ### Store presets
 
-Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). 
+Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets).
 Home Assistant does not have a standardized way to manage presets, so the `store_preset` action was added. It will store a preset with the provided number for the current playing item.
 
 ```yaml
@@ -636,7 +635,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
   You can't with this integration because the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
 
 * **Q: Why are Scene buttons are not working for my receiver?**  
-  On some receivers (e.g. RX-V475) the command to activate the scenes does not work even though the receiver seems to indicate support for them. There might be more receivers with this issue, please report them in an issue or start a discussion. 
+  On some receivers (e.g. RX-V475) the command to activate the scenes does not work even though the receiver seems to indicate support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
