@@ -12,7 +12,7 @@ from .const import CONF_HIDDEN_SOUND_MODES, DOMAIN, LOGGER
 from .helpers import receiver_requires_audio_input_workaround
 
 
-async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old entry."""
     from_version = config_entry.version
     from_minor_version = config_entry.minor_version
