@@ -66,10 +66,12 @@ input_mappings: list[Mapping] = [
 
 class InputHelper:
     @staticmethod
-    def get_subunit_for_input(api: ynca.YncaApi, input: ynca.Input | None):
-        """Returns Subunit of the current provided input if possible, otherwise None"""
+    def get_subunit_for_input(
+        api: ynca.YncaApi, input_: ynca.Input | None
+    ) -> ynca.subunit.SubunitBase | None:
+        """Return Subunit of the current provided input if possible, otherwise None."""
         for mapping in input_mappings:
-            if mapping.ynca_input is input:
+            if mapping.ynca_input is input_:
                 for subunit_attribute_name in mapping.subunit_attribute_names:
                     if subunit_attribute := getattr(api, subunit_attribute_name, None):
                         return subunit_attribute
@@ -78,15 +80,16 @@ class InputHelper:
 
     @staticmethod
     def get_input_for_subunit(subunit: ynca.subunit.SubunitBase) -> ynca.Input:
-        """Returns input of the provided subunit, raises ValueError if not found"""
+        """Return input of the provided subunit, raises ValueError if not found."""
         for mapping in input_mappings:
             if subunit.id.value.lower() in mapping.subunit_attribute_names:
                 return mapping.ynca_input
-        raise ValueError("Could not find input for subunit")
+        msg = "Could not find input for subunit"
+        raise ValueError(msg)
 
     @staticmethod
     def get_input_by_name(api: ynca.YncaApi, name: str) -> ynca.Input | None:
-        """Returns input by name"""
+        """Return input by name."""
         source_mapping = InputHelper.get_source_mapping(api)
         for source_input, source_name in source_mapping.items():
             if source_name == name.strip():
@@ -94,16 +97,16 @@ class InputHelper:
         return None
 
     @staticmethod
-    def get_name_of_input(api: ynca.YncaApi, input: ynca.Input) -> str | None:
+    def get_name_of_input(api: ynca.YncaApi, input_: ynca.Input) -> str | None:
         source_mapping = InputHelper.get_source_mapping(api)
         for source_input, source_name in source_mapping.items():
-            if input is source_input:
+            if input_ is source_input:
                 return source_name
         return None
 
     @staticmethod
-    def get_source_mapping(api: ynca.YncaApi) -> dict[ynca.Input, str]:
-        """Mapping of input to sourcename for this YNCA instance."""
+    def get_source_mapping(api: ynca.YncaApi) -> dict[ynca.Input, str]:  # noqa: C901
+        """Map input to sourcename for this YNCA instance."""
         source_mapping = {}
 
         # Try renameable inputs first
@@ -136,7 +139,7 @@ class InputHelper:
 
         # Trim whitespace for receivers that add spaces around names like "  HDMI4  " (presumably to center on display)
         # Having the spaces makes it hard to use for automations, especially since HA frontend does not show the spaces
-        for input in source_mapping:
-            source_mapping[input] = source_mapping[input].strip()
+        for input_, name in source_mapping.items():
+            source_mapping[input_] = name.strip()
 
         return source_mapping
