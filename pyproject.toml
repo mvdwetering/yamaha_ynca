@@ -72,6 +72,15 @@ src = ["custom_components/yamaha_ynca"]
 ignore = [
   "A005",   # It is just wrong
   "ANN401", # Opiniated warning on disallowing dynamically typed expressions
+  # Ignoring missing docstrings. Most things should be clear and they tend to get out of date which is worse.
+  "D100", # Missing docstrings for public module
+  "D101", # Missing docstrings for public classes
+  "D102", # Missing docstrings for public methods
+  "D103", # Missing docstrings for public functions
+  "D104", # Missing docstrings in public package
+  "D105", # Missing docstrings in magic method
+  "D107", # Missing docstrings in __init__
+
   "D203",   # Conflicts with other rules
   "D213",   # Conflicts with other rules
   "RUF012", # Just broken
@@ -90,6 +99,12 @@ ignore = [
   "W191",
 ]
 select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+  "S101",    # Asserts in tests is ok
+  "PLR2004", # Magic values in tests is ok(-ish)
+]
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
 "homeassistant.helpers.area_registry" = "ar"
