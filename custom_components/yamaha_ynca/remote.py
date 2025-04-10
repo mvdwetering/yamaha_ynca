@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 import re
 import time
 from typing import TYPE_CHECKING, Any
@@ -12,17 +11,20 @@ from homeassistant.components.remote import (
     DEFAULT_NUM_REPEATS,
     RemoteEntity,
 )
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-import ynca
-
-from . import YamahaYncaConfigEntry
 from .const import ATTR_COMMANDS, DOMAIN, ZONE_ATTRIBUTE_NAMES
 
 if TYPE_CHECKING:  # pragma: no cover
+    from collections.abc import Iterable
+
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    import ynca
     from ynca.subunits.zone import ZoneBase
+
+    from . import YamahaYncaConfigEntry
 
 
 # Use a docstring to more easily write the codes
@@ -99,23 +101,22 @@ def get_zone_codes(zone_id: str) -> dict[str, str]:
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     config_entry: YamahaYncaConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     domain_entry_data = config_entry.runtime_data
 
-    entities = []
-    for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
-        if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
-            entities.append(
-                YamahaYncaZoneRemote(
-                    config_entry.entry_id,
-                    domain_entry_data.api,
-                    zone_subunit,
-                    get_zone_codes(zone_subunit.id),
-                )
-            )
+    entities = [
+        YamahaYncaZoneRemote(
+            config_entry.entry_id,
+            domain_entry_data.api,
+            zone_subunit,
+            get_zone_codes(zone_subunit.id),
+        )
+        for zone_attr_name in ZONE_ATTRIBUTE_NAMES
+        if (zone_subunit := getattr(domain_entry_data.api, zone_attr_name))
+    ]
 
     async_add_entities(entities)
 
@@ -131,11 +132,11 @@ class YamahaYncaZoneRemote(RemoteEntity):
 
     def __init__(
         self,
-        receiver_unique_id,
+        receiver_unique_id: str,
         api: ynca.YncaApi,
         zone: ZoneBase,
         zone_codes: dict[str, str],
-    ):
+    ) -> None:
         self._api = api
         self._zone = zone
         self._zone_codes = zone_codes
@@ -151,7 +152,8 @@ class YamahaYncaZoneRemote(RemoteEntity):
         }
 
     def _format_remotecode(self, input_code: str) -> str:
-        """Convert various inputs to 32bit NEC
+        """Format the remote codes into 32bit NEC.
+
         Supported are (- can be any separator):
           AA-CC / AACC
           AA-CCCC / AACCCC
@@ -159,11 +161,12 @@ class YamahaYncaZoneRemote(RemoteEntity):
         """
         matches = self._remotecode_formats_regex.match(input_code)
         if not matches:
-            raise ValueError(f"Unrecognized remotecode format for '{input_code}'")
+            msg = f"Unrecognized remotecode format for '{input_code}'"
+            raise ValueError(msg)
 
         output_code = ""
-        for part in ["left", "right"]:
-            part = matches.group(part)
+        for side_selector in ["left", "right"]:
+            part = matches.group(side_selector)
             if len(part) == 2:
                 output_code += part
                 # Add filler byte by inverting the first byte, research NEC ir codes for more info
@@ -177,17 +180,16 @@ class YamahaYncaZoneRemote(RemoteEntity):
                 output_code += part
         return output_code
 
-    def turn_on(self, **kwargs: Any) -> None:
+    def turn_on(self, **_kwargs: Any) -> None:
         """Send the power on command."""
         self.send_command(["on"])
 
-    def turn_off(self, **kwargs: Any) -> None:
+    def turn_off(self, **_kwargs: Any) -> None:
         """Send the power off command."""
         self.send_command(["standby"])
 
-    def send_command(self, command: Iterable[str], **kwargs):
+    def send_command(self, command: Iterable[str], **kwargs: Any) -> None:
         """Send commands to a device."""
-
         num_repeats = kwargs.get(ATTR_NUM_REPEATS, DEFAULT_NUM_REPEATS)
         delay_secs = kwargs.get(ATTR_DELAY_SECS, DEFAULT_DELAY_SECS)
 
@@ -203,4 +205,4 @@ class YamahaYncaZoneRemote(RemoteEntity):
                 code = self._zone_codes.get(cmd, cmd)
                 formatted_code = self._format_remotecode(code)
 
-                self._api.sys.remotecode(formatted_code)  # type: ignore
+                self._api.sys.remotecode(formatted_code)
