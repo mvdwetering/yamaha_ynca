@@ -61,12 +61,12 @@ display, 7F01-609F, 7F01-807F, 7F01-A05F, 7F01-C03F
 top_menu, 7A85-A0DF, 7A85-A1DE, 7A85-A2DD, 7A85-A3DC
 popup_menu, 7A85-A4DB, 7A85-A5DA, 7A85-A6D9, 7A85-A7D8
 
-stop, 7F01-6996, 7F01-8976, 7F01-A956, 
-pause, 7F01-6798, 7F01-8778, 7F01-A758, 
-play, 7F01-6897, 7F01-8877, 7F01-A857, 
-rewind, 7F01-6A95, 7F01-8A75, 7F01-AA55, 
-fast_forward, 7F01-6B94, 7F01-8B74, 7F01-AB54, 
-previous, 7F01-6C93, 7F01-8C73, 7F01-AC53, 
+stop, 7F01-6996, 7F01-8976, 7F01-A956,
+pause, 7F01-6798, 7F01-8778, 7F01-A758,
+play, 7F01-6897, 7F01-8877, 7F01-A857,
+rewind, 7F01-6A95, 7F01-8A75, 7F01-AA55,
+fast_forward, 7F01-6B94, 7F01-8B74, 7F01-AB54,
+previous, 7F01-6C93, 7F01-8C73, 7F01-AC53,
 next, 7F01-6D92, 7F01-8D72, 7F01-AD52,
 
 1, 7F01-51AE, 7F01-718E, 7F01-916E
@@ -167,7 +167,7 @@ class YamahaYncaZoneRemote(RemoteEntity):
         output_code = ""
         for side_selector in ["left", "right"]:
             part = matches.group(side_selector)
-            if len(part) == 2:
+            if len(part) == 2:  # noqa: PLR2004
                 output_code += part
                 # Add filler byte by inverting the first byte, research NEC ir codes for more info
                 # Invert with 'xor 0xFF' because Python ~ operator makes it signed otherwise
