@@ -58,7 +58,9 @@ def receiver_requires_audio_input_workaround(modelname: str) -> bool:
     ]
 
 
-def subunit_supports_entitydescription_key(entity_description, subunit) -> bool:
+def subunit_supports_entitydescription_key(
+    entity_description: EntityDescription, subunit: SubunitBase
+) -> bool:
     return getattr(subunit, entity_description.key, None) is not None
 
 
@@ -106,7 +108,7 @@ class YamahaYncaSettingEntity:
 
     def update_callback(self, function: str, _value: Any) -> None:
         if function in self._relevant_updates:
-            self.schedule_update_ha_state()  # type: ignore
+            self.schedule_update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         self._subunit.register_update_callback(self.update_callback)
