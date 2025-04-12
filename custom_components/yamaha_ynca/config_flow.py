@@ -12,7 +12,7 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
 )
 from homeassistant.core import HomeAssistant, callback
-import voluptuous as vol  # type: ignore[import]
+import voluptuous as vol
 
 import ynca
 

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
-import voluptuous as vol  # type: ignore[import]
+import voluptuous as vol
 
 import ynca
 
@@ -27,7 +27,7 @@ from .const import (
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:
-    from homeassistant.data_entry_flow import FlowResult
+    from homeassistant.config_entries import ConfigFlowResult
 
     from . import YamahaYncaConfigEntry
 
@@ -75,13 +75,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: YamahaYncaConfigEntry) -> None:
         self.options = deepcopy(dict(config_entry.options))
 
-    async def do_next_step(self, current_step_id: str) -> FlowResult:
+    async def do_next_step(self, current_step_id: str) -> ConfigFlowResult:
         next_step_id = get_next_step_id(self, current_step_id)
-        return await getattr(self, f"async_step_{next_step_id}")()
+        return await getattr(self, f"async_step_{next_step_id}")()  # type: ignore[no-any-return]
 
     async def async_step_init(
         self, _user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Perform basic sanity checks before configuring options."""
         # The configentry in the optionsflow is _only_ a YamahaYncaConfigEntry when there is a connection
         # Otherwise it is a "plain" ConfigEntry, so without runtime_data
@@ -94,7 +94,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_no_connection(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """No connection dialog."""
         if user_input is not None:
             # Strangely enough there is no title on the abort box
@@ -107,7 +107,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_general(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """General device options."""
         modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
 
@@ -192,35 +192,35 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_main(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_MAIN, user_input=user_input
         )
 
     async def async_step_zone2(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE2, user_input=user_input
         )
 
     async def async_step_zone3(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE3, user_input=user_input
         )
 
     async def async_step_zone4(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE4, user_input=user_input
         )
 
     async def async_zone_settings_screen(
         self, step_id: str, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         zone_id = step_id.upper()
 
         all_inputs = {}
@@ -283,7 +283,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_done(
         self, _user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         return self.async_create_entry(
             title=self.config_entry.data[DATA_MODELNAME], data=self.options
         )
