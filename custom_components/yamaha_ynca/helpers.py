@@ -64,17 +64,7 @@ def subunit_supports_entitydescription_key(
     return getattr(subunit, entity_description.key, None) is not None
 
 
-class _EntityMethods(Protocol):
-    """Protocol defining methods that are provided by Entity (and used by YamahaYncaSettingEntity."""
-
-    def schedule_update_ha_state(
-        self, _force_refresh: bool = False  # noqa: FBT001, FBT002
-    ) -> None:
-        """Update the entity state in Home Assistant."""
-        return
-
-
-class YamahaYncaSettingEntity(_EntityMethods):
+class YamahaYncaSettingEntity:
     """Common code for YamahaYnca settings entities.
 
     Entities derived from this also need to derive from the standard HA entities.
@@ -118,7 +108,8 @@ class YamahaYncaSettingEntity(_EntityMethods):
 
     def update_callback(self, function: str, _value: Any) -> None:
         if function in self._relevant_updates:
-            self.schedule_update_ha_state()
+            # schedule_update_ha_state is part of Entity, but typechecker does not know
+            self.schedule_update_ha_state()  # type: ignore[attr-defined]
 
     async def async_added_to_hass(self) -> None:
         self._subunit.register_update_callback(self.update_callback)
