@@ -735,6 +735,10 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
     with pytest.raises(HomeAssistantError):
         await mp_entity.async_play_media("media_type", "tun:unsupported:15")
 
+    # Invalid preset format
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "tun:preset:not_a_number")
+
     # Out of range preset
     MIN_PRESET_ID = 1
     MAX_PRESET_ID = 40
