@@ -547,11 +547,11 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         # Netradio
         if station := getattr(subunit, "station", None):
-            return station or None
+            return station
 
         # Sirius variants
         if channelname := getattr(subunit, "chname", None):
-            return channelname or None
+            return channelname
 
         return None
 
