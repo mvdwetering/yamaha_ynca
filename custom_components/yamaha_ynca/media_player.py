@@ -807,8 +807,8 @@ class YamahaYncaZoneB(YamahaYncaZone):
         if self._zone.zonebvol is not None:  # type: ignore[attr-defined]
             return scale(
                 self._zone.zonebvol,  # type: ignore[attr-defined]
-                [ZONE_MIN_VOLUME, ZONE_MAX_VOLUME],
-                [0, 1],
+                (ZONE_MIN_VOLUME, ZONE_MAX_VOLUME),
+                (0, 1),
             )
         return None
 
