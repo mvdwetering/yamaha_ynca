@@ -173,7 +173,7 @@ type YamahaYncaConfigEntry = ConfigEntry[DomainEntryData]
 async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
-    def initialize_ynca(ynca_receiver: ynca.YncaApi) -> bool | None:
+    def initialize_ynca(ynca_receiver: ynca.YncaApi) -> bool:
         try:
             # Synchronous function taking a long time (> 10 seconds depending on receiver capabilities)
             ynca_receiver.initialize()
@@ -191,7 +191,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
             LOGGER.exception(
                 f"Unexpected exception during initialization of {entry.title}"
             )
-            return False
+        return False
 
     def on_disconnect() -> None:
         # Reload the entry on disconnect.
