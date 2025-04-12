@@ -89,7 +89,7 @@ async def update_device_registry(
 
 
 def build_zone_devicename(
-    receiver: ynca.YncaApi, zone_subunit: ynca.subunit.SubunitBase
+    receiver: ynca.YncaApi, zone_subunit: ynca.subunits.zone.ZoneBase
 ) -> str:
     devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
     if (
@@ -213,10 +213,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
 
-        if receiver_requires_audio_input_workaround(ynca_receiver.sys.modelname):
+        if receiver_requires_audio_input_workaround(str(ynca_receiver.sys.modelname)):
             # Pretend AUDIO provides a name like a normal input
             # This makes it work with standard code
-            ynca_receiver.sys.inpnameaudio = "AUDIO"
+            # Note that this _adds_ an attribute to the SYS subunit which essentially is a hack
+            ynca_receiver.sys.inpnameaudio = "AUDIO"  # type: ignore[attr-defined]
 
         entry.runtime_data = DomainEntryData(
             api=ynca_receiver,

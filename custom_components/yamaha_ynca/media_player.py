@@ -22,7 +22,7 @@ from homeassistant.helpers import (
     entity_platform,
 )
 from homeassistant.helpers.entity import DeviceInfo
-import voluptuous as vol  # type: ignore[import]
+import voluptuous as vol
 
 import ynca
 import ynca.subunit
@@ -132,7 +132,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
 
     def _get_zone_id(self) -> str:
-        return self._zone.id
+        return str(self._zone.id)
 
     def _build_device_name(self) -> str:
         return build_zone_devicename(self._ynca, self._zone)
@@ -221,7 +221,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     def is_volume_muted(self) -> bool | None:
         """Boolean if volume is currently muted."""
         if self._zone.mute is not None:
-            return self._zone.mute != ynca.Mute.OFF
+            return self._zone.mute is not ynca.Mute.OFF
         return None
 
     @property
@@ -260,10 +260,10 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
-            modelinfo = ynca.YncaModelInfo.get(self._ynca.sys.modelname)
+            modelinfo = ynca.YncaModelInfo.get(str(self._ynca.sys.modelname))
             device_sound_modes = [
                 sound_mode.value
-                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)  # type: ignore[attr-defined]
+                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
                 if sound_mode is not ynca.SoundPrg.UNKNOWN
             ]
             sound_modes.extend(device_sound_modes)
@@ -427,12 +427,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         if (subunit := self._get_input_subunit()) and (
             shuffle := getattr(subunit, "shuffle", None)
         ):
-            return shuffle == ynca.Shuffle.ON
+            return shuffle is ynca.Shuffle.ON
         return None
 
     def set_shuffle(self, shuffle: bool) -> None:  # noqa: FBT001
         """Enable/disable shuffle mode."""
-        if subunit := self._get_input_subunit():
+        if (subunit := self._get_input_subunit()) and (hasattr(subunit, "shuffle")):
             subunit.shuffle = ynca.Shuffle.ON if shuffle else ynca.Shuffle.OFF
 
     @property
@@ -451,7 +451,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_repeat(self, repeat: str) -> None:
         """Set repeat mode."""
-        if subunit := self._get_input_subunit():
+        if (subunit := self._get_input_subunit()) and hasattr(subunit, "repeat"):
             if repeat == RepeatMode.ALL:
                 subunit.repeat = ynca.Repeat.ALL
             elif repeat == RepeatMode.OFF:
@@ -488,11 +488,11 @@ class YamahaYncaZone(MediaPlayerEntity):
         """Title of current playing media."""
         if subunit := self._get_input_subunit():
             if song := getattr(subunit, "song", None):
-                return song
+                return song or None
             if track := getattr(subunit, "track", None):
-                return track
-            if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:
-                return subunit.dabdlslabel or None
+                return track or None
+            if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:  # type: ignore[attr-defined]
+                return subunit.dabdlslabel or None  # type: ignore[attr-defined]
         return None
 
     @property
@@ -501,7 +501,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if (subunit := self._get_input_subunit()) and (
             artist := getattr(subunit, "artist", None)
         ):
-            return artist
+            return artist or None
         return None
 
     @property
@@ -803,9 +803,9 @@ class YamahaYncaZoneB(YamahaYncaZone):
     @property
     def volume_level(self) -> float | None:
         """Volume level of the media player (0..1)."""
-        if self._zone.zonebvol is not None:  # type: ignore[attr-defined]
+        if self._zone.zonebvol is not None:
             return scale(
-                self._zone.zonebvol,  # type: ignore[attr-defined]
+                self._zone.zonebvol,
                 (ZONE_MIN_VOLUME, ZONE_MAX_VOLUME),
                 (0, 1),
             )
@@ -815,20 +815,20 @@ class YamahaYncaZoneB(YamahaYncaZone):
     def is_volume_muted(self) -> bool | None:
         """Boolean if volume is currently muted."""
         if self._zone.zonebmute is not None:
-            return self._zone.zonebmute != ynca.ZoneBMute.OFF
+            return self._zone.zonebmute is not ynca.ZoneBMute.OFF
         return None
 
     def turn_on(self) -> None:
         """Turn the media player on."""
-        self._zone.pwrb = ynca.PwrB.ON  # type: ignore[attr-defined]
+        self._zone.pwrb = ynca.PwrB.ON
 
     def turn_off(self) -> None:
         """Turn off media player."""
-        self._zone.pwrb = ynca.PwrB.STANDBY  # type: ignore[attr-defined]
+        self._zone.pwrb = ynca.PwrB.STANDBY
 
     def set_volume_level(self, volume: float) -> None:
         """Set volume level, convert range from 0..1."""
-        self._zone.zonebvol = scale(  # type: ignore[attr-defined]
+        self._zone.zonebvol = scale(
             volume,
             (0, 1),
             (ZONE_MIN_VOLUME, ZONE_MAX_VOLUME),
@@ -836,12 +836,12 @@ class YamahaYncaZoneB(YamahaYncaZone):
 
     def volume_up(self) -> None:
         """Volume up media player."""
-        self._zone.zonebvol_up()  # type: ignore[attr-defined]
+        self._zone.zonebvol_up()
 
     def volume_down(self) -> None:
         """Volume down media player."""
-        self._zone.zonebvol_down()  # type: ignore[attr-defined]
+        self._zone.zonebvol_down()
 
     def mute_volume(self, mute: bool) -> None:  # noqa: FBT001
         """Mute (true) or unmute (false) media player."""
-        self._zone.zonebmute = ynca.ZoneBMute.ON if mute else ynca.ZoneBMute.OFF  # type: ignore[attr-defined]
+        self._zone.zonebmute = ynca.ZoneBMute.ON if mute else ynca.ZoneBMute.OFF
