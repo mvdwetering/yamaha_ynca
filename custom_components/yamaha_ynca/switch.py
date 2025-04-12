@@ -189,9 +189,12 @@ async def async_setup_entry(
                 getattr(domain_entry_data.api.sys, entity_description.key, None)
                 is not None
             )
+            and entity_description.associated_zone_attr
             and (
                 zone_subunit := getattr(
-                    domain_entry_data.api, entity_description.associated_zone_attr
+                    domain_entry_data.api,
+                    entity_description.associated_zone_attr,
+                    None,
                 )
             )
         ]

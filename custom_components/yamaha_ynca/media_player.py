@@ -432,9 +432,8 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_shuffle(self, shuffle: bool) -> None:  # noqa: FBT001
         """Enable/disable shuffle mode."""
-        self._get_input_subunit().shuffle = (
-            ynca.Shuffle.ON if shuffle else ynca.Shuffle.OFF
-        )
+        if subunit := self._get_input_subunit():
+            subunit.shuffle = ynca.Shuffle.ON if shuffle else ynca.Shuffle.OFF
 
     @property
     def repeat(self) -> str | None:
@@ -452,15 +451,15 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def set_repeat(self, repeat: str) -> None:
         """Set repeat mode."""
-        subunit = self._get_input_subunit()
-        if repeat == RepeatMode.ALL:
-            subunit.repeat = ynca.Repeat.ALL
-        elif repeat == RepeatMode.OFF:
-            subunit.repeat = ynca.Repeat.OFF
-        elif repeat == RepeatMode.ONE:
-            subunit.repeat = ynca.Repeat.SINGLE
+        if subunit := self._get_input_subunit():
+            if repeat == RepeatMode.ALL:
+                subunit.repeat = ynca.Repeat.ALL
+            elif repeat == RepeatMode.OFF:
+                subunit.repeat = ynca.Repeat.OFF
+            elif repeat == RepeatMode.ONE:
+                subunit.repeat = ynca.Repeat.SINGLE
 
-    def _is_radio_subunit(self, subunit: ynca.subunit.Subunit) -> bool:
+    def _is_radio_subunit(self, subunit: ynca.subunit.SubunitBase) -> bool:
         return (
             subunit is self._ynca.dab
             or subunit is self._ynca.netradio
