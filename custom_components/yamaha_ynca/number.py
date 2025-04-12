@@ -155,7 +155,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
+class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):  # type: ignore[misc]
     """Representation of a number on a Yamaha Ynca device."""
 
     entity_description: YncaNumberEntityDescription

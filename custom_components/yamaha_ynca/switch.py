@@ -203,7 +203,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
+class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):  # type: ignore[misc]
     """Representation of a switch on a Yamaha Ynca device."""
 
     entity_description: YncaSwitchEntityDescription
