@@ -488,9 +488,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         """Title of current playing media."""
         if subunit := self._get_input_subunit():
             if song := getattr(subunit, "song", None):
-                return song or None
+                return song
             if track := getattr(subunit, "track", None):
-                return track or None
+                return track
             if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:  # type: ignore[attr-defined]
                 return subunit.dabdlslabel or None  # type: ignore[attr-defined]
         return None
@@ -501,7 +501,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if (subunit := self._get_input_subunit()) and (
             artist := getattr(subunit, "artist", None)
         ):
-            return artist or None
+            return artist
         return None
 
     @property
@@ -510,7 +510,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if (subunit := self._get_input_subunit()) and (
             album := getattr(subunit, "album", None)
         ):
-            return album or None
+            return album
         return None
 
     @property
