@@ -491,8 +491,11 @@ class YamahaYncaZone(MediaPlayerEntity):
                 return song
             if track := getattr(subunit, "track", None):
                 return track
-            if subunit is self._ynca.dab and subunit.band is ynca.BandDab.DAB:  # type: ignore[attr-defined]
-                return subunit.dabdlslabel or None  # type: ignore[attr-defined]
+            if (
+                isinstance(subunit, ynca.subunits.dab.Dab)
+                and subunit.band is ynca.BandDab.DAB
+            ):
+                return subunit.dabdlslabel or None
         return None
 
     @property
@@ -520,27 +523,27 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit is None:
             return None
 
-        if subunit is self._ynca.tun:
+        if isinstance(subunit, ynca.subunits.tun.Tun):
             # AM/FM Tuner
-            if subunit.band is ynca.BandTun.AM:  # type: ignore[attr-defined]
-                return f"AM {subunit.amfreq} kHz"  # type: ignore[attr-defined]
-            if subunit.band is ynca.BandTun.FM:  # type: ignore[attr-defined]
+            if subunit.band is ynca.BandTun.AM:
+                return f"AM {subunit.amfreq} kHz"
+            if subunit.band is ynca.BandTun.FM:
                 return (
-                    subunit.rdsprgservice  # type: ignore[attr-defined]
-                    if subunit.rdsprgservice  # type: ignore[attr-defined]
-                    else f"FM {subunit.fmfreq:.2f} MHz"  # type: ignore[attr-defined]
+                    subunit.rdsprgservice
+                    if subunit.rdsprgservice
+                    else f"FM {subunit.fmfreq:.2f} MHz"
                 )
 
-        if subunit is self._ynca.dab:
+        if isinstance(subunit, ynca.subunits.dab.Dab):
             # DAB/FM Tuner
-            if subunit.band is ynca.BandDab.FM:  # type: ignore[attr-defined]
+            if subunit.band is ynca.BandDab.FM:
                 return (
-                    subunit.fmrdsprgservice  # type: ignore[attr-defined]
-                    if subunit.fmrdsprgservice  # type: ignore[attr-defined]
-                    else f"FM {subunit.fmfreq:.2f} MHz"  # type: ignore[attr-defined]
+                    subunit.fmrdsprgservice
+                    if subunit.fmrdsprgservice
+                    else f"FM {subunit.fmfreq:.2f} MHz"
                 )
-            if subunit.band is ynca.BandDab.DAB:  # type: ignore[attr-defined]
-                return subunit.dabservicelabel or None  # type: ignore[attr-defined]
+            if subunit.band is ynca.BandDab.DAB:
+                return subunit.dabservicelabel or None
 
         # Netradio
         if station := getattr(subunit, "station", None):
