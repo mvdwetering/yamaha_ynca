@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 
@@ -64,7 +64,17 @@ def subunit_supports_entitydescription_key(
     return getattr(subunit, entity_description.key, None) is not None
 
 
-class YamahaYncaSettingEntity:
+class _EntityMethods(Protocol):
+    """Protocol defining methods that are provided by Entity (and used by YamahaYncaSettingEntity."""
+
+    def schedule_update_ha_state(
+        self, _force_refresh: bool = False  # noqa: FBT001, FBT002
+    ) -> None:
+        """Update the entity state in Home Assistant."""
+        return
+
+
+class YamahaYncaSettingEntity(_EntityMethods):
     """Common code for YamahaYnca settings entities.
 
     Entities derived from this also need to derive from the standard HA entities.

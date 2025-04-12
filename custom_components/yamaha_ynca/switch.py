@@ -222,7 +222,7 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):
     def is_on(self) -> bool | None:
         """Return True if entity is on."""
         return (
-            getattr(self._subunit, self.entity_description.key)
+            getattr(self._subunit, self.entity_description.key, None)
             == self.entity_description.on
         )
 

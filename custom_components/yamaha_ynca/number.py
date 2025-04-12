@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
-    return (
+    return float(
         associated_zone.maxvol
         if associated_zone.maxvol is not None
         else ZONE_MAX_VOLUME
@@ -163,14 +163,14 @@ class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
-        return getattr(self._subunit, self.entity_description.key)
+        return getattr(self._subunit, self.entity_description.key, None)
 
     @property
     def native_max_value(self) -> float:
         """Return the maximum value."""
         if fn := self.entity_description.native_max_value_fn:
             return fn(self._associated_zone)
-        return super().native_max_value
+        return float(super().native_max_value)
 
     def set_native_value(self, value: float) -> None:
         setattr(self._subunit, self.entity_description.key, value)
