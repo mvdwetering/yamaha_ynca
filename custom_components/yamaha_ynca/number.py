@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -9,19 +9,24 @@ from homeassistant.components.number import (
     NumberEntityDescription,
 )
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 import ynca
 
-from . import YamahaYncaConfigEntry
 from .const import ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME, ZONE_MIN_VOLUME
 from .helpers import YamahaYncaSettingEntity
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from . import YamahaYncaConfigEntry
+
 
 def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
-    return (
+    return float(
         associated_zone.maxvol
         if associated_zone.maxvol is not None
         else ZONE_MAX_VOLUME
@@ -39,7 +44,7 @@ class YncaNumberEntityDescription(NumberEntityDescription):
 ENTITY_DESCRIPTIONS = [
     # Suppress following mypy message, which seems to be not an issue as other values have defaults:
     # custom_components/yamaha_ynca/number.py:19: error: Missing positional arguments "entity_registry_enabled_default", "entity_registry_visible_default", "force_update", "icon", "has_entity_name", "unit_of_measurement", "max_value", "min_value", "step" in call to "NumberEntityDescription"  [call-arg]
-    YncaNumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(
         key="maxvol",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
@@ -49,7 +54,7 @@ ENTITY_DESCRIPTIONS = [
         native_step=0.5,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
     ),
-    YncaNumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(
         key="vol",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         icon="mdi:volume-high",
@@ -59,7 +64,7 @@ ENTITY_DESCRIPTIONS = [
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
         function_names=["VOL", "MAXVOL"],
     ),
-    YncaNumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(
         key="spbass",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
@@ -70,7 +75,7 @@ ENTITY_DESCRIPTIONS = [
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
         entity_registry_enabled_default=False,
     ),
-    YncaNumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(
         key="sptreble",
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
@@ -81,7 +86,7 @@ ENTITY_DESCRIPTIONS = [
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
         entity_registry_enabled_default=False,
     ),
-    YncaNumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(
         key="hpbass",
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
         entity_category=EntityCategory.CONFIG,
@@ -92,7 +97,7 @@ ENTITY_DESCRIPTIONS = [
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS,
         entity_registry_enabled_default=False,
     ),
-    YncaNumberEntityDescription(  # type: ignore
+    YncaNumberEntityDescription(
         key="hptreble",
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.SIGNAL_STRENGTH,
@@ -105,7 +110,7 @@ ENTITY_DESCRIPTIONS = [
     ),
 ]
 
-InitialVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: ignore
+InitialVolumeValueEntityDescription = YncaNumberEntityDescription(
     key="initvollvl",
     entity_category=EntityCategory.CONFIG,
     device_class=NumberDeviceClass.SIGNAL_STRENGTH,
@@ -119,22 +124,24 @@ InitialVolumeValueEntityDescription = YncaNumberEntityDescription(  # type: igno
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     config_entry: YamahaYncaConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
-            for entity_description in ENTITY_DESCRIPTIONS:
-                if getattr(zone_subunit, entity_description.key, None) is not None:
-                    entities.append(
-                        YamahaYncaNumber(
-                            config_entry.entry_id, zone_subunit, entity_description
-                        )
+            entities.extend(
+                [
+                    YamahaYncaNumber(
+                        config_entry.entry_id, zone_subunit, entity_description
                     )
+                    for entity_description in ENTITY_DESCRIPTIONS
+                    if getattr(zone_subunit, entity_description.key, None) is not None
+                ]
+            )
 
             if zone_subunit.initvollvl is not None:
                 entities.append(
@@ -148,7 +155,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
+class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):  # type: ignore[misc]
     """Representation of a number on a Yamaha Ynca device."""
 
     entity_description: YncaNumberEntityDescription
@@ -156,14 +163,14 @@ class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
-        return getattr(self._subunit, self.entity_description.key)
+        return getattr(self._subunit, self.entity_description.key, None)
 
     @property
     def native_max_value(self) -> float:
         """Return the maximum value."""
         if fn := self.entity_description.native_max_value_fn:
             return fn(self._associated_zone)
-        return super().native_max_value
+        return float(super().native_max_value)
 
     def set_native_value(self, value: float) -> None:
         setattr(self._subunit, self.entity_description.key, value)
@@ -171,11 +178,12 @@ class YamahaYncaNumber(YamahaYncaSettingEntity, NumberEntity):
 
 class YamahaYncaNumberInitialVolume(YamahaYncaNumber):
     """Representation Initial Volume level.
+
     This is special as it is not always a number and can depend on InitLvlMode
     """
 
     @property
-    def available(self):
+    def available(self) -> bool:
         return (
             super().available
             and isinstance(self._associated_zone.initvollvl, float)

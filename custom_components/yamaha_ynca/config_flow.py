@@ -7,11 +7,12 @@ from typing import Any
 
 from homeassistant.config_entries import (
     SOURCE_RECONFIGURE,
+    ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
 )
 from homeassistant.core import HomeAssistant, callback
-import voluptuous as vol  # type: ignore
+import voluptuous as vol
 
 import ynca
 
@@ -31,7 +32,7 @@ STEP_ID_NETWORK = "network"
 STEP_ID_ADVANCED = "advanced"
 
 
-def get_serial_url_schema(user_input):
+def get_serial_url_schema(user_input: dict[str, Any]) -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(
@@ -41,7 +42,7 @@ def get_serial_url_schema(user_input):
     )
 
 
-def get_network_schema(user_input):
+def get_network_schema(user_input: dict[str, Any]) -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(
@@ -56,10 +57,11 @@ async def validate_input(
     hass: HomeAssistant, data: dict[str, Any]
 ) -> ynca.YncaConnectionCheckResult:
     """Validate if the user input allows us to connect.
+
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    def validate_connection(serial_url):
+    def validate_connection(serial_url: str) -> ynca.YncaConnectionCheckResult:
         return ynca.YncaApi(serial_url).connection_check()
 
     return await hass.async_add_executor_job(validate_connection, data[CONF_SERIAL_URL])
@@ -74,11 +76,11 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry) -> OptionsFlowHandler:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowHandler:
         return OptionsFlowHandler(config_entry)
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self, _user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step."""
         return self.async_show_menu(
@@ -99,7 +101,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             errors["base"] = "connection_error"
         except ynca.YncaConnectionFailed:
             errors["base"] = f"connection_failed_{step_id}"
-        except Exception:  # pylint: disable=broad-except
+        except Exception:  # noqa: BLE001
             LOGGER.exception("Unhandled exception during connection.")
             errors["base"] = "unknown"
         else:
@@ -194,5 +196,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             STEP_ID_ADVANCED, get_serial_url_schema(user_input), user_input
         )
 
-    async def async_step_reconfigure(self, user_input=None):
+    async def async_step_reconfigure(
+        self, _user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         return await self.async_step_user()

@@ -43,6 +43,7 @@ CONF_NUMBER_OF_SCENES = "number_of_scenes"
 NUMBER_OF_SCENES_AUTODETECT = -1
 MAX_NUMBER_OF_SCENES = 12
 
+NUM_PRESETS = 40
 
 SURROUNDDECODEROPTIONS_PLIIX_MAPPING = {
     ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,

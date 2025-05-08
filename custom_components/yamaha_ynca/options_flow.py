@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
-import voluptuous as vol  # type: ignore
+import voluptuous as vol
 
 import ynca
 
-from . import YamahaYncaConfigEntry
 from .const import (
     CONF_HIDDEN_INPUTS,
     CONF_HIDDEN_SOUND_MODES,
@@ -26,6 +25,11 @@ from .const import (
     TWOCHDECODER_STRINGS,
 )
 from .input_helpers import InputHelper
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigFlowResult
+
+    from . import YamahaYncaConfigEntry
 
 STEP_ID_INIT = "init"
 STEP_ID_NO_CONNECTION = "no_connection"
@@ -71,12 +75,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: YamahaYncaConfigEntry) -> None:
         self.options = deepcopy(dict(config_entry.options))
 
-    async def do_next_step(self, current_step_id: str):
+    async def do_next_step(self, current_step_id: str) -> ConfigFlowResult:
         next_step_id = get_next_step_id(self, current_step_id)
-        return await getattr(self, f"async_step_{next_step_id}")()
+        return await getattr(self, f"async_step_{next_step_id}")()  # type: ignore[no-any-return]
 
-    async def async_step_init(self, user_input=None):
-        """Basic sanity checks before configuring options."""
+    async def async_step_init(
+        self, _user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Perform basic sanity checks before configuring options."""
         # The configentry in the optionsflow is _only_ a YamahaYncaConfigEntry when there is a connection
         # Otherwise it is a "plain" ConfigEntry, so without runtime_data
         # A normal isinstance check does not seem to work with type alias, to check for runtime_data attribute
@@ -86,19 +92,23 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         return await self.async_step_no_connection()
 
-    async def async_step_no_connection(self, user_input=None):
-        """No connection dialog"""
+    async def async_step_no_connection(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """No connection dialog."""
         if user_input is not None:
             # Strangely enough there is no title on the abort box
             # I guess because optionflows are not expected to be aborted
             # So exit with "success" instead through the done step and it will rewrite current settings
-            # return self.async_abort(reason="no_connection")
+            # return self.async_abort(reason="no_connection")  # noqa: ERA001
             return await self.async_step_done()
 
         return self.async_show_form(step_id=STEP_ID_NO_CONNECTION)
 
-    async def async_step_general(self, user_input=None):
-        """General device options"""
+    async def async_step_general(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """General device options."""
         modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
 
         # Note that hidden modes are stored, but selected modes are shown in UI
@@ -151,31 +161,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # Select supported Surround Decoders
         # Technically twochdecoder could have different values per zone, but that seems unlikely
         # It "feels" better to have it as a receiver wide configuration
-        if zone := self.api.main:
-            if zone.twochdecoder is not None:
-                stored_selected_surround_decoders_ids = self.options.get(
-                    CONF_SELECTED_SURROUND_DECODERS, []
-                )
-                all_surround_decoders = dict(
-                    sorted(
-                        TWOCHDECODER_STRINGS.items(), key=lambda item: item[1].lower()
-                    )
+        if (zone := self.api.main) and zone.twochdecoder is not None:
+            stored_selected_surround_decoders_ids = self.options.get(
+                CONF_SELECTED_SURROUND_DECODERS, []
+            )
+            all_surround_decoders = dict(
+                sorted(TWOCHDECODER_STRINGS.items(), key=lambda item: item[1].lower())
+            )
+
+            if not stored_selected_surround_decoders_ids:
+                stored_selected_surround_decoders_ids = list(
+                    all_surround_decoders.keys()
                 )
 
-                if not stored_selected_surround_decoders_ids:
-                    stored_selected_surround_decoders_ids = list(
-                        all_surround_decoders.keys()
-                    )
-
-                # Could technically use translation for this in Options flow, but only by using SelectorSelect
-                # but the multiselect UI it creates is a hassle to use and since there are no translations yet
-                # lets keep using cv.multiselect with hardcoded English translation
-                schema[
-                    vol.Required(
-                        CONF_SELECTED_SURROUND_DECODERS,
-                        default=stored_selected_surround_decoders_ids,
-                    )
-                ] = cv.multi_select(all_surround_decoders)
+            # Could technically use translation for this in Options flow, but only by using SelectorSelect
+            # but the multiselect UI it creates is a hassle to use and since there are no translations yet
+            # lets keep using cv.multiselect with hardcoded English translation
+            schema[
+                vol.Required(
+                    CONF_SELECTED_SURROUND_DECODERS,
+                    default=stored_selected_surround_decoders_ids,
+                )
+            ] = cv.multi_select(all_surround_decoders)
 
         return self.async_show_form(
             step_id=STEP_ID_GENERAL,
@@ -183,34 +190,44 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             last_step=get_next_step_id(self, STEP_ID_GENERAL) == STEP_ID_DONE,
         )
 
-    async def async_step_main(self, user_input=None):
+    async def async_step_main(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_MAIN, user_input=user_input
         )
 
-    async def async_step_zone2(self, user_input=None):
+    async def async_step_zone2(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE2, user_input=user_input
         )
 
-    async def async_step_zone3(self, user_input=None):
+    async def async_step_zone3(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE3, user_input=user_input
         )
 
-    async def async_step_zone4(self, user_input=None):
+    async def async_step_zone4(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         return await self.async_zone_settings_screen(
             STEP_ID_ZONE4, user_input=user_input
         )
 
-    async def async_zone_settings_screen(self, step_id, user_input=None):
+    async def async_zone_settings_screen(
+        self, step_id: str, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         zone_id = step_id.upper()
 
         all_inputs = {}
-        for input, name in InputHelper.get_source_mapping(self.api).items():
-            all_inputs[input.value] = (
-                f"{input.value} ({name})"
-                if input.value.lower() != name.strip().lower()
+        for input_, name in InputHelper.get_source_mapping(self.api).items():
+            all_inputs[input_.value] = (
+                f"{input_.value} ({name})"
+                if input_.value.lower() != name.strip().lower()
                 else name
             )
         all_inputs = dict(sorted(all_inputs.items(), key=lambda item: item[1].lower()))
@@ -246,8 +263,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         # Number of scenes for zone
         # Use a select so we can have nice distinct values presented with Autodetect and 0-12
         number_of_scenes_list = {NUMBER_OF_SCENES_AUTODETECT: "Auto detect"}
-        for id in range(MAX_NUMBER_OF_SCENES + 1):
-            number_of_scenes_list[id] = str(id)
+        for scene_id in range(MAX_NUMBER_OF_SCENES + 1):
+            number_of_scenes_list[scene_id] = str(scene_id)
 
         schema[
             vol.Required(
@@ -264,7 +281,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             last_step=get_next_step_id(self, step_id) == STEP_ID_DONE,
         )
 
-    async def async_step_done(self, user_input=None):
+    async def async_step_done(
+        self, _user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         return self.async_create_entry(
             title=self.config_entry.data[DATA_MODELNAME], data=self.options
         )
