@@ -65,7 +65,7 @@ async def async_setup_entry(
         YamahaYncaSelect(
             config_entry,
             config_entry.entry_id,
-            domain_entry_data.api.sys,
+            domain_entry_data.api.sys,  # type: ignore[arg-type]
             entity_description,
             associated_zone=zone_subunit,
         )

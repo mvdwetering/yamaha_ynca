@@ -205,4 +205,4 @@ class YamahaYncaZoneRemote(RemoteEntity):
                 code = self._zone_codes.get(cmd, cmd)
                 formatted_code = self._format_remotecode(code)
 
-                self._api.sys.remotecode(formatted_code)
+                self._api.sys.remotecode(formatted_code)  # type: ignore[union-attr]

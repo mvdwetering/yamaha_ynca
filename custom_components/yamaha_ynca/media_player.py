@@ -25,7 +25,6 @@ from homeassistant.helpers.entity import DeviceInfo
 import voluptuous as vol
 
 import ynca
-import ynca.subunit
 
 from . import YamahaYncaConfigEntry, build_zone_devicename, build_zoneb_devicename
 from .const import (
@@ -49,7 +48,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from ynca.subunits.zone import Main, ZoneBase
+    from ynca import Main, ZoneBase
 
 
 STRAIGHT = "Straight"
@@ -161,14 +160,18 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     async def async_added_to_hass(self) -> None:
         # Register to catch input renames on SYS
-        self._ynca.sys.register_update_callback(self.update_callback)
+        self._ynca.sys.register_update_callback(  # type: ignore[union-attr]
+            self.update_callback
+        )
         self._zone.register_update_callback(self.update_callback)
 
         for subunit in self._get_input_subunits():
             subunit.register_update_callback(self.update_callback)
 
     async def async_will_remove_from_hass(self) -> None:
-        self._ynca.sys.unregister_update_callback(self.update_callback)
+        self._ynca.sys.unregister_update_callback(  # type: ignore[union-attr]
+            self.update_callback
+        )
         self._zone.unregister_update_callback(self.update_callback)
 
         for subunit in self._get_input_subunits():
@@ -260,7 +263,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
         if self._zone.soundprg:
-            modelinfo = ynca.YncaModelInfo.get(str(self._ynca.sys.modelname))
+            modelinfo = ynca.YncaModelInfo.get(
+                str(self._ynca.sys.modelname)  # type: ignore[union-attr]
+            )
             device_sound_modes = [
                 sound_mode.value
                 for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
@@ -776,7 +781,7 @@ class YamahaYncaZoneB(YamahaYncaZone):
         ynca: ynca.YncaApi,
         hidden_inputs: list[str],
     ) -> None:
-        super().__init__(receiver_unique_id, ynca, ynca.main, hidden_inputs, [])
+        super().__init__(receiver_unique_id, ynca, ynca.main, hidden_inputs, [])  # type: ignore[arg-type]
         self._zone: Main  # Additional typehint
 
     def _get_zone_id(self) -> str:

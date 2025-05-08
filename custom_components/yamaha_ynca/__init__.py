@@ -15,7 +15,6 @@ from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
 
 import ynca
-import ynca.subunit
 
 from .const import (
     COMMUNICATION_LOG_SIZE,
@@ -70,8 +69,8 @@ async def update_device_registry(
                 identifiers={(DOMAIN, f"{config_entry.entry_id}_{zone_subunit.id}")},
                 manufacturer=MANUFACTURER_NAME,
                 name=devicename,
-                model=receiver.sys.modelname,
-                sw_version=receiver.sys.version,
+                model=receiver.sys.modelname,  # type: ignore[union-attr]
+                sw_version=receiver.sys.version,  # type: ignore[union-attr]
                 configuration_url=configuration_url,
             )
 
@@ -82,16 +81,14 @@ async def update_device_registry(
             identifiers={(DOMAIN, f"{config_entry.entry_id}_ZONEB")},
             manufacturer=MANUFACTURER_NAME,
             name=devicename,
-            model=receiver.sys.modelname,
-            sw_version=receiver.sys.version,
+            model=receiver.sys.modelname,  # type: ignore[union-attr]
+            sw_version=receiver.sys.version,  # type: ignore[union-attr]
             configuration_url=configuration_url,
         )
 
 
-def build_zone_devicename(
-    receiver: ynca.YncaApi, zone_subunit: ynca.subunits.zone.ZoneBase
-) -> str:
-    devicename = f"{receiver.sys.modelname} {zone_subunit.id}"
+def build_zone_devicename(receiver: ynca.YncaApi, zone_subunit: ynca.ZoneBase) -> str:
+    devicename = f"{receiver.sys.modelname} {zone_subunit.id}"  # type: ignore[union-attr]
     if (
         zone_subunit.zonename
         and zone_subunit.zonename.lower() != zone_subunit.id.lower()
@@ -102,10 +99,10 @@ def build_zone_devicename(
 
 
 def build_zoneb_devicename(receiver: ynca.YncaApi) -> str:
-    devicename = f"{receiver.sys.modelname} ZoneB"
-    if receiver.main.zonebname and receiver.main.zonebname.lower() != "ZoneB".lower():
+    devicename = f"{receiver.sys.modelname} ZoneB"  # type: ignore[union-attr]
+    if receiver.main.zonebname and receiver.main.zonebname.lower() != "ZoneB".lower():  # type: ignore[union-attr]
         # Prefer user defined name over "MODEL ZONE" naming
-        devicename = receiver.main.zonebname
+        devicename = receiver.main.zonebname  # type: ignore[union-attr]
     return devicename
 
 
@@ -213,11 +210,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
 
-        if receiver_requires_audio_input_workaround(str(ynca_receiver.sys.modelname)):
+        if receiver_requires_audio_input_workaround(str(ynca_receiver.sys.modelname)):  # type: ignore[union-attr]
             # Pretend AUDIO provides a name like a normal input
             # This makes it work with standard code
             # Note that this _adds_ an attribute to the SYS subunit which essentially is a hack
-            ynca_receiver.sys.inpnameaudio = "AUDIO"  # type: ignore[attr-defined]
+            ynca_receiver.sys.inpnameaudio = "AUDIO"  # type: ignore[union-attr]
 
         entry.runtime_data = DomainEntryData(
             api=ynca_receiver,
