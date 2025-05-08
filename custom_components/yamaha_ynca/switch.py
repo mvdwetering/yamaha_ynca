@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import inf
 from time import monotonic
 from typing import TYPE_CHECKING, Any
 
@@ -216,7 +217,7 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):  # type: ignore[m
         associated_zone: ZoneBase | None = None,
     ) -> None:
         super().__init__(receiver_unique_id, subunit, description, associated_zone)
-        self._dirmode_get_sent = 0.0  # Initialize to 0
+        self._dirmode_get_sent = -inf  # Initialize far in the past
 
     @property
     def is_on(self) -> bool | None:

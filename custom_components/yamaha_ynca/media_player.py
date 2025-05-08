@@ -115,12 +115,12 @@ class YamahaYncaZone(MediaPlayerEntity):
     def __init__(
         self,
         receiver_unique_id: str,
-        ynca: ynca.YncaApi,
+        ynca_api: ynca.YncaApi,
         zone: ZoneBase,
         hidden_inputs: list[str],
         hidden_sound_modes: list[str],
     ) -> None:
-        self._ynca = ynca
+        self._ynca = ynca_api
         self._zone = zone
         self._hidden_inputs = hidden_inputs
         self._hidden_sound_modes = hidden_sound_modes
@@ -731,7 +731,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             msg = f"Malformed media id: {media_id}"
             raise HomeAssistantError(msg)
 
-        if media_id_command not in ["preset", "fmpreset", "dabpreset"]:
+        if media_id_command not in SUPPORTED_MEDIA_ID_TYPES:
             msg = f"Malformed media id: {media_id}"
             raise HomeAssistantError(msg)
 
@@ -778,10 +778,10 @@ class YamahaYncaZoneB(YamahaYncaZone):
     def __init__(
         self,
         receiver_unique_id: str,
-        ynca: ynca.YncaApi,
+        ynca_api: ynca.YncaApi,
         hidden_inputs: list[str],
     ) -> None:
-        super().__init__(receiver_unique_id, ynca, ynca.main, hidden_inputs, [])  # type: ignore[arg-type]
+        super().__init__(receiver_unique_id, ynca_api, ynca_api.main, hidden_inputs, [])  # type: ignore[arg-type]
         self._zone: Main  # Additional typehint
 
     def _get_zone_id(self) -> str:
