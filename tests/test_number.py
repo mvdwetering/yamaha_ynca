@@ -19,11 +19,11 @@ from tests.conftest import setup_integration
 import ynca
 
 
-def native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
+def native_max_value_fn(_associated_zone: ynca.subunits.zone.ZoneBase) -> float:
     return 5.5
 
 
-TEST_ENTITY_DESCRIPTION = YncaNumberEntityDescription(  # type: ignore
+TEST_ENTITY_DESCRIPTION = YncaNumberEntityDescription(
     key="spbass",
     entity_category=EntityCategory.CONFIG,
     native_min_value=-6,
