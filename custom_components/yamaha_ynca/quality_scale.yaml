@@ -1,7 +1,7 @@
 rules:
   # Bronze
   action-setup: done
-  appropriate-polling:  # Excempt is taken from Onkyo, but docs say no exceptions...
+  appropriate-polling:  # Exempt is taken from Onkyo, but docs say no exceptions...
     status: exempt
     comment: |
       This integration uses a push API. No polling required.
