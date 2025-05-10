@@ -71,5 +71,8 @@ rules:
 
   # Platinum
   async-dependency: todo
-  inject-websession: todo
+  inject-websession:
+    status: done
+    comment: |
+      This integration does not perform HTTP requests.
   strict-typing: todo
