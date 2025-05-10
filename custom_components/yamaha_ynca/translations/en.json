@@ -34,7 +34,7 @@
     "error": {
       "connection_error": "Failed to connect, check settings and make sure this is the _only_ application connecting to the receiver with the YNCA protocol.",
       "connection_failed_serial": "Connection failed, check serial port.",
-      "connection_failed_network": "Connection failed, check IP address and port settings.",
+      "connection_failed_network": "Connection failed, check IP address and port settings and make sure this is the _only_ application connecting to the receiver with the YNCA protocol.",
       "connection_failed_advanced": "Connection failed, check URL handler format.",
       "unknown": "Unexpected error."
     },
