@@ -8,7 +8,7 @@ from importlib.metadata import version
 import re
 from typing import TYPE_CHECKING
 
-from homeassistant.config_entries import ConfigEntry, OperationNotAllowed
+from homeassistant.config_entries import ConfigEntry, OperationNotAllowed, UnknownEntry
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
@@ -193,8 +193,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
     def on_disconnect() -> None:
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
-        # Can not reload when during setup, which is fine, so just let it go
-        with contextlib.suppress(OperationNotAllowed):  # pragma: no cover
+        # OperationNotAllowed => Can not reload during setup, which is fine, so just let it go
+        # UnknownEntry => Can happen when entry was removed while trying to connect and connection fails
+        with contextlib.suppress(OperationNotAllowed, UnknownEntry):  # pragma: no cover
             asyncio.run_coroutine_threadsafe(
                 hass.config_entries.async_reload(entry.entry_id), hass.loop
             ).result()

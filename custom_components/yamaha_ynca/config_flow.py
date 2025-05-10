@@ -97,9 +97,11 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         errors = {}
         try:
             check_result = await validate_input(self.hass, user_input)
-        except ynca.YncaConnectionError:
+        except ynca.YncaConnectionError as e:
+            LOGGER.exception("Connection error during connection check: %s", e)
             errors["base"] = "connection_error"
-        except ynca.YncaConnectionFailed:
+        except ynca.YncaConnectionFailed as e:
+            LOGGER.exception("Connection failed during connection check: %s", e)
             errors["base"] = f"connection_failed_{step_id}"
         except Exception:  # noqa: BLE001
             LOGGER.exception("Unhandled exception during connection.")
