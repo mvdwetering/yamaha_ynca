@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 import pytest
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
@@ -15,6 +15,9 @@ from pytest_homeassistant_custom_component.common import (  # type: ignore[impor
 
 from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES, DOMAIN
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 
 @pytest.fixture
@@ -526,3 +529,34 @@ async def test_async_migration_entry_version_v7_5_to_v7_6(
     assert "OPTICAL1" in new_entry.options["ZONE2"]["hidden_inputs"]
     assert "OPTICAL2" in new_entry.options["ZONE2"]["hidden_inputs"]
     assert "SOME INPUT" in new_entry.options["ZONE2"]["hidden_inputs"]
+
+
+async def test_async_migration_entry_version_v7_6_to_v7_7(
+    hass: HomeAssistant,
+):
+    # Make sure to use a model that has sound modes in ynca modelinfo
+    # DOES NOT EXIST is for robustness
+    config_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl", "zones": ["ZONE2"], "modelname": "RX-A810"},
+        options={"hidden_sound_modes": ["The Roxy Theatre", "DOES NOT EXIST"]},
+        version=7,
+    )
+    config_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrations.migrate_v7_6_to_v7_7(hass, config_entry)
+    await hass.async_block_till_done()
+
+    new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
+    assert new_entry is not None
+    assert new_entry.version == 7
+    assert new_entry.minor_version == 7
+    assert len(new_entry.options.keys()) == 1
+    assert len(new_entry.options["selected_sound_modes"]) == 18
+    assert (
+        "7ch Stereo" in new_entry.options["selected_sound_modes"]
+    )  # Just sanity check one
+    assert "The Roxy Theatre" not in new_entry.options["selected_sound_modes"]
