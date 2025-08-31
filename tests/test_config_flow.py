@@ -94,6 +94,41 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert len(mock_setup_entry.mock_calls) == 1
 
 
+async def test_abort_on_duplicate_entry(hass: HomeAssistant, mock_ynca) -> None:
+    integration = await setup_integration(hass, mock_ynca)
+
+    # Flow goes to menu with connection options
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN,
+        context={
+            "source": config_entries.SOURCE_USER,
+            "entry_id": integration.entry.entry_id,
+        },
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    # Select network for this test
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={"next_step_id": "serial"},
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] is None
+
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            yamaha_ynca.const.CONF_SERIAL_URL: "SerialUrl",  # Same as existing entry
+        },
+    )
+    await hass.async_block_till_done()
+
+    # Flow is aborted (as intended)
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "already_configured"
+
+
 async def test_connection_error(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error."""
     result = await hass.config_entries.flow.async_init(
