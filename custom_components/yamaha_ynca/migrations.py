@@ -123,7 +123,8 @@ def migrate_v7_6_to_v7_7(hass: HomeAssistant, config_entry: ConfigEntry) -> None
 
     unsupported_sound_modes = []
     if modelinfo := ynca.YncaModelInfo.get(config_entry.data[DATA_MODELNAME]):
-        unsupported_sound_modes = list(set(all_sound_modes) - set(modelinfo.soundprg))
+        modelinfo_soundprgs = [soundprg.value for soundprg in modelinfo.soundprg]
+        unsupported_sound_modes = list(set(all_sound_modes) - set(modelinfo_soundprgs))
 
     hidden_sound_modes = (
         options.get(LEGACY_CONF_HIDDEN_SOUND_MODES, []) + unsupported_sound_modes
