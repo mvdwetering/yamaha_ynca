@@ -6,7 +6,7 @@ rules:
     comment: |
       This integration uses a push API. No polling required.
   brands: done
-  common-modules: todo
+  common-modules: done
   config-flow-test-coverage: done
   config-flow: done
   dependency-transparency: done

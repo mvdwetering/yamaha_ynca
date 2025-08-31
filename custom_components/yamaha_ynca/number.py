@@ -14,7 +14,7 @@ from homeassistant.helpers.entity import EntityCategory
 import ynca
 
 from .const import ZONE_ATTRIBUTE_NAMES, ZONE_MAX_VOLUME, ZONE_MIN_VOLUME
-from .helpers import YamahaYncaSettingEntity
+from .entity import YamahaYncaSettingEntity
 
 if TYPE_CHECKING:
     from collections.abc import Callable

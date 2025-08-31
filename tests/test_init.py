@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, call, patch
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.service import ServiceCall
-from pytest_homeassistant_custom_component.common import (
-    MockConfigEntry,  # type: ignore[import]
+from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
+    MockConfigEntry,
 )
 
 from custom_components import yamaha_ynca
