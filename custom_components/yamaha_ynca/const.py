@@ -34,7 +34,6 @@ ZONE_ATTRIBUTE_NAMES = [
     "zone4",
 ]
 
-CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 CONF_SELECTED_SOUND_MODES = "selected_sound_modes"
 CONF_HIDDEN_INPUTS = "hidden_inputs"
 CONF_SELECTED_INPUTS = "selected_inputs"

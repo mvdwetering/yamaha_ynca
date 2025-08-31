@@ -14,7 +14,8 @@ from pytest_homeassistant_custom_component.common import (  # type: ignore[impor
 )
 
 from custom_components import yamaha_ynca
-from custom_components.yamaha_ynca.const import CONF_HIDDEN_SOUND_MODES, DOMAIN
+from custom_components.yamaha_ynca.const import DOMAIN
+from custom_components.yamaha_ynca.migrations import LEGACY_CONF_HIDDEN_SOUND_MODES
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -45,7 +46,24 @@ async def test_async_migration_entry(hass: HomeAssistant):
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 7
-    assert new_entry.minor_version == 6
+    assert new_entry.minor_version == 7
+
+
+async def test_async_migration_entry_downgrade(hass: HomeAssistant):
+    """Full chain of migrations should result in last version"""
+    old_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={},
+        version=1000000,
+    )
+    old_entry.add_to_hass(hass)
+
+    migration_success = await yamaha_ynca.async_migrate_entry(hass, old_entry)
+    await hass.async_block_till_done()
+
+    assert migration_success is False  # Downgrade is not supported
 
 
 async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
@@ -99,7 +117,9 @@ async def test_async_migration_entry_version_v3_to_v4_hidden_soundmodes(
         entry_id="entry_id",
         title="ModelName",
         data={"serial_url": "SerialUrl"},
-        options={CONF_HIDDEN_SOUND_MODES: ["CHURCH_IN_ROYAUMONT", "UNSUPPORTED"]},
+        options={
+            LEGACY_CONF_HIDDEN_SOUND_MODES: ["CHURCH_IN_ROYAUMONT", "UNSUPPORTED"]
+        },
         version=3,
     )
     old_entry.add_to_hass(hass)
@@ -112,7 +132,7 @@ async def test_async_migration_entry_version_v3_to_v4_hidden_soundmodes(
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 4
-    assert new_entry.options[CONF_HIDDEN_SOUND_MODES] == ["Church in Royaumont"]
+    assert new_entry.options[LEGACY_CONF_HIDDEN_SOUND_MODES] == ["Church in Royaumont"]
 
 
 async def test_async_migration_entry_version_v3_to_v4_no_hidden_soundmodes(
@@ -135,7 +155,7 @@ async def test_async_migration_entry_version_v3_to_v4_no_hidden_soundmodes(
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 4
-    assert new_entry.options.get(CONF_HIDDEN_SOUND_MODES, None) is None
+    assert new_entry.options.get(LEGACY_CONF_HIDDEN_SOUND_MODES, None) is None
 
 
 async def test_async_migration_entry_version_v4_to_v5_is_ipaddress(hass: HomeAssistant):

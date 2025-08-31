@@ -151,7 +151,7 @@ async def test_options_flow_navigate_all_screens(
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
             yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
@@ -197,7 +197,7 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     integration = await setup_integration(hass, mock_ynca)
 
     options = dict(integration.entry.options)
-    options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
+    options[yamaha_ynca.const.CONF_SELECTED_SOUND_MODES] = [
         "Obsolete",  # Obsolete values should not break the schema
     ]
     hass.config_entries.async_update_entry(integration.entry, options=options)
@@ -211,32 +211,14 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
         result["flow_id"],
         user_input={
             yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: [
-                ynca.SoundPrg.HALL_IN_MUNICH,
-                # ynca.SoundPrg.HALL_IN_VIENNA,
-                ynca.SoundPrg.CHAMBER,
-                ynca.SoundPrg.CELLAR_CLUB,
-                ynca.SoundPrg.THE_ROXY_THEATRE,
-                ynca.SoundPrg.THE_BOTTOM_LINE,
-                ynca.SoundPrg.SPORTS,
-                ynca.SoundPrg.ACTION_GAME,
-                ynca.SoundPrg.ROLEPLAYING_GAME,
-                ynca.SoundPrg.MUSIC_VIDEO,
-                ynca.SoundPrg.STANDARD,
-                ynca.SoundPrg.SPECTACLE,
-                ynca.SoundPrg.SCI_FI,
-                ynca.SoundPrg.ADVENTURE,
-                ynca.SoundPrg.DRAMA,
-                ynca.SoundPrg.MONO_MOVIE,
-                ynca.SoundPrg.TWO_CH_STEREO,
-                ynca.SoundPrg.SURROUND_DECODER,
-                ynca.SoundPrg.SEVEN_CH_STEREO,
+                ynca.SoundPrg.HALL_IN_VIENNA,
             ],
         },
     )
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"]
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ["Hall in Vienna"]
     }
 
     # Make sure HA finishes creating entry completely
@@ -329,7 +311,7 @@ async def test_options_flow_zone_inputs(
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
             yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
@@ -369,7 +351,7 @@ async def test_options_flow_configure_nof_scenes(
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
             yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,

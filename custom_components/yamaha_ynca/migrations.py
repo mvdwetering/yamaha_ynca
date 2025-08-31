@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
-CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
+LEGACY_CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 
 
 # This is a copy of the enum in ynca package
 # so that during import we have a stable enum that does not change
 @unique
-class YncaSoundPrg(StrEnum):
+class YncaSoundPrgCopy(StrEnum):
     HALL_IN_MUNICH = "Hall in Munich"
     HALL_IN_VIENNA = "Hall in Vienna"
     HALL_IN_AMSTERDAM = "Hall in Amsterdam"
@@ -53,14 +53,6 @@ class YncaSoundPrg(StrEnum):
     SURROUND_DECODER = "Surround Decoder"
     ALL_CH_STEREO = "All-Ch Stereo"
     ENHANCED = "Enhanced"
-
-    @classmethod
-    def _missing_(cls, value: object) -> Self:
-        LOGGER.warning("Unknown value '%s' in %s", value, cls.__name__)
-        return cls(cls.UNKNOWN)
-
-    UNKNOWN = "UNKNOWN_VALUE"
-    """Unknown values in the enum are mapped to UNKNOWN"""
 
 
 async def async_migrate_entry(  # noqa: C901
@@ -126,11 +118,7 @@ def migrate_v7_6_to_v7_7(hass: HomeAssistant, config_entry: ConfigEntry) -> None
     options = dict(config_entry.options)  # Convert to dict to be able to use .get
 
     # Switch from using "hidden_sound_modes" to "selected_sound_modes"
-    all_sound_modes = []
-    for sound_mode in YncaSoundPrg:
-        if sound_mode is YncaSoundPrg.UNKNOWN:
-            continue
-        all_sound_modes.append(sound_mode.value)
+    all_sound_modes = [sound_mode.value for sound_mode in YncaSoundPrgCopy]
     all_sound_modes.sort(key=str.lower)
 
     unsupported_sound_modes = []
@@ -138,13 +126,13 @@ def migrate_v7_6_to_v7_7(hass: HomeAssistant, config_entry: ConfigEntry) -> None
         unsupported_sound_modes = list(set(all_sound_modes) - set(modelinfo.soundprg))
 
     hidden_sound_modes = (
-        options.get(CONF_HIDDEN_SOUND_MODES, []) + unsupported_sound_modes
+        options.get(LEGACY_CONF_HIDDEN_SOUND_MODES, []) + unsupported_sound_modes
     )
 
     selected_sound_modes = list(set(all_sound_modes) - set(hidden_sound_modes))
 
     options["selected_sound_modes"] = selected_sound_modes
-    del options[CONF_HIDDEN_SOUND_MODES]
+    options.pop(LEGACY_CONF_HIDDEN_SOUND_MODES, None)
 
     hass.config_entries.async_update_entry(
         config_entry, options=options, minor_version=7
@@ -335,12 +323,12 @@ def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     # Used to be the enum name, now it is the value
 
     options = dict(config_entry.options)
-    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES):
+    if old_hidden_soundmodes := options.get(LEGACY_CONF_HIDDEN_SOUND_MODES):
         new_hidden_soundmodes = []
         for old_hidden_soundmode in old_hidden_soundmodes:
             with contextlib.suppress(KeyError):
                 new_hidden_soundmodes.append(ynca.SoundPrg[old_hidden_soundmode].value)
-        options[CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
+        options[LEGACY_CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
 
     hass.config_entries.async_update_entry(
         config_entry,

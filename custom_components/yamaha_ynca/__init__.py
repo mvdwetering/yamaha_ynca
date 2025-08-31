@@ -109,7 +109,7 @@ def build_zoneb_devicename(receiver: ynca.YncaApi) -> str:
 async def update_configentry(
     hass: HomeAssistant, config_entry: ConfigEntry, receiver: ynca.YncaApi
 ) -> None:
-    # Older configurations setup before 5.3.0+ will not have zones data filled
+    # Older configurations setup before 5.3.0 will not have zones data filled
     # So fill it when not set already
     # If not set, options will not show for zones
     if DATA_ZONES not in config_entry.data:
