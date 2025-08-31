@@ -95,15 +95,12 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
 
 
 async def test_abort_on_duplicate_entry(hass: HomeAssistant, mock_ynca) -> None:
-    integration = await setup_integration(hass, mock_ynca)
+    await setup_integration(hass, mock_ynca)
 
     # Flow goes to menu with connection options
     result = await hass.config_entries.flow.async_init(
         yamaha_ynca.DOMAIN,
-        context={
-            "source": config_entries.SOURCE_USER,
-            "entry_id": integration.entry.entry_id,
-        },
+        context={"source": config_entries.SOURCE_USER},
     )
     assert result["type"] == FlowResultType.MENU
 
