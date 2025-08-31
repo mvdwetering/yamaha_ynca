@@ -50,7 +50,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
 
 
 async def test_async_migration_entry_downgrade(hass: HomeAssistant):
-    """Full chain of migrations should result in last version"""
+    """Downgrade not supported"""
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
