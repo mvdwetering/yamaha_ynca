@@ -94,6 +94,8 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
         data_schema: vol.Schema,
         user_input: dict[str, Any],
     ) -> ConfigFlowResult:
+        self._async_abort_entries_match({CONF_SERIAL_URL: user_input[CONF_SERIAL_URL]})
+
         errors = {}
         try:
             check_result = await validate_input(self.hass, user_input)
