@@ -264,7 +264,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         sound_modes = []
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
-        if self._zone.soundprg:
+        if self._zone.soundprg is not None:
             sound_modes.extend(self._selected_sound_modes)
 
         sound_modes.sort(key=str.lower)
