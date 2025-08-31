@@ -94,6 +94,38 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert len(mock_setup_entry.mock_calls) == 1
 
 
+async def test_abort_on_duplicate_entry(hass: HomeAssistant, mock_ynca) -> None:
+    await setup_integration(hass, mock_ynca)
+
+    # Flow goes to menu with connection options
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN,
+        context={"source": config_entries.SOURCE_USER},
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    # Select serial for this test
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        user_input={"next_step_id": "serial"},
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] is None
+
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            yamaha_ynca.const.CONF_SERIAL_URL: "SerialUrl",  # Same as existing entry
+        },
+    )
+    await hass.async_block_till_done()
+
+    # Flow is aborted (as intended)
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "already_configured"
+
+
 async def test_connection_error(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error."""
     result = await hass.config_entries.flow.async_init(
@@ -158,16 +190,7 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
 
 
 async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
-    integration = await setup_integration(hass, mock_ynca)
-
-    # Make sure existing data is different from what we are changing it to
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        data={
-            **integration.entry.data,
-            yamaha_ynca.const.CONF_SERIAL_URL: "old_serial_port",
-        },
-    )
+    integration = await setup_integration(hass, mock_ynca, serial_url="old_serial_port")
 
     # Flow goes to menu with connection options
     result = await hass.config_entries.flow.async_init(
@@ -218,15 +241,8 @@ async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
 
 
 async def test_reconfigure_network(hass: HomeAssistant, mock_ynca) -> None:
-    integration = await setup_integration(hass, mock_ynca)
-
-    # Make sure existing data is different from what we are changing it to
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        data={
-            **integration.entry.data,
-            yamaha_ynca.const.CONF_SERIAL_URL: "socket://old_hostname_or_ipaddress:12345",
-        },
+    integration = await setup_integration(
+        hass, mock_ynca, serial_url="socket://old_hostname_or_ipaddress:12345"
     )
 
     # Flow goes to menu with connection options
