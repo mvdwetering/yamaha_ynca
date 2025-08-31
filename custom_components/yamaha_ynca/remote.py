@@ -13,6 +13,8 @@ from homeassistant.components.remote import (
 )
 from homeassistant.helpers.entity import DeviceInfo
 
+import ynca
+
 from .const import ATTR_COMMANDS, DOMAIN, ZONE_ATTRIBUTE_NAMES
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -21,7 +23,6 @@ if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    import ynca
     from ynca.subunits.zone import ZoneBase
 
     from . import YamahaYncaConfigEntry
@@ -179,6 +180,21 @@ class YamahaYncaZoneRemote(RemoteEntity):
             else:
                 output_code += part
         return output_code
+
+    def _update_callback(self, function: str | None, _value: Any) -> None:
+        if function == "PWR":
+            self.schedule_update_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        self._zone.register_update_callback(self._update_callback)
+
+    async def async_will_remove_from_hass(self) -> None:
+        self._zone.unregister_update_callback(self._update_callback)
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return True if entity is on."""
+        return self._zone.pwr is ynca.Pwr.ON
 
     def turn_on(self, **_kwargs: Any) -> None:
         """Send the power on command."""

@@ -125,3 +125,47 @@ async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
 
     entity.turn_off()
     mock_ynca.sys.remotecode.assert_called_with("90ABCDEF")
+
+
+async def test_remote_is_on(mock_ynca, mock_zone_zone3):
+    mock_zone_zone3.pwr = ynca.Pwr.STANDBY
+
+    entity = YamahaYncaZoneRemote(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone_zone3,
+        {},
+    )
+
+    assert entity.is_on is False
+
+    mock_zone_zone3.pwr = ynca.Pwr.ON
+    assert entity.is_on is True
+
+
+async def test_remote_update_state(mock_ynca, mock_zone_zone3):
+    mock_zone_zone3.pwr = ynca.Pwr.STANDBY
+
+    entity = YamahaYncaZoneRemote(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone_zone3,
+        {},
+    )
+
+    # Check handling of updates from YNCA
+    await entity.async_added_to_hass()
+    mock_zone_zone3.register_update_callback.assert_called_once()
+    callback = mock_zone_zone3.register_update_callback.call_args.args[0]
+    entity.schedule_update_ha_state = Mock()
+
+    # Only PWR schedules update
+    callback("PWR", None)
+    entity.schedule_update_ha_state.assert_called_once()
+    entity.schedule_update_ha_state.reset_mock()
+    callback("SOMETHING_ELSE", None)
+    entity.schedule_update_ha_state.assert_not_called()
+
+    # Cleanup on exit
+    await entity.async_will_remove_from_hass()
+    mock_zone_zone3.unregister_update_callback.assert_called_once_with(callback)
