@@ -24,6 +24,8 @@ from custom_components.yamaha_ynca.media_player import (
 from tests.conftest import setup_integration
 import ynca
 
+ALL_SOUNDMODES = [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
+
 
 @pytest.fixture
 def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
@@ -383,9 +385,17 @@ async def test_mediaplayer_entity_sound_mode(mp_entity: YamahaYncaZone, mock_zon
     assert mp_entity.sound_mode == "Sports"
 
 
-async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, mock_zone):
+async def test_mediaplayer_entity_sound_mode_list(mock_ynca, mock_zone):
     mock_zone.soundprg = ynca.SoundPrg.VILLAGE_VANGUARD
     mock_zone.straight = ynca.Straight.OFF
+
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        [],
+        ALL_SOUNDMODES,
+    )
     assert "Straight" in mp_entity.sound_mode_list
 
     mock_zone.straight = None
@@ -396,7 +406,7 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, moc
 
     mock_zone.soundprg = ynca.SoundPrg.CELLAR_CLUB
     assert mp_entity.sound_mode_list == sorted(
-        [sp for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
+        [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
     )
 
 
@@ -405,25 +415,34 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, moc
     return_value=ynca.modelinfo.ModelInfo(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
 )
 async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
-    patched_YncaModelInfo_get, mp_entity, mock_zone
+    patched_YncaModelInfo_get, mock_ynca, mock_zone
 ):
     mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE
+
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        [],
+        [ynca.SoundPrg.ALL_CH_STEREO.value],
+    )
+
     assert "All-Ch Stereo" in mp_entity.sound_mode_list
 
 
-async def test_mediaplayer_entity_hidden_sound_mode(hass, mock_ynca, mock_zone):
+async def test_mediaplayer_entity_selected_sound_mode(hass, mock_ynca, mock_zone):
     mock_zone.soundprg = ynca.SoundPrg.VILLAGE_VANGUARD
 
     mp_entity = YamahaYncaZone(
-        "ReceiverUniqueId", mock_ynca, mock_zone, [], ["MONO_MOVIE"]
+        "ReceiverUniqueId", mock_ynca, mock_zone, [], [ynca.SoundPrg.MONO_MOVIE.value]
     )
 
-    assert "Drama" in mp_entity.sound_mode_list
-    assert "Mono movie" not in mp_entity.sound_mode_list
+    assert "Mono Movie" in mp_entity.sound_mode_list
+    assert "Drama" not in mp_entity.sound_mode_list
 
     # Hidden soundmodes should still be shown if they are the current soundmode
-    mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE
-    assert mp_entity.sound_mode == "Mono Movie"
+    mock_zone.soundprg = ynca.SoundPrg.DRAMA
+    assert mp_entity.sound_mode == "Drama"
 
 
 async def test_mediaplayer_entity_supported_features(

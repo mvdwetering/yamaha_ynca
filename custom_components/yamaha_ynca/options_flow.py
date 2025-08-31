@@ -13,7 +13,6 @@ import ynca
 
 from .const import (
     CONF_HIDDEN_INPUTS,
-    CONF_HIDDEN_SOUND_MODES,
     CONF_NUMBER_OF_SCENES,
     CONF_SELECTED_INPUTS,
     CONF_SELECTED_SOUND_MODES,
@@ -109,28 +108,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """General device options."""
-        modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
-
-        # Note that hidden modes are stored, but selected modes are shown in UI
-        # It makes selecting easier for the user (if selected then it is used)
-        # Storing hidden so that when adding support for new soundmodes/sources they will show up automatically
-        # Not sure if it is the best way, but lets see feedback in the (expected rare) case this will happen.
-
-        # List all sound modes for this model
-        sound_modes = []
-        for sound_mode in ynca.SoundPrg:
-            if sound_mode is ynca.SoundPrg.UNKNOWN:
-                continue
-            if modelinfo and sound_mode not in modelinfo.soundprg:
-                continue  # Skip soundmodes not supported on the model
-            sound_modes.append(sound_mode.value)
-        sound_modes.sort(key=str.lower)
-
         if user_input is not None:
-            hidden_sound_modes = list(
-                set(sound_modes) - set(user_input[CONF_SELECTED_SOUND_MODES])
-            )
-            self.options[CONF_HIDDEN_SOUND_MODES] = hidden_sound_modes
+            self.options[CONF_SELECTED_SOUND_MODES] = user_input[
+                CONF_SELECTED_SOUND_MODES
+            ]
 
             if CONF_SELECTED_SURROUND_DECODERS in user_input:
                 self.options[CONF_SELECTED_SURROUND_DECODERS] = user_input[
@@ -139,24 +120,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
             return await self.do_next_step(STEP_ID_GENERAL)
 
-        # List all hidden modes
-        hidden_sound_modes = self.options.get(CONF_HIDDEN_SOUND_MODES, [])
-        hidden_sound_modes = [
-            stored_sound_mode
-            for stored_sound_mode in hidden_sound_modes
-            # Protect against supported soundmode list updates
-            if stored_sound_mode in sound_modes
-        ]
-
-        selected_sound_modes = list(set(sound_modes) - set(hidden_sound_modes))
+        # List all sound modes for this model
+        modelinfo = ynca.YncaModelInfo.get(self.config_entry.data[DATA_MODELNAME])
+        all_sound_modes = []
+        for sound_mode in ynca.SoundPrg:
+            if sound_mode is ynca.SoundPrg.UNKNOWN:
+                continue
+            if modelinfo and sound_mode not in modelinfo.soundprg:
+                continue  # Skip soundmodes not supported on the model
+            all_sound_modes.append(sound_mode.value)
+        all_sound_modes.sort(key=str.lower)
 
         schema = {}
         schema[
             vol.Required(
                 CONF_SELECTED_SOUND_MODES,
-                default=selected_sound_modes,
+                default=self.options.get(CONF_SELECTED_SOUND_MODES, []),
             )
-        ] = cv.multi_select(sound_modes)
+        ] = cv.multi_select(all_sound_modes)
 
         # Select supported Surround Decoders
         # Technically twochdecoder could have different values per zone, but that seems unlikely

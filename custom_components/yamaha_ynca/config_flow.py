@@ -70,9 +70,9 @@ async def validate_input(
 class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Yamaha (YNCA)."""
 
-    # When updating also update the one used in `setup_integration` for tests
+    # When updating also update the one used in `create_mock_config_entry` for tests
     VERSION = 7
-    MINOR_VERSION = 6
+    MINOR_VERSION = 7
 
     @staticmethod
     @callback

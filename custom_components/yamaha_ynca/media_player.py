@@ -30,7 +30,7 @@ from . import YamahaYncaConfigEntry, build_zone_devicename, build_zoneb_devicena
 from .const import (
     ATTR_PRESET_ID,
     CONF_HIDDEN_INPUTS,
-    CONF_HIDDEN_SOUND_MODES,
+    CONF_SELECTED_SOUND_MODES,
     DOMAIN,
     LOGGER,
     NUM_PRESETS,
@@ -79,7 +79,9 @@ async def async_setup_entry(
             hidden_inputs = config_entry.options.get(zone_subunit.id, {}).get(
                 CONF_HIDDEN_INPUTS, []
             )
-            hidden_sound_modes = config_entry.options.get(CONF_HIDDEN_SOUND_MODES, [])
+            selected_sound_modes = config_entry.options.get(
+                CONF_SELECTED_SOUND_MODES, []
+            )
 
             entities.append(
                 YamahaYncaZone(
@@ -87,7 +89,7 @@ async def async_setup_entry(
                     domain_entry_data.api,
                     zone_subunit,
                     hidden_inputs,
-                    hidden_sound_modes,
+                    selected_sound_modes,
                 )
             )
 
@@ -118,12 +120,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         ynca_api: ynca.YncaApi,
         zone: ZoneBase,
         hidden_inputs: list[str],
-        hidden_sound_modes: list[str],
+        selected_sound_modes: list[str],
     ) -> None:
         self._ynca = ynca_api
         self._zone = zone
         self._hidden_inputs = hidden_inputs
-        self._hidden_sound_modes = hidden_sound_modes
+        self._selected_sound_modes = selected_sound_modes
 
         self._device_id = f"{receiver_unique_id}_{self._get_zone_id()}"
 
@@ -262,23 +264,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         sound_modes = []
         if self._zone.straight is not None:
             sound_modes.append(STRAIGHT)
-        if self._zone.soundprg:
-            modelinfo = ynca.YncaModelInfo.get(
-                str(self._ynca.sys.modelname)  # type: ignore[union-attr]
-            )
-            device_sound_modes = [
-                sound_mode.value
-                for sound_mode in (modelinfo.soundprg if modelinfo else ynca.SoundPrg)
-                if sound_mode is not ynca.SoundPrg.UNKNOWN
-            ]
-            sound_modes.extend(device_sound_modes)
+        if self._zone.soundprg is not None:
+            sound_modes.extend(self._selected_sound_modes)
 
-        # Filter hidden sound modes
-        sound_modes = [
-            sound_mode
-            for sound_mode in sound_modes
-            if sound_mode not in self._hidden_sound_modes
-        ]
         sound_modes.sort(key=str.lower)
 
         return sound_modes if sound_modes else None

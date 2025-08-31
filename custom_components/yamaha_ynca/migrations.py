@@ -3,18 +3,56 @@
 from __future__ import annotations
 
 import contextlib
+from enum import StrEnum, unique
 from typing import TYPE_CHECKING
 
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 import ynca
 
-from .const import CONF_HIDDEN_SOUND_MODES, DOMAIN, LOGGER
+from .const import DATA_MODELNAME, DOMAIN, LOGGER
 from .helpers import receiver_requires_audio_input_workaround
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
+
+LEGACY_CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
+
+
+# This is a copy of the enum in ynca package
+# so that during import we have a stable enum that does not change
+@unique
+class YncaSoundPrgCopy(StrEnum):
+    HALL_IN_MUNICH = "Hall in Munich"
+    HALL_IN_VIENNA = "Hall in Vienna"
+    HALL_IN_AMSTERDAM = "Hall in Amsterdam"
+    CHURCH_IN_FREIBURG = "Church in Freiburg"
+    CHURCH_IN_ROYAUMONT = "Church in Royaumont"
+    CHAMBER = "Chamber"
+    VILLAGE_VANGUARD = "Village Vanguard"
+    WAREHOUSE_LOFT = "Warehouse Loft"
+    CELLAR_CLUB = "Cellar Club"
+    THE_ROXY_THEATRE = "The Roxy Theatre"
+    THE_BOTTOM_LINE = "The Bottom Line"
+    SPORTS = "Sports"
+    ACTION_GAME = "Action Game"
+    ROLEPLAYING_GAME = "Roleplaying Game"
+    MUSIC_VIDEO = "Music Video"
+    RECITAL_OPERA = "Recital/Opera"
+    STANDARD = "Standard"
+    SPECTACLE = "Spectacle"
+    SCI_FI = "Sci-Fi"
+    ADVENTURE = "Adventure"
+    DRAMA = "Drama"
+    MONO_MOVIE = "Mono Movie"
+    TWO_CH_STEREO = "2ch Stereo"
+    FIVE_CH_STEREO = "5ch Stereo"
+    SEVEN_CH_STEREO = "7ch Stereo"
+    NINE_CH_STEREO = "9ch Stereo"
+    SURROUND_DECODER = "Surround Decoder"
+    ALL_CH_STEREO = "All-Ch Stereo"
+    ENHANCED = "Enhanced"
 
 
 async def async_migrate_entry(  # noqa: C901
@@ -24,6 +62,10 @@ async def async_migrate_entry(  # noqa: C901
     from_version = config_entry.version
     from_minor_version = config_entry.minor_version
     LOGGER.debug("Migrating from version %s.%s", from_version, from_minor_version)
+
+    if config_entry.version > 7:
+        # This means the user has downgraded from a future version
+        return False
 
     if config_entry.version == 1:
         migrate_v1_to_v2(hass, config_entry)
@@ -54,10 +96,12 @@ async def async_migrate_entry(  # noqa: C901
             migrate_v7_4_to_v7_5(hass, config_entry)
         if config_entry.minor_version == 5:  # noqa: PLR2004
             migrate_v7_5_to_v7_6(hass, config_entry)
+        if config_entry.minor_version == 6:  # noqa: PLR2004
+            migrate_v7_6_to_v7_7(hass, config_entry)
 
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
-    # and update the version in `setup_integration`
+    # and update the version in `create_mock_config_entry`
 
     LOGGER.info(
         "Migration of ConfigEntry from version %s.%s to version %s.%s successful",
@@ -68,6 +112,32 @@ async def async_migrate_entry(  # noqa: C901
     )
 
     return True
+
+
+def migrate_v7_6_to_v7_7(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    options = dict(config_entry.options)  # Convert to dict to be able to use .get
+
+    # Switch from using "hidden_sound_modes" to "selected_sound_modes"
+    all_sound_modes = [sound_mode.value for sound_mode in YncaSoundPrgCopy]
+    all_sound_modes.sort(key=str.lower)
+
+    unsupported_sound_modes = []
+    if modelinfo := ynca.YncaModelInfo.get(config_entry.data[DATA_MODELNAME]):
+        modelinfo_soundprgs = [soundprg.value for soundprg in modelinfo.soundprg]
+        unsupported_sound_modes = list(set(all_sound_modes) - set(modelinfo_soundprgs))
+
+    hidden_sound_modes = (
+        options.get(LEGACY_CONF_HIDDEN_SOUND_MODES, []) + unsupported_sound_modes
+    )
+
+    selected_sound_modes = list(set(all_sound_modes) - set(hidden_sound_modes))
+
+    options["selected_sound_modes"] = selected_sound_modes
+    options.pop(LEGACY_CONF_HIDDEN_SOUND_MODES, None)
+
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=7
+    )
 
 
 def migrate_v7_5_to_v7_6(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
@@ -254,12 +324,12 @@ def migrate_v3_to_v4(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     # Used to be the enum name, now it is the value
 
     options = dict(config_entry.options)
-    if old_hidden_soundmodes := options.get(CONF_HIDDEN_SOUND_MODES):
+    if old_hidden_soundmodes := options.get(LEGACY_CONF_HIDDEN_SOUND_MODES):
         new_hidden_soundmodes = []
         for old_hidden_soundmode in old_hidden_soundmodes:
             with contextlib.suppress(KeyError):
                 new_hidden_soundmodes.append(ynca.SoundPrg[old_hidden_soundmode].value)
-        options[CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
+        options[LEGACY_CONF_HIDDEN_SOUND_MODES] = new_hidden_soundmodes
 
     hass.config_entries.async_update_entry(
         config_entry,
