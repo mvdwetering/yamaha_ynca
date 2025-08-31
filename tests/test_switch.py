@@ -200,4 +200,4 @@ async def test_dirmode(hass, mock_ynca, mock_zone_main):
 
     # Cleanup on exit
     await entity.async_will_remove_from_hass()
-    mock_zone_main.unregister_update_callback.assert_called_once()
+    mock_zone_main.unregister_update_callback.assert_called_once_with(callback)

@@ -168,4 +168,4 @@ async def test_remote_update_state(mock_ynca, mock_zone_zone3):
 
     # Cleanup on exit
     await entity.async_will_remove_from_hass()
-    mock_zone_zone3.unregister_update_callback.assert_called_once()
+    mock_zone_zone3.unregister_update_callback.assert_called_once_with(callback)
