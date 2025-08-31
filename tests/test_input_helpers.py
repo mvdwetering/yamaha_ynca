@@ -90,8 +90,7 @@ def test_sourcemapping_inpnames_not_set(mock_ynca):
 
 
 def test_sourcemapping_input_subunits(mock_ynca):
-    """Check names of input subunits
-    """
+    """Check names of input subunits"""
     # Setup subunits with dummy value, but it is good enough for building sourcelist
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, True)
@@ -118,8 +117,7 @@ def test_sourcemapping_input_subunits(mock_ynca):
 
 
 def test_sourcemapping_no_duplicates(mock_ynca):
-    """Should be no duplicates, e.g. avoid USB is in the list twice
-    """
+    """Should be no duplicates, e.g. avoid USB is in the list twice"""
     # Setup subunits with dummy value, but it is good enough for building sourcelist
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, True)
@@ -146,8 +144,7 @@ def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca):
 
 
 def test_sourcemapping_trim_whitepspace(mock_ynca):
-    """Check that (leading and trailing) whitespace is trimmed from names
-    """
+    """Check that (leading and trailing) whitespace is trimmed from names"""
     mock_ynca.sys.inpnamehdmi1 = "No spaces"
     mock_ynca.sys.inpnamehdmi2 = "   Leading spaces"
     mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
