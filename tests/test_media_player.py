@@ -406,7 +406,7 @@ async def test_mediaplayer_entity_sound_mode_list(mock_ynca, mock_zone):
 
     mock_zone.soundprg = ynca.SoundPrg.CELLAR_CLUB
     assert mp_entity.sound_mode_list == sorted(
-        [sp for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
+        [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
     )
 
 
