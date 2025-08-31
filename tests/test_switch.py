@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import time
+import asyncio
 from unittest.mock import ANY, Mock, call, patch
 
 from homeassistant.helpers.entity import EntityCategory
@@ -193,7 +193,7 @@ async def test_dirmode(hass, mock_ynca, mock_zone_main):
     mock_zone_main._connection.get.assert_not_called()
 
     # But after the cooldown expires it requests again
-    time.sleep(0.51)
+    await asyncio.sleep(0.51)
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
     mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
