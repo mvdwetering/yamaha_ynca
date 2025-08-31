@@ -70,7 +70,10 @@ rules:
   stale-devices: todo
 
   # Platinum
-  async-dependency: todo
+  async-dependency:
+    status: todo
+    comment: |
+      This implies a complete rewrite of the communication library and integration. That is a lot of work. Probably not going to happen.
   inject-websession:
     status: done
     comment: |
