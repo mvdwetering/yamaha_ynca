@@ -11,7 +11,8 @@ from homeassistant.helpers.entity import EntityCategory
 import ynca
 
 from .const import ZONE_ATTRIBUTE_NAMES
-from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
+from .entity import YamahaYncaSettingEntity
+from .helpers import subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable
