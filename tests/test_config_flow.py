@@ -107,7 +107,7 @@ async def test_abort_on_duplicate_entry(hass: HomeAssistant, mock_ynca) -> None:
     )
     assert result["type"] == FlowResultType.MENU
 
-    # Select network for this test
+    # Select serial for this test
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         user_input={"next_step_id": "serial"},
