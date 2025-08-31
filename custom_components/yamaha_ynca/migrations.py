@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import contextlib
 from enum import StrEnum, unique
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 
