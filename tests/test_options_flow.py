@@ -156,19 +156,19 @@ async def test_options_flow_navigate_all_screens(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE2": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE3": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE4": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
@@ -289,7 +289,7 @@ async def test_options_flow_zone_inputs(
 
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
-    options["MAIN"] = {"hidden_inputs": ["AV5"]}
+    options["MAIN"] = {"selected_inputs": ["AV5"]}
     hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
@@ -316,7 +316,7 @@ async def test_options_flow_zone_inputs(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ["NET RADIO"],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
@@ -356,7 +356,7 @@ async def test_options_flow_configure_nof_scenes(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     }

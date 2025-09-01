@@ -12,7 +12,6 @@ import voluptuous as vol
 import ynca
 
 from .const import (
-    CONF_HIDDEN_INPUTS,
     CONF_NUMBER_OF_SCENES,
     CONF_SELECTED_INPUTS,
     CONF_SELECTED_SOUND_MODES,
@@ -212,15 +211,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 else name
             )
         all_inputs = dict(sorted(all_inputs.items(), key=lambda item: item[1].lower()))
-        all_input_ids = list(all_inputs.keys())
 
         if user_input is not None:
-            hidden_input_ids = list(
-                set(all_input_ids) - set(user_input[CONF_SELECTED_INPUTS])
-            )
-
             self.options.setdefault(zone_id, {})
-            self.options[zone_id][CONF_HIDDEN_INPUTS] = hidden_input_ids
+            self.options[zone_id][CONF_SELECTED_INPUTS] = user_input[
+                CONF_SELECTED_INPUTS
+            ]
             self.options[zone_id][CONF_NUMBER_OF_SCENES] = user_input[
                 CONF_NUMBER_OF_SCENES
             ]
@@ -229,11 +225,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema: dict[Any, Any] = {}
 
         # Select inputs for zone
-        stored_hidden_input_ids = self.options.get(zone_id, {}).get(
-            CONF_HIDDEN_INPUTS, []
-        )
-        selected_inputs = list(set(all_input_ids) - set(stored_hidden_input_ids))
-
+        selected_inputs = self.options.get(zone_id, {}).get(CONF_SELECTED_INPUTS, [])
         schema[
             vol.Required(
                 CONF_SELECTED_INPUTS,
