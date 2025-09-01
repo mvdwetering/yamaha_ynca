@@ -65,6 +65,17 @@ input_mappings: list[Mapping] = [
 
 
 class InputHelper:
+
+    @staticmethod
+    def get_internal_subunit_attribute_names() -> list[str]:
+        """Return list of attributenames of internal subunits."""
+        input_subunits = []
+        for mapping in input_mappings:
+            if mapping.subunit_attribute_names:
+                input_subunits.extend(mapping.subunit_attribute_names)
+
+        return input_subunits
+
     @staticmethod
     def get_subunit_for_input(
         api: ynca.YncaApi, input_: ynca.Input | None
