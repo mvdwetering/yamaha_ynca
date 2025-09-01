@@ -46,7 +46,7 @@ async def test_async_migration_entry(hass: HomeAssistant):
     new_entry = hass.config_entries.async_get_entry(old_entry.entry_id)
     assert new_entry is not None
     assert new_entry.version == 7
-    assert new_entry.minor_version == 7
+    assert new_entry.minor_version == 8
 
 
 async def test_async_migration_entry_downgrade(hass: HomeAssistant):
@@ -563,6 +563,7 @@ async def test_async_migration_entry_version_v7_6_to_v7_7(
         data={"serial_url": "SerialUrl", "zones": ["ZONE2"], "modelname": "RX-A810"},
         options={"hidden_sound_modes": ["The Roxy Theatre", "DOES NOT EXIST"]},
         version=7,
+        minor_version=6,
     )
     config_entry.add_to_hass(hass)
 
@@ -580,3 +581,36 @@ async def test_async_migration_entry_version_v7_6_to_v7_7(
         "7ch Stereo" in new_entry.options["selected_sound_modes"]
     )  # Just sanity check one
     assert "The Roxy Theatre" not in new_entry.options["selected_sound_modes"]
+
+
+async def test_async_migration_entry_version_v7_7_to_v7_8(
+    hass: HomeAssistant,
+):
+    # Make sure to use a model that has inputs in ynca modelinfo
+    # DOES NOT EXIST is for robustness
+    config_entry = MockConfigEntry(
+        domain=yamaha_ynca.DOMAIN,
+        entry_id="entry_id",
+        title="ModelName",
+        data={"serial_url": "SerialUrl", "zones": ["ZONE2"], "modelname": "RX-A810"},
+        options={"ZONE2": {"hidden_inputs": ["HDMI1", "DOES NOT EXIST"]}},
+        version=7,
+        minor_version=7,
+    )
+    config_entry.add_to_hass(hass)
+
+    # Migrate
+    yamaha_ynca.migrations.migrate_v7_7_to_v7_8(hass, config_entry)
+    await hass.async_block_till_done()
+
+    new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
+    assert new_entry is not None
+    assert new_entry.version == 7
+    assert new_entry.minor_version == 8
+    assert len(new_entry.options.keys()) == 1
+    zoneoptions = new_entry.options.get("ZONE2")
+    assert zoneoptions is not None
+    assert len(zoneoptions["selected_inputs"]) == 43
+    assert "HDMI2" in zoneoptions["selected_inputs"]  # Just sanity check one
+    assert "HDMI1" not in zoneoptions["selected_inputs"]
+    assert "DOES NOT EXIST" not in zoneoptions["selected_inputs"]
