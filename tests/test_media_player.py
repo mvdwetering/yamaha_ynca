@@ -25,11 +25,14 @@ from tests.conftest import setup_integration
 import ynca
 
 ALL_SOUNDMODES = [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
+ALL_INPUTS = [input_.value for input_ in ynca.Input if input_ is not ynca.Input.UNKNOWN]
 
 
 @pytest.fixture
 def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
-    return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    return YamahaYncaZone(
+        "ReceiverUniqueId", mock_ynca, mock_zone, ALL_INPUTS, ALL_SOUNDMODES
+    )
 
 
 @pytest.fixture
@@ -318,9 +321,15 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
     # Tuner is hidden
-    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        ["HDMI4", "NET RADIO", "TUNER"],
+        [],
+    )
 
-    assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
+    assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO", "TUNER"]
 
 
 async def test_mediaplayer_entity_source_whitespace_handling(
@@ -331,7 +340,13 @@ async def test_mediaplayer_entity_source_whitespace_handling(
     mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
     mock_ynca.sys.inpnamehdmi4 = "   Leading and trailing spaces   "
 
-    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        ["HDMI1", "HDMI2", "HDMI3", "HDMI4"],
+        [],
+    )
 
     assert mp_entity.source_list == unordered(
         [

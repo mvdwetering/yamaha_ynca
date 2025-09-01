@@ -29,7 +29,7 @@ import ynca
 from . import YamahaYncaConfigEntry, build_zone_devicename, build_zoneb_devicename
 from .const import (
     ATTR_PRESET_ID,
-    CONF_HIDDEN_INPUTS,
+    CONF_SELECTED_INPUTS,
     CONF_SELECTED_SOUND_MODES,
     DOMAIN,
     LOGGER,
@@ -76,8 +76,8 @@ async def async_setup_entry(
     entities: list[MediaPlayerEntity] = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(api, zone_attr_name):
-            hidden_inputs = config_entry.options.get(zone_subunit.id, {}).get(
-                CONF_HIDDEN_INPUTS, []
+            selected_inputs = config_entry.options.get(zone_subunit.id, {}).get(
+                CONF_SELECTED_INPUTS, []
             )
             selected_sound_modes = config_entry.options.get(
                 CONF_SELECTED_SOUND_MODES, []
@@ -88,7 +88,7 @@ async def async_setup_entry(
                     config_entry.entry_id,
                     domain_entry_data.api,
                     zone_subunit,
-                    hidden_inputs,
+                    selected_inputs,
                     selected_sound_modes,
                 )
             )
@@ -98,7 +98,7 @@ async def async_setup_entry(
                 and api.main.zonebavail is ynca.ZoneBAvail.READY
             ):
                 entities.append(
-                    YamahaYncaZoneB(config_entry.entry_id, api, hidden_inputs)
+                    YamahaYncaZoneB(config_entry.entry_id, api, selected_inputs)
                 )
 
     async_add_entities(entities)
@@ -119,12 +119,12 @@ class YamahaYncaZone(MediaPlayerEntity):
         receiver_unique_id: str,
         ynca_api: ynca.YncaApi,
         zone: ZoneBase,
-        hidden_inputs: list[str],
+        selected_inputs: list[str],
         selected_sound_modes: list[str],
     ) -> None:
         self._ynca = ynca_api
         self._zone = zone
-        self._hidden_inputs = hidden_inputs
+        self._selected_inputs = selected_inputs
         self._selected_sound_modes = selected_sound_modes
 
         self._device_id = f"{receiver_unique_id}_{self._get_zone_id()}"
@@ -246,7 +246,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         filtered_sources = [
             name
             for input_, name in source_mapping.items()
-            if input_.value not in self._hidden_inputs
+            if input_.value in self._selected_inputs
         ]
 
         return sorted(filtered_sources, key=str.lower)
@@ -335,7 +335,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         source_mapping = InputHelper.get_source_mapping(self._ynca)
 
         for input_ in source_mapping:
-            if input_.value not in self._hidden_inputs and (
+            if input_.value in self._selected_inputs and (
                 subunit := InputHelper.get_subunit_for_input(self._ynca, input_)
             ):
                 if hasattr(subunit, "preset"):
@@ -581,7 +581,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         source_mapping = InputHelper.get_source_mapping(self._ynca)
         for input_, name in source_mapping.items():
             if (
-                input_.value not in self._hidden_inputs
+                input_.value in self._selected_inputs
                 and (subunit := InputHelper.get_subunit_for_input(self._ynca, input_))
                 and hasattr(subunit, "preset")
             ):
@@ -592,7 +592,7 @@ class YamahaYncaZone(MediaPlayerEntity):
                 )
 
         # Presets for DAB Tuner, it has 2 preset lists and uses different attribute names, so add manually
-        if self._ynca.dab and ynca.Input.TUNER.value not in self._hidden_inputs:
+        if self._ynca.dab and ynca.Input.TUNER.value in self._selected_inputs:
             children.extend(
                 [
                     self.directory_browse_media_item(
