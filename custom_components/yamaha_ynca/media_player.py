@@ -706,7 +706,10 @@ class YamahaYncaZone(MediaPlayerEntity):
             if input_ == ynca.Input.TUNER:
                 await asyncio.sleep(1.0)
 
-        setattr(subunit, media_id_command, int(media_id_preset_id))
+        if hasattr(
+            subunit, media_id_command
+        ):  # Safety against calling on unsupported subunit
+            setattr(subunit, media_id_command, int(media_id_preset_id))
 
     def validate_media_id(
         self,
