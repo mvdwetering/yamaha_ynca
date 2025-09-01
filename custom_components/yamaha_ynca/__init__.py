@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+from functools import partial
 from importlib.metadata import version
 import re
+import threading
 from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry, OperationNotAllowed, UnknownEntry
@@ -27,6 +29,7 @@ from .const import (
     ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
+from .input_helpers import InputHelper
 from .migrations import async_migrate_entry as migrations_async_migrate_entry
 
 if TYPE_CHECKING:
@@ -167,6 +170,57 @@ async def async_setup(hass: HomeAssistant, _config: ConfigType) -> bool:
 type YamahaYncaConfigEntry = ConfigEntry[DomainEntryData]
 
 
+async def preset_support_detection_hack(
+    hass: HomeAssistant, ynca_receiver: ynca.YncaApi
+) -> None:
+    """Check which subunits explicitly do not support presets and remove the attribute from the subunit. This will make it easy to show presets for correct subunits."""
+
+    def do_the_check() -> None:
+        connection = ynca_receiver.get_raw_connection()
+
+        for input_attribute_name in InputHelper.get_internal_subunit_attribute_names():
+            if (
+                subunit := getattr(ynca_receiver, input_attribute_name, None)
+            ) and hasattr(subunit, "preset"):
+                check_done_event = threading.Event()
+                restricted = False
+                subunit_id = subunit.id
+
+                def ynca_message_callback(
+                    status: ynca.YncaProtocolStatus,
+                    subunit: str | None,
+                    function_: str | None,
+                    _value: str | None,
+                    check_done_event: threading.Event,
+                    subunit_id: str,
+                ) -> None:
+                    if subunit == subunit_id and function_ == "AVAIL":
+                        check_done_event.set()
+                    elif status is ynca.YncaProtocolStatus.RESTRICTED:
+                        nonlocal restricted
+                        restricted = True
+
+                ynca_message_callback_with_additional_parameters = partial(
+                    ynca_message_callback,
+                    check_done_event=check_done_event,
+                    subunit_id=subunit_id,
+                )
+                connection.register_message_callback(
+                    ynca_message_callback_with_additional_parameters
+                )
+                connection.get(subunit.id, "PRESET")
+                connection.get(subunit.id, "AVAIL")
+
+                if check_done_event.wait(1) and restricted:
+                    delattr(subunit, "preset")
+
+                connection.unregister_message_callback(
+                    ynca_message_callback_with_additional_parameters
+                )
+
+    await hass.async_add_executor_job(do_the_check)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -> bool:
     """Set up Yamaha (YNCA) from a config entry."""
 
@@ -210,6 +264,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
     if initialized:
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
+        await preset_support_detection_hack(hass, ynca_receiver)
 
         if receiver_requires_audio_input_workaround(str(ynca_receiver.sys.modelname)):  # type: ignore[union-attr]
             # Pretend AUDIO provides a name like a normal input
