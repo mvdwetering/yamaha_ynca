@@ -46,7 +46,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 || RX-V | RX-V477, RX-V677, RX-V777, RX-V1077, RX-V2077, RX-V3077 |
 | 2015 | AVENTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
 || RX-V | RX-V679 |
-|| Other | RX-S601D |
+|| Other | CX-A5100, RX-S601D |
 | 2016 | AVENTAGE | RX-A660 |
 || RX-V | RX-V481D, RX-V581, RX-V681 |
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
