@@ -159,7 +159,7 @@ Sending the commands and IR codes is done through the `remote.send_command` acti
 Example:
 
 ```yaml
-service: remote.send_command
+action: remote.send_command
 target:
   entity_id: remote.rx_a810_main_remote
 data:
@@ -647,7 +647,7 @@ Select Yamaha (YNCA). Click the three dots ⋮ menu and then select Delete.
 Store the current playing media as a preset with the provided `preset_id`. This will only work for sources that support presets. See the [Presets section](#presets) for more details.
 
 ```yaml
-service: yamaha_ynca.store_preset
+action: yamaha_ynca.store_preset
 target:
   entity_id: media_player.rx_a810_main
 data:
@@ -689,7 +689,7 @@ data:
   As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote entity](#remote-entity).
 
 ```yaml
-service: remote.send_command
+action: remote.send_command
 target:
   entity_id: remote.rx_V475_main_remote
 data:
