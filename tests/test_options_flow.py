@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import create_autospec
 
-from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
 import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 ALL_SOUND_MODES = [
     soundprg.value
@@ -46,7 +49,10 @@ ALL_SOUND_MODES = [
     ]
 ]
 
-ALL_INPUTS = [
+# These inputs will be assumed to be supported when they can not be detected by reading INPNAME<input>
+# Notably this excludes internal subunits like "NET RADIO" and "SPOTIFY" which can be detected
+# and are usually not setup in tests
+ALL_PHYSICAL_INPUTS = [
     "AUDIO",
     "AUDIO1",
     "AUDIO2",
@@ -111,7 +117,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -123,7 +129,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -135,7 +141,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -147,7 +153,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -156,26 +162,26 @@ async def test_options_flow_navigate_all_screens(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE2": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE3": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE4": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
 
 
 async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
-    """Test optionsflow when there is no connection"""
+    """Test optionsflow when there is no connection."""
     integration = await setup_integration(hass, mock_ynca)
     integration.entry.runtime_data = None  # Pretend connection failed
 
@@ -289,7 +295,7 @@ async def test_options_flow_zone_inputs(
 
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
-    options["MAIN"] = {"hidden_inputs": ["AV5"]}
+    options["MAIN"] = {"selected_inputs": ["AV5", "DOES_NOT_EXIST"]}
     hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
@@ -316,7 +322,7 @@ async def test_options_flow_zone_inputs(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ["NET RADIO"],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
@@ -347,7 +353,7 @@ async def test_options_flow_configure_nof_scenes(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     )
@@ -356,7 +362,7 @@ async def test_options_flow_configure_nof_scenes(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     }

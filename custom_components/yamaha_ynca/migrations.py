@@ -10,6 +10,7 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 import ynca
 
+from .config_flow import YamahaYncaConfigFlow
 from .const import DATA_MODELNAME, DOMAIN, LOGGER
 from .helpers import receiver_requires_audio_input_workaround
 
@@ -17,11 +18,11 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
+LEGACY_CONF_HIDDEN_INPUTS = "hidden_inputs"
 LEGACY_CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 
 
-# This is a copy of the enum in ynca package
-# so that during import we have a stable enum that does not change
+# This is a copy of the enum in ynca package so that during migration we have a stable enum that does not change over time
 @unique
 class YncaSoundPrgCopy(StrEnum):
     HALL_IN_MUNICH = "Hall in Munich"
@@ -55,7 +56,59 @@ class YncaSoundPrgCopy(StrEnum):
     ENHANCED = "Enhanced"
 
 
-async def async_migrate_entry(  # noqa: C901
+# This is a copy of the enum in ynca package so that during migration we have a stable enum that does not change over time
+@unique
+class YncaInputCopy(StrEnum):
+    # Inputs with connectors on the receiver
+    AUDIO = "AUDIO"  # This input is kind of weird since it is not reported by INPNAME=?
+    AUDIO1 = "AUDIO1"
+    AUDIO2 = "AUDIO2"
+    AUDIO3 = "AUDIO3"
+    AUDIO4 = "AUDIO4"
+    AUDIO5 = "AUDIO5"
+    AV1 = "AV1"
+    AV2 = "AV2"
+    AV3 = "AV3"
+    AV4 = "AV4"
+    AV5 = "AV5"
+    AV6 = "AV6"
+    AV7 = "AV7"
+    DOCK = "DOCK"  # Selecting DOCK selects iPod for me, might depend on what dock is attached (I have no dock to test)
+    HDMI1 = "HDMI1"
+    HDMI2 = "HDMI2"
+    HDMI3 = "HDMI3"
+    HDMI4 = "HDMI4"
+    HDMI5 = "HDMI5"
+    HDMI6 = "HDMI6"
+    HDMI7 = "HDMI7"
+    MULTICH = "MULTI CH"
+    OPTICAL1 = "OPTICAL1"
+    OPTICAL2 = "OPTICAL2"
+    PHONO = "PHONO"
+    TV = "TV"
+    VAUX = "V-AUX"
+
+    # Inputs provided by subunits
+    AIRPLAY = "AirPlay"
+    BLUETOOTH = "Bluetooth"
+    IPOD = "iPod"
+    IPOD_USB = "iPod (USB)"
+    NAPSTER = "Napster"
+    NETRADIO = "NET RADIO"
+    PANDORA = "Pandora"
+    PC = "PC"
+    RHAPSODY = "Rhapsody"
+    SERVER = "SERVER"
+    SIRIUS = "SIRIUS"
+    SIRIUS_IR = "SIRIUS InternetRadio"
+    SIRIUS_XM = "SiriusXM"
+    SPOTIFY = "Spotify"
+    TUNER = "TUNER"  # AM/FM tuner (@TUN) or DAB/FM tuner (@DAB)
+    UAW = "UAW"
+    USB = "USB"
+
+
+async def async_migrate_entry(  # noqa: C901, PLR0912
     hass: HomeAssistant, config_entry: ConfigEntry
 ) -> bool:
     """Migrate old entry."""
@@ -63,7 +116,7 @@ async def async_migrate_entry(  # noqa: C901
     from_minor_version = config_entry.minor_version
     LOGGER.debug("Migrating from version %s.%s", from_version, from_minor_version)
 
-    if config_entry.version > 7:
+    if config_entry.version > YamahaYncaConfigFlow.VERSION:
         # This means the user has downgraded from a future version
         return False
 
@@ -98,6 +151,8 @@ async def async_migrate_entry(  # noqa: C901
             migrate_v7_5_to_v7_6(hass, config_entry)
         if config_entry.minor_version == 6:  # noqa: PLR2004
             migrate_v7_6_to_v7_7(hass, config_entry)
+        if config_entry.minor_version == 7:  # noqa: PLR2004
+            migrate_v7_7_to_v7_8(hass, config_entry)
 
     # When adding new migrations do _not_ forget
     # to increase the VERSION of the YamahaYncaConfigFlow
@@ -112,6 +167,26 @@ async def async_migrate_entry(  # noqa: C901
     )
 
     return True
+
+
+def migrate_v7_7_to_v7_8(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    options = dict(config_entry.options)  # Convert to dict to be able to use .get
+
+    # Switch from using "hidden_inputs" to "selected_inputs"
+    all_inputs = [input_.value for input_ in YncaInputCopy]
+
+    for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
+        if zone_options := options.get(zone_id):
+            hidden_inputs = zone_options.get(LEGACY_CONF_HIDDEN_INPUTS, [])
+
+            selected_inputs = list(set(all_inputs) - set(hidden_inputs))
+
+            zone_options["selected_inputs"] = selected_inputs
+            zone_options.pop(LEGACY_CONF_HIDDEN_INPUTS, None)
+
+    hass.config_entries.async_update_entry(
+        config_entry, options=options, minor_version=8
+    )
 
 
 def migrate_v7_6_to_v7_7(hass: HomeAssistant, config_entry: ConfigEntry) -> None:

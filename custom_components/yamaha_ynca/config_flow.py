@@ -72,7 +72,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # When updating also update the one used in `create_mock_config_entry` for tests
     VERSION = 7
-    MINOR_VERSION = 7
+    MINOR_VERSION = 8
 
     @staticmethod
     @callback
