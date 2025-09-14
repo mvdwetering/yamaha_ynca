@@ -146,13 +146,13 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 
 The remote entity allows sending remote control codes and commands to the receiver. There is a remote entity for each zone.
 
-The current list of commands is below, check the "commands" attribute of the remote entity for the most up-to-date version. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
+The current list of commands is below, check the "commands" attribute of the remote entity for the most up-to-date version. Note that this command list does not take zone capabilities into account, just that there is a known remote control IR code for that command.
 
 > on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
 
 More remote control commands exist, but for now the commands included are the ones that are not available on the normal entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
 
-Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and are 4, 6 or 8 characters long. E.g. the `on` command for the main zone has code `7E81-7E81`. The separator is optional. Since each code includes the zone it is possible to send an IR code through any of the remote entities.
+Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
 
 Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
 
@@ -593,7 +593,7 @@ cards:
 
 *Recommended because you get notified of updates.*
 
-HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site <https://hacs.xyz/>
+HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site <https://hacs.xyz/>
 
 You can add the repository with the button below
 
@@ -627,7 +627,6 @@ To add the Yamaha (YNCA) integration to your Home Assistant instance use this My
 
 If the above My button doesn’t work, you can also perform the following steps manually:
 
-* Go to the "Integration" page in Home Assistant
 * Go to  Settings > Devices & Services.
 * Press the "Add Integration" button
 * Select the "Yamaha (YNCA)" integration from the list
@@ -644,7 +643,7 @@ Select Yamaha (YNCA). Click the three dots ⋮ menu and then select Delete.
 
 ### Action yamaha_ynca.store_preset
 
-Store the current playing media as a preset with the provided `preset_id`. This will only work for sources that support presets. See the [Presets section](#presets) for more details.
+Store the currently playing media as a preset with the provided `preset_id`. This will only work for sources that support presets. See the [Presets section](#presets) for more details.
 
 ```yaml
 action: yamaha_ynca.store_preset
