@@ -637,8 +637,8 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 This integration follows standard integration removal. No extra steps are required.
 
-Go to {% my integrations icon title="Settings > Devices & Services" %}.
-Select Denon HEOS. Click the three dots {% icon "mdi:dots-vertical" %} menu and then select Delete.
+Go to "Settings > Devices & Services".
+Select Yamaha (YNCA). Click the three dots ⋮ menu and then select Delete.
 
 ## Actions
 
