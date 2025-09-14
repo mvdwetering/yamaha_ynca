@@ -49,7 +49,10 @@ ALL_SOUND_MODES = [
     ]
 ]
 
-ALL_INPUTS = [
+# These inputs will be assumed to be supported when they can not be detected by reading INPNAME<input>
+# Notably this excludes internal subunits like "NET RADIO" and "SPOTIFY" which can be detected
+# and are usually not setup in tests
+ALL_PHYSICAL_INPUTS = [
     "AUDIO",
     "AUDIO1",
     "AUDIO2",
@@ -114,7 +117,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -126,7 +129,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -138,7 +141,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -150,7 +153,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -159,19 +162,19 @@ async def test_options_flow_navigate_all_screens(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE2": {
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE3": {
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE4": {
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
@@ -350,7 +353,7 @@ async def test_options_flow_configure_nof_scenes(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     )
@@ -359,7 +362,7 @@ async def test_options_flow_configure_nof_scenes(
     assert result["data"] == {
         yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     }
