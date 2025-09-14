@@ -144,7 +144,7 @@ The `media_content_type` is always "music". The `media_content_id` format is lis
 
 ### Remote entity
 
-The remote entity allows sending remote control codes and commands to the receiver. There is remote entity for each zone.
+The remote entity allows sending remote control codes and commands to the receiver. There is a remote entity for each zone.
 
 The current list of commands is below, check the "commands" attribute of the remote entity for the most up-to-date version. Note that this command list does not take zone capabilities into account, just that there is a known remote control code for that command.
 
@@ -676,12 +676,12 @@ data:
   
   It can also be that your receiver does not expose that feature.
   
-  You can make an issue if you believe it is supposed to be supported on your receiver.
+  You can open an issue if you believe it is supposed to be supported on your receiver.
 
 * **Q: How can I stream audio from a URL?**  
   You can't do that with this integration because the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
 
-* **Q: Why are Scene buttons are not working for my receiver?**  
+* **Q: Why are Scene buttons not working for my receiver?**  
   On some receivers (e.g. RX-V475) the command to activate the scenes does not work even though the receiver seems to indicate support for them. There might be more receivers with this issue, please report them in an issue or start a discussion.
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
@@ -691,14 +691,14 @@ data:
 ```yaml
 action: remote.send_command
 target:
-  entity_id: remote.rx_V475_main_remote
+  entity_id: remote.rx_v475_main_remote
 data:
   command: scene_1
 ```
 
 ## Development notes
 
-Just a quick reminder on how to set up the development enviroment.
+Just a quick reminder on how to set up the development environment.
 
 ```bash
 $ python3.13 -m venv venv
@@ -706,7 +706,7 @@ $ python3.13 -m venv venv
 (venv) $ pip install -e .[dev]
 ```
 
-Some usefull commands
+Some useful commands
 
 ```bash
 (venv) $ mypy --check-untyped-defs custom_components
