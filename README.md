@@ -77,7 +77,7 @@ If your receiver works but is not in the list, please post a message in the [dis
   * Standard Home Assistant media player
   * Separate [number entity with Volume in dB](#volume-db-entity)
 * Source selection
-  * Source names are taken from receiver if supported by receiver
+  * Source names are taken from the receiver if supported
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
