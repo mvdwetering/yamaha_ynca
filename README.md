@@ -5,7 +5,11 @@ Minimum required Home Assistant version is: 2025.2.0
 * [Description](#description)
 * [Working models](#working-models)
 * [Features](#features)
-* [Installation](#installation)
+* [Downloading](#downloading)
+  * [Home Assistant Community Store (HACS)](#home-assistant-community-store-hacs)
+  * [Manual download](#manual-download)
+* [Configuration](#configuration)
+* [Removal](#removal)
 * [Volume (dB) entity](#volume-db-entity)
 * [Remote entity](#remote-entity)
 * [Presets](#presets)
@@ -93,7 +97,7 @@ If your receiver works but is not in the list, please post a message in the [dis
   * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
 
-## Installation
+## Downloading
 
 ### Home Assistant Community Store (HACS)
 
@@ -101,33 +105,50 @@ If your receiver works but is not in the list, please post a message in the [dis
 
 HACS is a 3rd party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site <https://hacs.xyz/>
 
+You can add the repository with the button below
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mvdwetering&repository=yamaha_ynca&category=integration)
+
+<details>
+<summary>If the button does not work or you don't want to use it follow these steps below to add the integration to HACS manually</summary>
+
+* Go to your Home Assistant instance
 * Open the HACS page
 * Search for "Yamaha (YNCA)" in the HACS search bar
 * Click/tap on the integration to open the integration page
 * Press the Download button to download the integration
-* Restart Home Assistant
+* **Restart Home Assistant**
 
-Then configure the integration in Home Assistant as usual:
+</details>
 
-* Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
-* Press the "Add Integration" button
-* Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
-* Follow the instructions
+### Manual download
 
-### Manual
-
-* Go to the releases section on Github
+* Go to the [releases section on Github](https://github.com/mvdwetering/yamaha_ynca/releases)
 * Download the zip file for the version you want to install
 * Extract the zip
-* Copy the contents to the `custom_components` directory in your `config` directory
-* Restart Home Assistant
+* Copy the contents to the `custom_components` directory in your `config` directory. You should end up with the following directory structure `config/custom_components/yamaha_ynca`
+* **Restart Home Assistant**
 
-Then configure the integration in Home Assistant as usual:
+## Configuration
 
-* Go to the "Integration" page in Home Assistant (Settings > Devices & Services)
+To add the Yamaha (YNCA) integration to your Home Assistant instance use this My button:
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=yamaha_ynca)
+
+If the above My button doesn’t work, you can also perform the following steps manually:
+
+* Go to the "Integration" page in Home Assistant
+* Go to  Settings > Devices & Services.
 * Press the "Add Integration" button
-* Search for "Yamaha (YNCA)" and select the integration. You might need to clear the browser cache for it to show up (e.g. reload with CTRL+F5).
-* Follow the instructions
+* Select the "Yamaha (YNCA)" integration from the list
+* Follow the instructions on screen to complete the setup
+
+## Removal
+
+This integration follows standard integration removal. No extra steps are required.
+
+Go to {% my integrations icon title="Settings > Devices & Services" %}.
+Select Denon HEOS. Click the three dots {% icon "mdi:dots-vertical" %} menu and then select Delete.
 
 ## Volume (dB) entity
 
