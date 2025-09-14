@@ -18,7 +18,7 @@ Minimum required Home Assistant version is: 2025.2.0
 
 ## Description
 
-Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network).
+This is a custom integration for Home Assistant to support [Yamaha AV receivers](https://uk.yamaha.com/en/audio/home-audio/products/av-receivers-amps/) that support the YNCA protocol (serial and network).
 
 For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 

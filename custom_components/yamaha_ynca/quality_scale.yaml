@@ -11,7 +11,7 @@ rules:
   config-flow: done
   dependency-transparency: done
   docs-actions: todo
-  docs-high-level-description: todo
+  docs-high-level-description: done
   docs-installation-instructions: done
   docs-removal-instructions: done
   entity-event-setup: done
