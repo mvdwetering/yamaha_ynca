@@ -776,9 +776,9 @@ class YamahaYncaZoneB(YamahaYncaZone):
         self,
         receiver_unique_id: str,
         ynca_api: ynca.YncaApi,
-        hidden_inputs: list[str],
+        selected_inputs: list[str],
     ) -> None:
-        super().__init__(receiver_unique_id, ynca_api, ynca_api.main, hidden_inputs, [])  # type: ignore[arg-type]
+        super().__init__(receiver_unique_id, ynca_api, ynca_api.main, selected_inputs, [])  # type: ignore[arg-type]
         self._zone: Main  # Additional typehint
 
     def _get_zone_id(self) -> str:
