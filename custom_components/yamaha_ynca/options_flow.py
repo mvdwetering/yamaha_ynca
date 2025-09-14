@@ -203,15 +203,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ) -> ConfigFlowResult:
         zone_id = step_id.upper()
 
-        all_inputs = {}
-        for input_, name in InputHelper.get_source_mapping(self.api).items():
-            all_inputs[input_.value] = (
-                f"{input_.value} ({name})"
-                if input_.value.lower() != name.strip().lower()
-                else name
-            )
-        all_inputs = dict(sorted(all_inputs.items(), key=lambda item: item[1].lower()))
-
         if user_input is not None:
             self.options.setdefault(zone_id, {})
             self.options[zone_id][CONF_SELECTED_INPUTS] = user_input[
@@ -226,12 +217,34 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Select inputs for zone
         selected_inputs = self.options.get(zone_id, {}).get(CONF_SELECTED_INPUTS, [])
+
+        all_receiver_inputs = {}
+        for input_, name in InputHelper.get_source_mapping(self.api).items():
+            all_receiver_inputs[input_.value] = (
+                f"{input_.value} ({name})"
+                if input_.value.lower() != name.strip().lower()
+                else name
+            )
+        # Make sure list is sorted by name in UI
+        all_receiver_inputs = dict(
+            sorted(all_receiver_inputs.items(), key=lambda item: item[1].lower())
+        )
+
+        # Due to actual supported inputs of receiver is unknown at migration time the list of selected inputs
+        # can contain inputs not detected as supported by the receiver
+        all_receiver_input_ids = list(all_receiver_inputs.keys())
+        applicable_selected_input_ids = [
+            input_id
+            for input_id in selected_inputs
+            if input_id in all_receiver_input_ids
+        ]
+
         schema[
             vol.Required(
                 CONF_SELECTED_INPUTS,
-                default=selected_inputs,
+                default=applicable_selected_input_ids,
             )
-        ] = cv.multi_select(all_inputs)
+        ] = cv.multi_select(all_receiver_inputs)
 
         # Number of scenes for zone
         # Use a select so we can have nice distinct values presented with Autodetect and 0-12

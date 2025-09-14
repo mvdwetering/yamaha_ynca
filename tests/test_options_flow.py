@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import create_autospec
 
-from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
 import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 ALL_SOUND_MODES = [
     soundprg.value
@@ -175,7 +178,7 @@ async def test_options_flow_navigate_all_screens(
 
 
 async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
-    """Test optionsflow when there is no connection"""
+    """Test optionsflow when there is no connection."""
     integration = await setup_integration(hass, mock_ynca)
     integration.entry.runtime_data = None  # Pretend connection failed
 
@@ -289,7 +292,7 @@ async def test_options_flow_zone_inputs(
 
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
-    options["MAIN"] = {"selected_inputs": ["AV5"]}
+    options["MAIN"] = {"selected_inputs": ["AV5", "DOES_NOT_EXIST"]}
     hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
