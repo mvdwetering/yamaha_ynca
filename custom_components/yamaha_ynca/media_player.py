@@ -79,10 +79,9 @@ async def async_setup_entry(
         CONF_SELECTED_SOUND_MODES,
         [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN],
     )
-    all_inputs = (
-        [input_.value for input_ in ynca.Input if input_ is not ynca.Input.UNKNOWN],
-    )
-
+    all_inputs = [
+        input_.value for input_ in ynca.Input if input_ is not ynca.Input.UNKNOWN
+    ]
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(api, zone_attr_name):
             selected_inputs = config_entry.options.get(zone_subunit.id, {}).get(
