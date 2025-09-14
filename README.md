@@ -10,6 +10,9 @@ Minimum required Home Assistant version is: 2025.2.0
   * [Manual download](#manual-download)
 * [Configuration](#configuration)
 * [Removal](#removal)
+* [Actions](#actions)
+  * [Action yamaha_ynca.store_preset](#action-yamaha_yncastore_preset)
+  * [Action yamaha_ynca.send_raw_ynca](#action-yamaha_yncasend_raw_ynca)
 * [Volume (dB) entity](#volume-db-entity)
 * [Remote entity](#remote-entity)
 * [Presets](#presets)
@@ -149,6 +152,32 @@ This integration follows standard integration removal. No extra steps are requir
 
 Go to {% my integrations icon title="Settings > Devices & Services" %}.
 Select Denon HEOS. Click the three dots {% icon "mdi:dots-vertical" %} menu and then select Delete.
+
+## Actions
+
+### Action yamaha_ynca.store_preset
+
+Store the current playing media as a preset with the provided `preset_id`. This will only work for sources that support presets. See the [Presets section](#presets) for more details.
+
+```yaml
+service: yamaha_ynca.store_preset
+target:
+  entity_id: media_player.rx_a810_main
+data:
+  preset_id: 12
+```
+
+### Action yamaha_ynca.send_raw_ynca
+
+This action allows sending raw YNCA commands. It is intended for debugging only.
+
+```yaml
+action: yamaha_ynca.send_raw_ynca
+target:
+  entity_id: media_player.rx_a810_main
+data:
+  raw_data: "@MAIN:INP=HDMI3"
+```
 
 ## Volume (dB) entity
 
