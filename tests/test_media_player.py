@@ -172,7 +172,7 @@ async def test_mediaplayer_entity_turn_on_off(
 ):
     mp_entity.turn_on()
     assert mock_zone.pwr is ynca.Pwr.ON
-    assert mp_entity.state is MediaPlayerState.IDLE
+    assert mp_entity.state is MediaPlayerState.ON
 
     mp_entity.turn_off()
     assert mock_zone.pwr is ynca.Pwr.STANDBY
@@ -185,7 +185,7 @@ async def test_mediaplayer_entity_zoneb_turn_on_off(
 ):
     mp_entity_zoneb.turn_on()
     assert mock_zone_main_with_zoneb.pwrb is ynca.PwrB.ON
-    assert mp_entity_zoneb.state is MediaPlayerState.IDLE
+    assert mp_entity_zoneb.state is MediaPlayerState.ON
 
     mp_entity_zoneb.turn_off()
     assert mock_zone_main_with_zoneb.pwrb is ynca.PwrB.STANDBY
@@ -538,11 +538,12 @@ async def test_mediaplayer_entity_supported_features(
 async def test_mediaplayer_entity_state(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
+    mock_zone.inp = ynca.Input.HDMI1
     mock_zone.pwr = ynca.Pwr.STANDBY
     assert mp_entity.state is MediaPlayerState.OFF
 
     mock_zone.pwr = ynca.Pwr.ON
-    assert mp_entity.state is MediaPlayerState.IDLE
+    assert mp_entity.state is MediaPlayerState.ON
 
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
