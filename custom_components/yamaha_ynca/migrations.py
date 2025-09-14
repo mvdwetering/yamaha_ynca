@@ -10,6 +10,7 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 import ynca
 
+from .config_flow import YamahaYncaConfigFlow
 from .const import DATA_MODELNAME, DOMAIN, LOGGER
 from .helpers import receiver_requires_audio_input_workaround
 
@@ -107,7 +108,7 @@ class YncaInputCopy(StrEnum):
     USB = "USB"
 
 
-async def async_migrate_entry(  # noqa: C901
+async def async_migrate_entry(  # noqa: C901, PLR0912
     hass: HomeAssistant, config_entry: ConfigEntry
 ) -> bool:
     """Migrate old entry."""
@@ -115,7 +116,7 @@ async def async_migrate_entry(  # noqa: C901
     from_minor_version = config_entry.minor_version
     LOGGER.debug("Migrating from version %s.%s", from_version, from_minor_version)
 
-    if config_entry.version > 7:
+    if config_entry.version > YamahaYncaConfigFlow.VERSION:
         # This means the user has downgraded from a future version
         return False
 
