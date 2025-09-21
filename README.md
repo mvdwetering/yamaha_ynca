@@ -617,7 +617,8 @@ You can add the repository with the button below
 * Go to the [releases section on Github](https://github.com/mvdwetering/yamaha_ynca/releases)
 * Download the zip file for the version you want to install
 * Extract the zip
-* Copy the contents to the `custom_components` directory in your `config` directory. You should end up with the following directory structure `config/custom_components/yamaha_ynca`
+* Make sure the `config/custom_components/yamaha_ynca` directory exists, if not create it
+* Copy the files from the zip into the `config/custom_components/yamaha_ynca` directory
 * **Restart Home Assistant**
 
 ## Configuration
