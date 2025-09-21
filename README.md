@@ -36,35 +36,35 @@ If your receiver works but is not in the list, please post a message in the [dis
 | Year | Series | Models |
 | --- | --- | --- |
 | 2010 | AVENTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
-|| RX-V |  RX-V867, RX-V1067, RX-V2067, RX-V3067 |
+| | RX-V | RX-V867, RX-V1067, RX-V2067, RX-V3067 |
 | 2011 | AVENTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
-|| RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
-|| HTR | HTR-6064 |
+| | RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
+| | HTR | HTR-6064 |
 | 2012 | AVENTAGE | RX-A720, RX-A820, RX-A1020, RX-A2020, RX-A3020 |
-|| RX-V | RX-V473, RX-V573, RX-V673, RX-V773 |
-|| HTR |  HTR-4065, HTR-7065 |
+| | RX-V | RX-V473, RX-V573, RX-V673, RX-V773 |
+| | HTR | HTR-4065, HTR-7065 |
 | 2013 | AVENTAGE | RX-A730, RX-A830, RX-A1030, RX-A2030, RX-A3030 |
-|| RX-V | RX-V475, RX-V575, RX-V675, RX-V775, RX-V1075, RX-V2075, RX-V3075 |
-|| HTR |  HTR-4066 |
-|| Other |  CX-A5000, R-N500, RX-V500D, RX-S600D |
+| | RX-V | RX-V475, RX-V575, RX-V675, RX-V775, RX-V1075, RX-V2075, RX-V3075 |
+| | HTR | HTR-4066 |
+| | Other | CX-A5000, R-N500, RX-V500D, RX-S600D |
 | 2014 | AVENTAGE | RX-A740, RX-A840, RX-A1040, RX-A2040, RX-A3040 |
-|| RX-V | RX-V477, RX-V677, RX-V777, RX-V1077, RX-V2077, RX-V3077 |
+| | RX-V | RX-V477, RX-V677, RX-V777, RX-V1077, RX-V2077, RX-V3077 |
 | 2015 | AVENTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
-|| RX-V | RX-V679 |
-|| Other | CX-A5100, RX-S601D |
+| | RX-V | RX-V679 |
+| | Other | CX-A5100, RX-S601D |
 | 2016 | AVENTAGE | RX-A660 |
-|| RX-V | RX-V481D, RX-V581, RX-V681 |
-|| TSR |  TSR-7810 |
+| | RX-V | RX-V481D, RX-V581, RX-V681 |
+| | TSR | TSR-7810 |
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
-|| RX-V | RX-V483, RX-V683 |
-|| HTR | HTR-4071 |
+| | RX-V | RX-V483, RX-V683 |
+| | HTR | HTR-4071 |
 | 2018 | AVENTAGE | RX-A3080 |
-|| RX-V | RX-V585, RX-V685, RX-V1085 |
-|| HTR |  HTR-4072 |
-|| TSR |  TSR-7850 |
+| | RX-V | RX-V585, RX-V685, RX-V1085 |
+| | HTR | HTR-4072 |
+| | TSR | TSR-7850 |
 | 2020 | AVENTAGE | RX-A2A, RX-A4A, RX-A6A |
-|| RX-V |  RX-V4A |
-|| TSR |  TSR-700 |
+| | RX-V | RX-V4A |
+| | TSR | TSR-700 |
 
 ## Features
 
@@ -82,22 +82,22 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
-* Activate scenes (like the buttons on the front/remote control)
+* Activate scenes with button entities like the buttons on the front panel
 * Select and store [Presets](#presets) for radio or other sources
 * Send [remote control commands and IR codes](#remote-entity)
 * Several controllable settings (if supported by receiver):
-  * CINEMA DSP 3D mode
   * Adaptive DRC
+  * CINEMA DSP 3D mode
   * Compressed Music Enhancer
+  * Direct / Pure Direct
   * HDMI Out enable/disable
   * Initial volume
   * Max volume
   * Sleep timer
   * Surround Decoder
-  * Direct / Pure Direct
   * Speaker pattern selection
-  * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
+  * Speaker bass/treble (default disabled)
 
 ### Volume (dB) entity
 
@@ -113,7 +113,7 @@ The volume of a `media_player` entity in Home Assistant has to be in the range 0
 
 ### Presets
 
-Presets can be activated and stored with the integration for some inputsources that support it. The AM/FM or DAB radio input seems to work for all models. Other inputsources, which don't work on all models, are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR and USB. It seems that Presets for these inputsources work only on pre-2012 models. The integration will autodetect if presets are supported for the available sources.
++Presets can be activated and stored with the integration for some sources that support it. The AM/FM or DAB radio input seems to work for all models. Other sources that may support presets on some models include: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, and USB. Presets for these sources seem to work only on pre‑2012 models. The integration will auto‑detect whether presets are supported for available sources.
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
@@ -153,9 +153,9 @@ The current list of commands is below, check the "commands" attribute of the rem
 
 More remote control commands exist, but for now the commands included are the ones that are not available on the normal entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
 
-Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
+Next to sending the predefined commands it is possible to send IR codes directly in case you need to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
 
-Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
+Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
 
 Example:
 
@@ -594,14 +594,16 @@ cards:
 
 *Recommended because you get notified of updates.*
 
-HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site <https://hacs.xyz/>
+> HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. See <https://hacs.xyz/> for more details.
 
-You can add the repository with the button below
+You can add the repository to HACS on your Home Assistant instance with the button below
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mvdwetering&repository=yamaha_ynca&category=integration)
 
+If the button does not work, or you don't want to use it, follow these steps to add the integration to HACS manually.
+
 <details>
-<summary>If the button does not work or you don't want to use it follow these steps below to add the integration to HACS manually</summary>
+<summary>Manual HACS configuration steps</summary>
 
 * Go to your Home Assistant instance
 * Open the HACS page
@@ -617,7 +619,8 @@ You can add the repository with the button below
 * Go to the [releases section on Github](https://github.com/mvdwetering/yamaha_ynca/releases)
 * Download the zip file for the version you want to install
 * Extract the zip
-* Copy the contents to the `custom_components` directory in your `config` directory. You should end up with the following directory structure `config/custom_components/yamaha_ynca`
+* Ensure the `config/custom_components/yamaha_ynca` directory exists (create it if needed)
+* Copy the files from the zip into the `config/custom_components/yamaha_ynca` directory
 * **Restart Home Assistant**
 
 ## Configuration
@@ -626,12 +629,23 @@ To add the Yamaha (YNCA) integration to your Home Assistant instance use this My
 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=yamaha_ynca)
 
-If the above My button doesn’t work, you can also perform the following steps manually:
+If the above My button doesn’t work, you can also perform the following steps manually
 
-* Go to  Settings > Devices & Services.
+<details>
+<summary>Manual configuration steps</summary>
+
+* Go to Settings > Devices & Services.
 * Press the "Add Integration" button
 * Select the "Yamaha (YNCA)" integration from the list
 * Follow the instructions on screen to complete the setup
+
+</details>
+
+<br/>
+
+> After initial configuration, check the integration options (sound modes, inputs, etc.) to match your receiver; not everything can be autodetected.
+>
+> You can access the integration options via the cogwheel⚙️ on `Settings > Devices & Services > Yamaha (YNCA) > Your Receiver`.
 
 ## Removal
 
