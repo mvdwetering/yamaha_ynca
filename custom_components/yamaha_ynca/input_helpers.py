@@ -54,6 +54,9 @@ input_mappings: list[Mapping] = [
     Mapping(ynca.Input.HDMI5, []),
     Mapping(ynca.Input.HDMI6, []),
     Mapping(ynca.Input.HDMI7, []),
+    Mapping(
+        ynca.Input.MAIN_ZONE_SYNC, []
+    ),  # Not an external input, but also not a subunit
     Mapping(ynca.Input.MULTICH, []),
     Mapping(ynca.Input.OPTICAL1, []),
     Mapping(ynca.Input.OPTICAL2, []),
@@ -135,7 +138,8 @@ class InputHelper:
                 source_mapping[mapping.ynca_input] = name
                 continue
 
-        # Some receivers don't expose external inputs as renameable so just add them all
+        # Some receivers don't expose external inputs as renameable (no support for INPNAME)
+        # so just add all non-subunit related inputs.
         if len(source_mapping) == 0:
             for mapping in input_mappings:
                 if not mapping.subunit_attribute_names:
