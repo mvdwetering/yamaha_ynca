@@ -113,7 +113,7 @@ The volume of a `media_player` entity in Home Assistant has to be in the range 0
 
 ### Presets
 
-Presets can be activated and stored for sources that support them. AM/FM and DAB radio inputs seem to work on all models. Other sources—Napster, Net Radio, Pandora, PC, Rhapsody, Sirius, SiriusIR, and USB—appear to work only on pre‑2012 models. The integration will autodetect whether presets are supported for the available sources.
++Presets can be activated and stored with the integration for some sources that support it. The AM/FM or DAB radio input seems to work for all models. Other sources that may support presets on some models include: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, and USB. Presets for these sources seem to work only on pre‑2012 models. The integration will auto‑detect whether presets are supported for available sources.
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
@@ -153,9 +153,9 @@ The current list of commands is below, check the "commands" attribute of the rem
 
 More remote control commands exist, but for now the commands included are the ones that are not available on the normal entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
 
-Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
+Next to sending the predefined commands it is possible to send IR codes directly in case you need to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
 
-Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
+Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
 
 Example:
 
@@ -594,13 +594,13 @@ cards:
 
 *Recommended because you get notified of updates.*
 
-> HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. More information and installation instructions can be found on their site <https://hacs.xyz/>
+> HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. See <https://hacs.xyz/> for more details.
 
 You can add the repository to HACS on your Home Assistant instance with the button below
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mvdwetering&repository=yamaha_ynca&category=integration)
 
-If the button does not work or you don't want to use it follow these steps below to add the integration to HACS manually.
+If the button does not work, or you don't want to use it, follow these steps to add the integration to HACS manually.
 
 <details>
 <summary>Manual HACS configuration steps</summary>
@@ -643,9 +643,9 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 <br/>
 
-> After the initial configuration is complete, check the integration options to configure available sound modes, inputs, and more to match your receiver because not everything can be autodetected.
+> After initial configuration, check the integration options (sound modes, inputs, etc.) to match your receiver; not everything can be autodetected.
 >
-> The integration options can be accessed through the cogwheel on the integrations page.
+> You can access the integration options via the cogwheel⚙️ on `Settings > Devices & Services > Yamaha (YNCA) > Your Receiver`.
 
 ## Removal
 
