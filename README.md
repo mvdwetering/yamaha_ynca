@@ -36,17 +36,17 @@ If your receiver works but is not in the list, please post a message in the [dis
 | Year | Series | Models |
 | --- | --- | --- |
 | 2010 | AVENTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
-|| RX-V |  RX-V867, RX-V1067, RX-V2067, RX-V3067 |
+|| RX-V | RX-V867, RX-V1067, RX-V2067, RX-V3067 |
 | 2011 | AVENTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
 || RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
 || HTR | HTR-6064 |
 | 2012 | AVENTAGE | RX-A720, RX-A820, RX-A1020, RX-A2020, RX-A3020 |
 || RX-V | RX-V473, RX-V573, RX-V673, RX-V773 |
-|| HTR |  HTR-4065, HTR-7065 |
+|| HTR | HTR-4065, HTR-7065 |
 | 2013 | AVENTAGE | RX-A730, RX-A830, RX-A1030, RX-A2030, RX-A3030 |
 || RX-V | RX-V475, RX-V575, RX-V675, RX-V775, RX-V1075, RX-V2075, RX-V3075 |
-|| HTR |  HTR-4066 |
-|| Other |  CX-A5000, R-N500, RX-V500D, RX-S600D |
+|| HTR | HTR-4066 |
+|| Other | CX-A5000, R-N500, RX-V500D, RX-S600D |
 | 2014 | AVENTAGE | RX-A740, RX-A840, RX-A1040, RX-A2040, RX-A3040 |
 || RX-V | RX-V477, RX-V677, RX-V777, RX-V1077, RX-V2077, RX-V3077 |
 | 2015 | AVENTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
@@ -54,17 +54,17 @@ If your receiver works but is not in the list, please post a message in the [dis
 || Other | CX-A5100, RX-S601D |
 | 2016 | AVENTAGE | RX-A660 |
 || RX-V | RX-V481D, RX-V581, RX-V681 |
-|| TSR |  TSR-7810 |
+|| TSR | TSR-7810 |
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
 || RX-V | RX-V483, RX-V683 |
 || HTR | HTR-4071 |
 | 2018 | AVENTAGE | RX-A3080 |
 || RX-V | RX-V585, RX-V685, RX-V1085 |
-|| HTR |  HTR-4072 |
-|| TSR |  TSR-7850 |
+|| HTR | HTR-4072 |
+|| TSR | TSR-7850 |
 | 2020 | AVENTAGE | RX-A2A, RX-A4A, RX-A6A |
-|| RX-V |  RX-V4A |
-|| TSR |  TSR-700 |
+|| RX-V | RX-V4A |
+|| TSR | TSR-700 |
 
 ## Features
 
@@ -631,13 +631,13 @@ If the above My button doesn’t work, you can also perform the following steps 
 <details>
 <summary>Manual configuration steps</summary>
 
-* Go to  Settings > Devices & Services.
+* Go to Settings > Devices & Services.
 * Press the "Add Integration" button
 * Select the "Yamaha (YNCA)" integration from the list
 * Follow the instructions on screen to complete the setup
 
 </details>
-  
+
 <br/>
 
 >After the initial configuration is complete make sure to check out the integration options to configure available soundmodes, inputs and more to match your receiver because not everything can be autodetected.
