@@ -155,7 +155,7 @@ More remote control commands exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send IR codes directly in case you want to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
 
-Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
+Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation use the Actions tab of the Developer Tools in Home Assistant. Select the device or entity and type the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
 
 Example:
 
