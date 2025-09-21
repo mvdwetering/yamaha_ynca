@@ -1,49 +1,58 @@
 """Test the Yamaha (YNCA) config flow."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import create_autospec
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
-from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
+import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 ALL_SOUND_MODES = [
-    ynca.SoundPrg.HALL_IN_MUNICH,
-    ynca.SoundPrg.HALL_IN_VIENNA,
-    ynca.SoundPrg.CHAMBER,
-    ynca.SoundPrg.CELLAR_CLUB,
-    ynca.SoundPrg.THE_ROXY_THEATRE,
-    ynca.SoundPrg.THE_BOTTOM_LINE,
-    ynca.SoundPrg.SPORTS,
-    ynca.SoundPrg.ACTION_GAME,
-    ynca.SoundPrg.ROLEPLAYING_GAME,
-    ynca.SoundPrg.MUSIC_VIDEO,
-    ynca.SoundPrg.STANDARD,
-    ynca.SoundPrg.SPECTACLE,
-    ynca.SoundPrg.SCI_FI,
-    ynca.SoundPrg.ADVENTURE,
-    ynca.SoundPrg.DRAMA,
-    ynca.SoundPrg.MONO_MOVIE,
-    ynca.SoundPrg.TWO_CH_STEREO,
-    ynca.SoundPrg.SURROUND_DECODER,
-    ynca.SoundPrg.HALL_IN_AMSTERDAM,
-    ynca.SoundPrg.CHURCH_IN_FREIBURG,
-    ynca.SoundPrg.CHURCH_IN_ROYAUMONT,
-    ynca.SoundPrg.VILLAGE_VANGUARD,
-    ynca.SoundPrg.WAREHOUSE_LOFT,
-    ynca.SoundPrg.RECITAL_OPERA,
-    ynca.SoundPrg.FIVE_CH_STEREO,
-    ynca.SoundPrg.SEVEN_CH_STEREO,
-    ynca.SoundPrg.NINE_CH_STEREO,
-    ynca.SoundPrg.ALL_CH_STEREO,
-    ynca.SoundPrg.ENHANCED,
+    soundprg.value
+    for soundprg in [
+        ynca.SoundPrg.HALL_IN_MUNICH,
+        ynca.SoundPrg.HALL_IN_VIENNA,
+        ynca.SoundPrg.CHAMBER,
+        ynca.SoundPrg.CELLAR_CLUB,
+        ynca.SoundPrg.THE_ROXY_THEATRE,
+        ynca.SoundPrg.THE_BOTTOM_LINE,
+        ynca.SoundPrg.SPORTS,
+        ynca.SoundPrg.ACTION_GAME,
+        ynca.SoundPrg.ROLEPLAYING_GAME,
+        ynca.SoundPrg.MUSIC_VIDEO,
+        ynca.SoundPrg.STANDARD,
+        ynca.SoundPrg.SPECTACLE,
+        ynca.SoundPrg.SCI_FI,
+        ynca.SoundPrg.ADVENTURE,
+        ynca.SoundPrg.DRAMA,
+        ynca.SoundPrg.MONO_MOVIE,
+        ynca.SoundPrg.TWO_CH_STEREO,
+        ynca.SoundPrg.SURROUND_DECODER,
+        ynca.SoundPrg.HALL_IN_AMSTERDAM,
+        ynca.SoundPrg.CHURCH_IN_FREIBURG,
+        ynca.SoundPrg.CHURCH_IN_ROYAUMONT,
+        ynca.SoundPrg.VILLAGE_VANGUARD,
+        ynca.SoundPrg.WAREHOUSE_LOFT,
+        ynca.SoundPrg.RECITAL_OPERA,
+        ynca.SoundPrg.FIVE_CH_STEREO,
+        ynca.SoundPrg.SEVEN_CH_STEREO,
+        ynca.SoundPrg.NINE_CH_STEREO,
+        ynca.SoundPrg.ALL_CH_STEREO,
+        ynca.SoundPrg.ENHANCED,
+    ]
 ]
 
-ALL_INPUTS = [
+# These inputs will be assumed to be supported when they can not be detected by reading INPNAME<input>
+# Notably this excludes internal subunits like "NET RADIO" and "SPOTIFY" which can be detected
+# and are usually not setup in tests
+ALL_PHYSICAL_INPUTS = [
     "AUDIO",
     "AUDIO1",
     "AUDIO2",
@@ -108,7 +117,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -120,7 +129,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -132,7 +141,7 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
@@ -144,36 +153,35 @@ async def test_options_flow_navigate_all_screens(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE2": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE3": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
         "ZONE4": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
 
 
 async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
-    """Test optionsflow when there is no connection"""
-
+    """Test optionsflow when there is no connection."""
     integration = await setup_integration(hass, mock_ynca)
     integration.entry.runtime_data = None  # Pretend connection failed
 
@@ -198,13 +206,10 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     integration = await setup_integration(hass, mock_ynca)
 
     options = dict(integration.entry.options)
-    options[yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES] = [
+    options[yamaha_ynca.const.CONF_SELECTED_SOUND_MODES] = [
         "Obsolete",  # Obsolete values should not break the schema
     ]
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -215,32 +220,14 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
         result["flow_id"],
         user_input={
             yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: [
-                ynca.SoundPrg.HALL_IN_MUNICH,
-                # ynca.SoundPrg.HALL_IN_VIENNA,
-                ynca.SoundPrg.CHAMBER,
-                ynca.SoundPrg.CELLAR_CLUB,
-                ynca.SoundPrg.THE_ROXY_THEATRE,
-                ynca.SoundPrg.THE_BOTTOM_LINE,
-                ynca.SoundPrg.SPORTS,
-                ynca.SoundPrg.ACTION_GAME,
-                ynca.SoundPrg.ROLEPLAYING_GAME,
-                ynca.SoundPrg.MUSIC_VIDEO,
-                ynca.SoundPrg.STANDARD,
-                ynca.SoundPrg.SPECTACLE,
-                ynca.SoundPrg.SCI_FI,
-                ynca.SoundPrg.ADVENTURE,
-                ynca.SoundPrg.DRAMA,
-                ynca.SoundPrg.MONO_MOVIE,
-                ynca.SoundPrg.TWO_CH_STEREO,
-                ynca.SoundPrg.SURROUND_DECODER,
-                ynca.SoundPrg.SEVEN_CH_STEREO,
+                ynca.SoundPrg.HALL_IN_VIENNA,
             ],
         },
     )
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: ["Hall in Vienna"]
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ["Hall in Vienna"]
     }
 
     # Make sure HA finishes creating entry completely
@@ -248,17 +235,16 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
     await hass.async_block_till_done()
 
 
-async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, mock_zone_main) -> None:
+async def test_options_flow_surrounddecoders(
+    hass: HomeAssistant, mock_ynca, mock_zone_main
+) -> None:
     mock_zone_main.twochdecoder = ynca.TwoChDecoder.Auro3d
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
 
     options = dict(integration.entry.options)
     # Do _not_ set options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] to test handling of absent options
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -269,7 +255,11 @@ async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, moc
         result["flow_id"],
         user_input={
             yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: [],
-            yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS: ["dolby_plii_movie", "auto", "dts_neural_x"],
+            yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS: [
+                "dolby_plii_movie",
+                "auto",
+                "dts_neural_x",
+            ],
         },
     )
 
@@ -285,7 +275,11 @@ async def test_options_flow_surrounddecoders(hass: HomeAssistant, mock_ynca, moc
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert result["data"][yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] == ["dolby_plii_movie", "auto", "dts_neural_x"]
+    assert result["data"][yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] == [
+        "dolby_plii_movie",
+        "auto",
+        "dts_neural_x",
+    ]
 
     # Make sure HA finishes creating entry completely
     # or it will result in errors when tearing down the test
@@ -301,11 +295,8 @@ async def test_options_flow_zone_inputs(
 
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
-    options["MAIN"] = {"hidden_inputs": ["AV5"]}
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    options["MAIN"] = {"selected_inputs": ["AV5", "DOES_NOT_EXIST"]}
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"
@@ -329,9 +320,9 @@ async def test_options_flow_zone_inputs(
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: ["HDMI4"],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ["NET RADIO"],
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: yamaha_ynca.const.NUMBER_OF_SCENES_AUTODETECT,
         },
     }
@@ -345,10 +336,7 @@ async def test_options_flow_configure_nof_scenes(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"number_of_scenes": 5}
-    hass.config_entries.async_update_entry(
-        integration.entry,
-        options=options
-    )
+    hass.config_entries.async_update_entry(integration.entry, options=options)
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"
@@ -365,16 +353,16 @@ async def test_options_flow_configure_nof_scenes(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_INPUTS,
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     )
 
     assert result["type"] == "create_entry"
     assert result["data"] == {
-        yamaha_ynca.const.CONF_HIDDEN_SOUND_MODES: [],
+        yamaha_ynca.const.CONF_SELECTED_SOUND_MODES: ALL_SOUND_MODES,
         "MAIN": {
-            yamaha_ynca.const.CONF_HIDDEN_INPUTS: [],
+            yamaha_ynca.const.CONF_SELECTED_INPUTS: ALL_PHYSICAL_INPUTS,
             yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 8,
         },
     }

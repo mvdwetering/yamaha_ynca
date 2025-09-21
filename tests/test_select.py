@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
+
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.const import CONF_SELECTED_SURROUND_DECODERS
 from custom_components.yamaha_ynca.select import (
     ENTITY_DESCRIPTIONS,
@@ -16,9 +16,8 @@ from custom_components.yamaha_ynca.select import (
     YncaSelectEntityDescription,
     async_setup_entry,
 )
-from homeassistant.helpers.entity import EntityCategory
-
 from tests.conftest import setup_integration
+import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
@@ -62,7 +61,6 @@ async def test_async_setup_entry(
 
 
 async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
-
     entity = YamahaYncaSelect(
         mock_config_entry, "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
@@ -88,7 +86,6 @@ async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
 async def test_select_initial_volume_mode_entity_select_option(
     mock_zone: ZoneBase, mock_config_entry
 ):
-
     entity = YamahaYncaSelectInitialVolumeMode(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -143,7 +140,6 @@ async def test_select_initial_volume_mode_entity_select_option(
 async def test_select_initial_volume_mode_entity_current_option(
     mock_zone: ZoneBase, mock_config_entry
 ):
-
     entity = YamahaYncaSelectInitialVolumeMode(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -181,7 +177,6 @@ async def test_select_initial_volume_mode_entity_current_option(
 async def test_select_surrounddecoder_entity_current_option(
     mock_zone: ZoneBase, mock_config_entry
 ):
-
     entity = YamahaYncaSelectSurroundDecoder(
         mock_config_entry,
         "ReceiverUniqueId",

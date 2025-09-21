@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+import time
 from unittest.mock import ANY, Mock, call, patch
+
 import pytest
 
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.remote import (
     YamahaYncaZoneRemote,
     async_setup_entry,
 )
-
 from tests.conftest import setup_integration
+import ynca
 
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)
@@ -39,7 +39,6 @@ async def test_async_setup_entry(
 
 
 async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
-
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     assert entity.unique_id == "ReceiverUniqueId_ZONE3_remote"
@@ -49,7 +48,6 @@ async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
 
 
 async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
-
     codes = {
         "code1": "12-AB",
         "code2": "12-CDEF",
@@ -80,8 +78,8 @@ async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
         else:
             assert False
 
-async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
 
+async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -92,14 +90,82 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
         entity.send_command(["not a valid code"])
 
 
-async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
+async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
+    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
+    # Setting value
+    entity.send_command(["1234ABCD"], num_repeats=2)
+    assert mock_ynca.sys.remotecode.call_count == 2
+    mock_ynca.sys.remotecode.assert_any_call("1234ABCD")
+
+
+async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
+    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
+
+    # Setting value
+    start = time.perf_counter()
+    entity.send_command(["1234ABCD"], num_repeats=2, delay_secs=0.250)
+    end = time.perf_counter()
+    assert end - start >= 0.250
+    assert end - start < 0.500
+
+
+async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
-    entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {"on": "12345678", "standby": "90ABCDEF"})
+    entity = YamahaYncaZoneRemote(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone_zone3,
+        {"on": "12345678", "standby": "90ABCDEF"},
+    )
 
     entity.turn_on()
     mock_ynca.sys.remotecode.assert_called_with("12345678")
 
     entity.turn_off()
     mock_ynca.sys.remotecode.assert_called_with("90ABCDEF")
+
+
+async def test_remote_is_on(mock_ynca, mock_zone_zone3):
+    mock_zone_zone3.pwr = ynca.Pwr.STANDBY
+
+    entity = YamahaYncaZoneRemote(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone_zone3,
+        {},
+    )
+
+    assert entity.is_on is False
+
+    mock_zone_zone3.pwr = ynca.Pwr.ON
+    assert entity.is_on is True
+
+
+async def test_remote_update_state(mock_ynca, mock_zone_zone3):
+    mock_zone_zone3.pwr = ynca.Pwr.STANDBY
+
+    entity = YamahaYncaZoneRemote(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone_zone3,
+        {},
+    )
+
+    # Check handling of updates from YNCA
+    await entity.async_added_to_hass()
+    mock_zone_zone3.register_update_callback.assert_called_once()
+    callback = mock_zone_zone3.register_update_callback.call_args.args[0]
+    entity.schedule_update_ha_state = Mock()
+
+    # Only PWR schedules update
+    callback("PWR", None)
+    entity.schedule_update_ha_state.assert_called_once()
+    entity.schedule_update_ha_state.reset_mock()
+    callback("SOMETHING_ELSE", None)
+    entity.schedule_update_ha_state.assert_not_called()
+
+    # Cleanup on exit
+    await entity.async_will_remove_from_hass()
+    mock_zone_zone3.unregister_update_callback.assert_called_once_with(callback)

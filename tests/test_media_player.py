@@ -1,19 +1,10 @@
 """Test the Yamaha (YNCA) media_player entitity."""
 
 from __future__ import annotations
-import logging
 
+import logging
 from unittest.mock import Mock, create_autospec, patch
 
-import pytest
-from pytest_unordered import unordered
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
-from custom_components.yamaha_ynca.media_player import (
-    YamahaYncaZone,
-    YamahaYncaZoneB,
-)
 from homeassistant.components.media_player import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -22,13 +13,26 @@ from homeassistant.components.media_player import (
 )
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
+import pytest
+from pytest_unordered import unordered
 
+from custom_components import yamaha_ynca
+from custom_components.yamaha_ynca.media_player import (
+    YamahaYncaZone,
+    YamahaYncaZoneB,
+)
 from tests.conftest import setup_integration
+import ynca
+
+ALL_SOUNDMODES = [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
+ALL_INPUTS = [input_.value for input_ in ynca.Input if input_ is not ynca.Input.UNKNOWN]
 
 
 @pytest.fixture
 def mp_entity(mock_zone, mock_ynca) -> YamahaYncaZone:
-    return YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    return YamahaYncaZone(
+        "ReceiverUniqueId", mock_ynca, mock_zone, ALL_INPUTS, ALL_SOUNDMODES
+    )
 
 
 @pytest.fixture
@@ -168,7 +172,7 @@ async def test_mediaplayer_entity_turn_on_off(
 ):
     mp_entity.turn_on()
     assert mock_zone.pwr is ynca.Pwr.ON
-    assert mp_entity.state is MediaPlayerState.IDLE
+    assert mp_entity.state is MediaPlayerState.ON
 
     mp_entity.turn_off()
     assert mock_zone.pwr is ynca.Pwr.STANDBY
@@ -181,7 +185,7 @@ async def test_mediaplayer_entity_zoneb_turn_on_off(
 ):
     mp_entity_zoneb.turn_on()
     assert mock_zone_main_with_zoneb.pwrb is ynca.PwrB.ON
-    assert mp_entity_zoneb.state is MediaPlayerState.IDLE
+    assert mp_entity_zoneb.state is MediaPlayerState.ON
 
     mp_entity_zoneb.turn_off()
     assert mock_zone_main_with_zoneb.pwrb is ynca.PwrB.STANDBY
@@ -189,7 +193,6 @@ async def test_mediaplayer_entity_zoneb_turn_on_off(
 
 
 async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
-
     mp_entity.mute_volume(True)
     assert mock_zone.mute is ynca.Mute.ON
     assert mp_entity.is_volume_muted is True
@@ -206,7 +209,6 @@ async def test_mediaplayer_entity_mute_volume(mp_entity, mock_zone):
 async def test_mediaplayer_entity_zoneb_mute_volume(
     mp_entity_zoneb, mock_zone_main_with_zoneb
 ):
-
     mp_entity_zoneb.mute_volume(True)
     assert mock_zone_main_with_zoneb.zonebmute is ynca.ZoneBMute.ON
     assert mp_entity_zoneb.is_volume_muted is True
@@ -223,7 +225,6 @@ async def test_mediaplayer_entity_zoneb_mute_volume(
 async def test_mediaplayer_entity_volume_set_up_down(
     mp_entity: YamahaYncaZone, mock_zone
 ):
-
     mock_zone.maxvol = 10
 
     mp_entity.set_volume_level(1)
@@ -260,7 +261,6 @@ async def test_mediaplayer_entity_volume_set_up_down(
 async def test_mediaplayer_entity_zoneb_volume_set_up_down(
     mp_entity_zoneb, mock_zone_main_with_zoneb
 ):
-
     mp_entity_zoneb.set_volume_level(1)
     assert mock_zone_main_with_zoneb.zonebvol == 16.5
     assert mp_entity_zoneb.volume_level == 1
@@ -281,7 +281,6 @@ async def test_mediaplayer_entity_zoneb_volume_set_up_down(
 
 
 async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):
-
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
@@ -317,27 +316,37 @@ async def test_mediaplayer_entity_source(hass, mock_zone, mock_ynca):
 
 
 async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
-
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
     mock_ynca.sys.inpnamehdmi4 = "Input HDMI 4"
 
     # Tuner is hidden
-    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, ["TUNER"], [])
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        ["HDMI4", "NET RADIO", "TUNER"],
+        [],
+    )
 
-    assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO"]
+    assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO", "TUNER"]
 
 
 async def test_mediaplayer_entity_source_whitespace_handling(
     hass, mock_zone, mock_ynca
 ):
-
     mock_ynca.sys.inpnamehdmi1 = "No spaces"
     mock_ynca.sys.inpnamehdmi2 = "   Leading spaces"
     mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
     mock_ynca.sys.inpnamehdmi4 = "   Leading and trailing spaces   "
 
-    mp_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        ["HDMI1", "HDMI2", "HDMI3", "HDMI4"],
+        [],
+    )
 
     assert mp_entity.source_list == unordered(
         [
@@ -365,7 +374,6 @@ async def test_mediaplayer_entity_source_whitespace_handling(
 
 
 async def test_mediaplayer_entity_sound_mode(mp_entity: YamahaYncaZone, mock_zone):
-
     mock_zone.straight = ynca.Straight.OFF
     mock_zone.puredirmode = ynca.PureDirMode.OFF
 
@@ -392,21 +400,28 @@ async def test_mediaplayer_entity_sound_mode(mp_entity: YamahaYncaZone, mock_zon
     assert mp_entity.sound_mode == "Sports"
 
 
-async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, mock_zone):
-
+async def test_mediaplayer_entity_sound_mode_list(mock_ynca, mock_zone):
     mock_zone.soundprg = ynca.SoundPrg.VILLAGE_VANGUARD
     mock_zone.straight = ynca.Straight.OFF
+
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        [],
+        ALL_SOUNDMODES,
+    )
     assert "Straight" in mp_entity.sound_mode_list
 
     mock_zone.straight = None
-    assert not "Straight" in mp_entity.sound_mode_list
+    assert "Straight" not in mp_entity.sound_mode_list
 
     mock_zone.soundprg = None
     assert mp_entity.sound_mode_list is None
 
     mock_zone.soundprg = ynca.SoundPrg.CELLAR_CLUB
     assert mp_entity.sound_mode_list == sorted(
-        [sp for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
+        [sp.value for sp in ynca.SoundPrg if sp is not ynca.SoundPrg.UNKNOWN]
     )
 
 
@@ -415,33 +430,39 @@ async def test_mediaplayer_entity_sound_mode_list(mp_entity: YamahaYncaZone, moc
     return_value=ynca.modelinfo.ModelInfo(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
 )
 async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
-    patched_YncaModelInfo_get, mp_entity, mock_zone
+    patched_YncaModelInfo_get, mock_ynca, mock_zone
 ):
-
     mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE
+
+    mp_entity = YamahaYncaZone(
+        "ReceiverUniqueId",
+        mock_ynca,
+        mock_zone,
+        [],
+        [ynca.SoundPrg.ALL_CH_STEREO.value],
+    )
+
     assert "All-Ch Stereo" in mp_entity.sound_mode_list
 
 
-async def test_mediaplayer_entity_hidden_sound_mode(hass, mock_ynca, mock_zone):
-
+async def test_mediaplayer_entity_selected_sound_mode(hass, mock_ynca, mock_zone):
     mock_zone.soundprg = ynca.SoundPrg.VILLAGE_VANGUARD
 
     mp_entity = YamahaYncaZone(
-        "ReceiverUniqueId", mock_ynca, mock_zone, [], ["MONO_MOVIE"]
+        "ReceiverUniqueId", mock_ynca, mock_zone, [], [ynca.SoundPrg.MONO_MOVIE.value]
     )
 
-    assert "Drama" in mp_entity.sound_mode_list
-    assert "Mono movie" not in mp_entity.sound_mode_list
+    assert "Mono Movie" in mp_entity.sound_mode_list
+    assert "Drama" not in mp_entity.sound_mode_list
 
     # Hidden soundmodes should still be shown if they are the current soundmode
-    mock_zone.soundprg = ynca.SoundPrg.MONO_MOVIE
-    assert mp_entity.sound_mode == "Mono Movie"
+    mock_zone.soundprg = ynca.SoundPrg.DRAMA
+    assert mp_entity.sound_mode == "Drama"
 
 
 async def test_mediaplayer_entity_supported_features(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
-
     expected_supported_features = (
         MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
     )
@@ -517,12 +538,12 @@ async def test_mediaplayer_entity_supported_features(
 async def test_mediaplayer_entity_state(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
-
+    mock_zone.inp = ynca.Input.HDMI1
     mock_zone.pwr = ynca.Pwr.STANDBY
     assert mp_entity.state is MediaPlayerState.OFF
 
     mock_zone.pwr = ynca.Pwr.ON
-    assert mp_entity.state is MediaPlayerState.IDLE
+    assert mp_entity.state is MediaPlayerState.ON
 
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
@@ -551,7 +572,6 @@ async def test_mediaplayer_playback_controls(mp_entity, mock_zone):
 
 
 async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_ynca):
-
     assert mp_entity.media_album_name is None
     assert mp_entity.media_artist is None
     assert mp_entity.media_title is None
@@ -562,6 +582,15 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     mock_zone.inp = ynca.Input.USB
     mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
 
+    # Empty metadata is not exposed
+    mock_ynca.usb.album = ""
+    mock_ynca.usb.artist = ""
+    mock_ynca.usb.song = ""
+    assert mp_entity.media_album_name is None
+    assert mp_entity.media_artist is None
+    assert mp_entity.media_title is None
+
+    # Available metadata is exposed
     mock_ynca.usb.album = "AlbumName"
     mock_ynca.usb.artist = "ArtistName"
     mock_ynca.usb.song = "Song title"
@@ -584,6 +613,12 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     # Netradio is a "channel" which name is exposed by the "station" attribute
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+
+    # Empty metadata is not exposed
+    mock_ynca.netradio.station = ""
+    assert mp_entity.media_channel is None
+
+    # Available metadata is exposed
     mock_ynca.netradio.station = "StationName"
     mock_ynca.netradio.song = "SongName"
     mock_ynca.netradio.album = "AlbumName"
@@ -661,7 +696,6 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
 async def test_mediaplayer_entity_shuffle(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
-
     # Unsupported subunit selected
     assert mp_entity.shuffle is None
 
@@ -686,7 +720,6 @@ async def test_mediaplayer_entity_shuffle(
 async def test_mediaplayer_entity_repeat(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
-
     # Unsupported subunit selected
     assert mp_entity.repeat is None
 
@@ -736,6 +769,10 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
 
     with pytest.raises(HomeAssistantError):
         await mp_entity.async_play_media("media_type", "tun:unsupported:15")
+
+    # Invalid preset format
+    with pytest.raises(HomeAssistantError):
+        await mp_entity.async_play_media("media_type", "tun:preset:not_a_number")
 
     # Out of range preset
     MIN_PRESET_ID = 1

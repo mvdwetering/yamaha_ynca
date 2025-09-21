@@ -2,78 +2,85 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, List, Type
+from typing import TYPE_CHECKING
+
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
+from homeassistant.helpers.entity import EntityCategory
+from homeassistant.util import slugify
 
 import ynca
 
-from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.util import slugify
-
-from . import YamahaYncaConfigEntry
 from .const import (
     CONF_SELECTED_SURROUND_DECODERS,
     SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
     TWOCHDECODER_STRINGS,
     ZONE_ATTRIBUTE_NAMES,
 )
-from .helpers import YamahaYncaSettingEntity, subunit_supports_entitydescription_key
+from .entity import YamahaYncaSettingEntity
+from .helpers import subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
+    from collections.abc import Callable
+
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
     from ynca.subunit import SubunitBase
     from ynca.subunits.zone import ZoneBase
 
+    from . import YamahaYncaConfigEntry
 
-class InitialVolumeMode(str, Enum):
+
+class InitialVolumeMode(Enum):
     CONFIGURED_INITIAL_VOLUME = "configured_initial_volume"
     LAST_VALUE = "last_value"
     MUTE = "mute"
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     config_entry: YamahaYncaConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     domain_entry_data = config_entry.runtime_data
 
     entities = []
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
-            for entity_description in ENTITY_DESCRIPTIONS:
-                if entity_description.is_supported(zone_subunit):
-                    entities.append(
-                        entity_description.entity_class(
-                            config_entry,
-                            config_entry.entry_id,
-                            zone_subunit,
-                            entity_description,
-                        )
+            entities.extend(
+                [
+                    entity_description.entity_class(
+                        config_entry,
+                        config_entry.entry_id,
+                        zone_subunit,
+                        entity_description,
                     )
+                    for entity_description in ENTITY_DESCRIPTIONS
+                    if entity_description.is_supported(zone_subunit)
+                ]
+            )
 
     # These are features on the SYS subunit, but they are tied to a zone
-    assert domain_entry_data.api.sys is not None
-    for entity_description in SYS_ENTITY_DESCRIPTIONS:
-        assert isinstance(entity_description.associated_zone_attr, str)
-        if (
-            getattr(domain_entry_data.api.sys, entity_description.key, None) is not None
-        ) and (
+    entities.extend(
+        YamahaYncaSelect(
+            config_entry,
+            config_entry.entry_id,
+            domain_entry_data.api.sys,  # type: ignore[arg-type]
+            entity_description,
+            associated_zone=zone_subunit,
+        )
+        for entity_description in SYS_ENTITY_DESCRIPTIONS
+        if getattr(domain_entry_data.api.sys, entity_description.key, None) is not None
+        and entity_description.associated_zone_attr
+        and (
             zone_subunit := getattr(
-                domain_entry_data.api, entity_description.associated_zone_attr
+                domain_entry_data.api,
+                entity_description.associated_zone_attr,
+                None,
             )
-        ):
-            entities.append(
-                YamahaYncaSelect(
-                    config_entry,
-                    config_entry.entry_id,
-                    domain_entry_data.api.sys,
-                    entity_description,
-                    associated_zone=zone_subunit,
-                )
-            )
+        )
+    )
 
     async_add_entities(entities)
 
@@ -86,11 +93,11 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
     def __init__(
         self,
         config_entry: ConfigEntry,
-        receiver_unique_id,
+        receiver_unique_id: str,
         subunit: SubunitBase,
         description: YncaSelectEntityDescription,
         associated_zone: ZoneBase | None = None,
-    ):
+    ) -> None:
         super().__init__(receiver_unique_id, subunit, description, associated_zone)
 
         if description.options_fn is not None:
@@ -123,8 +130,8 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 
 
 class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
-    """
-    Representation of a select entity on a Yamaha Ynca device specifically for Initial Volume.
+    """Representation of a select entity on a Yamaha Ynca device specifically for Initial Volume.
+
     Initial Volume is special as it depends on 2 attributes (INITVOLLVL and/or INITVOLMODE)
     """
 
@@ -176,8 +183,8 @@ class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
 
 
 class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
-    """
-    Representation of a select entity on a Yamaha Ynca device specifically for SurroundDecoder.
+    """Representation of a select entity on a Yamaha Ynca device specifically for SurroundDecoder.
+
     Surround Decoder is special in that the receiver transparently translates the
     PLII/PLIIx settings to match receiver configuration.
     E.g. setting DolbyPLIIx on a receiver without presence speakers will fallback to DolbyPLII.
@@ -201,13 +208,13 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
 
 @dataclass(frozen=True, kw_only=True)
 class YncaSelectEntityDescription(SelectEntityDescription):
-    enum: Type[Enum]
+    enum: type[Enum]
     """Enum is used to map and generate options (if not specified) for the select entity."""
 
-    function_names: List[str] | None = None
+    function_names: list[str] | None = None
     """Override which function names indicate updates for this entity. Default is `key.upper()`"""
 
-    entity_class: Type[YamahaYncaSelect] = YamahaYncaSelect
+    entity_class: type[YamahaYncaSelect] = YamahaYncaSelect
     """YamahaYncaSelect class to instantiate for this entity_description"""
 
     supported_check: Callable[[YncaSelectEntityDescription, ZoneBase], bool] = (
@@ -217,10 +224,10 @@ class YncaSelectEntityDescription(SelectEntityDescription):
     )
     """Callable to check support for this entity on the zone, default checks if attribute `key` is not None."""
 
-    def is_supported(self, zone_subunit: ZoneBase):
+    def is_supported(self, zone_subunit: ZoneBase) -> bool:
         return self.supported_check(self, zone_subunit)
 
-    options_fn: Callable[[ConfigEntry], List[str]] | None = None
+    options_fn: Callable[[ConfigEntry], list[str]] | None = None
     """Override which options are supported for this entity."""
 
     associated_zone_attr: str | None = None
@@ -232,7 +239,7 @@ class YncaSelectEntityDescription(SelectEntityDescription):
 
 
 ENTITY_DESCRIPTIONS = [
-    YncaSelectEntityDescription(  # type: ignore
+    YncaSelectEntityDescription(
         key="hdmiout",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.HdmiOut,
@@ -253,13 +260,13 @@ ENTITY_DESCRIPTIONS = [
             and zone_subunit.lipsynchdmiout2offset is not None
         ),
     ),
-    YncaSelectEntityDescription(  # type: ignore
+    YncaSelectEntityDescription(
         key="sleep",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.Sleep,
         icon="mdi:timer-outline",
     ),
-    YncaSelectEntityDescription(  # type: ignore
+    YncaSelectEntityDescription(
         entity_class=YamahaYncaSelectInitialVolumeMode,
         key="initial_volume_mode",
         entity_category=EntityCategory.CONFIG,
@@ -267,7 +274,7 @@ ENTITY_DESCRIPTIONS = [
         function_names=["INITVOLMODE", "INITVOLLVL"],
         supported_check=lambda _, zone_subunit: zone_subunit.initvollvl is not None,
     ),
-    YncaSelectEntityDescription(  # type: ignore
+    YncaSelectEntityDescription(
         entity_class=YamahaYncaSelectSurroundDecoder,
         key="twochdecoder",
         entity_category=EntityCategory.CONFIG,
@@ -283,7 +290,7 @@ ENTITY_DESCRIPTIONS = [
 ]
 
 SYS_ENTITY_DESCRIPTIONS = [
-    YncaSelectEntityDescription(  # type: ignore
+    YncaSelectEntityDescription(
         key="sppattern",
         entity_category=EntityCategory.CONFIG,
         enum=ynca.SpPattern,

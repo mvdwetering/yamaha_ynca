@@ -23,3 +23,6 @@ docs/_build/
 .vscode/
 
 venv*/
+*.egg-info/
+
+build/

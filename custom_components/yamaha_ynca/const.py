@@ -34,15 +34,14 @@ ZONE_ATTRIBUTE_NAMES = [
     "zone4",
 ]
 
-CONF_HIDDEN_SOUND_MODES = "hidden_sound_modes"
 CONF_SELECTED_SOUND_MODES = "selected_sound_modes"
-CONF_HIDDEN_INPUTS = "hidden_inputs"
 CONF_SELECTED_INPUTS = "selected_inputs"
 CONF_SELECTED_SURROUND_DECODERS = "selected_surround_decoders"
 CONF_NUMBER_OF_SCENES = "number_of_scenes"
 NUMBER_OF_SCENES_AUTODETECT = -1
 MAX_NUMBER_OF_SCENES = 12
 
+NUM_PRESETS = 40
 
 SURROUNDDECODEROPTIONS_PLIIX_MAPPING = {
     ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,
@@ -60,5 +59,5 @@ TWOCHDECODER_STRINGS = {
     "auto": "Auto",
     "dolby_surround": "Dolby Surround",
     "dts_neural_x": "DTS Neural:X",
-    "auro_3d": "AURO-3D"
+    "auro_3d": "AURO-3D",
 }

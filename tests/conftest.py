@@ -1,23 +1,22 @@
 """Fixtures for testing."""
 
 from __future__ import annotations
-from dataclasses import dataclass
 
-from typing import Callable, Generator, NamedTuple, Type
+from collections.abc import Callable, Generator
+from dataclasses import dataclass
+from typing import NamedTuple
 from unittest.mock import DEFAULT, Mock, patch
 
-import pytest
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry
-
+import pytest
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
     mock_device_registry,
 )
 
-import custom_components.yamaha_ynca as yamaha_ynca
-
+from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.helpers import DomainEntryData
 import ynca
 
@@ -47,7 +46,8 @@ INPUT_SUBUNITS = [
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
-    yield
+    return
+
 
 # Copied from HA tests/components/conftest.py
 @pytest.fixture
@@ -58,6 +58,7 @@ def entity_registry_enabled_by_default() -> Generator[None]:
         return_value=True,
     ):
         yield
+
 
 @pytest.fixture
 def mock_zone():
@@ -77,6 +78,7 @@ def mock_zone_main():
     main_mock.zonebvol = None
 
     return main_mock
+
 
 @pytest.fixture
 def mock_zone_main_with_zoneb(mock_zone_main):
@@ -102,6 +104,7 @@ def mock_zone_zone3():
 @pytest.fixture
 def mock_zone_zone4():
     return create_mock_zone(ynca.subunits.zone.Zone4)
+
 
 @pytest.fixture
 def mock_config_entry():
@@ -201,7 +204,7 @@ def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
 def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
     return MockConfigEntry(
         version=7,
-        minor_version=6,
+        minor_version=8,
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
         title=MODELNAME,
@@ -214,9 +217,9 @@ def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
 
 
 class Integration(NamedTuple):
-    entry: Type[yamaha_ynca.YamahaYncaConfigEntry]
+    entry: type[yamaha_ynca.YamahaYncaConfigEntry]
     on_disconnect: Callable | None
-    mock_ynca: Type[Mock]
+    mock_ynca: type[Mock]
 
 
 @dataclass
@@ -241,7 +244,9 @@ async def setup_integration(
     if mock_ynca.zone4:
         zones.append("ZONE4")
 
-    entry = create_mock_config_entry(modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url)
+    entry = create_mock_config_entry(
+        modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url
+    )
     entry.runtime_data = DomainEntryData(
         api=mock_ynca,
         initialization_events=[],

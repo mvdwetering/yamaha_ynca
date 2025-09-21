@@ -1,156 +1,136 @@
-# This file is copied from Home Assistant and will be out of date
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.black]
-target-version = ["py312"]
-exclude = 'generated'
-
-[tool.isort]
-# https://github.com/PyCQA/isort/wiki/isort-Settings
-profile = "black"
-# will group `import x` and `from x import` of the same module.
-force_sort_within_sections = true
-known_first_party = [
-    "homeassistant",
-    "yamaha_ynca",
-    "tests",
+[project]
+name = "yamaha_ynca"
+version = "0.0.0"
+license = { text = "MIT License" }
+description = "Custom integration for Home Assistant to support Yamaha AV receivers with the YNCA protocol (serial and network)."
+authors = [
+  { name = "Michel van de Wetering", email = "michel.van.de.wetering+yamaha_ynca@gmail.com" },
 ]
-forced_separate = [
-    "tests",
+maintainers = [
+  { name = "Michel van de Wetering", email = "michel.van.de.wetering+yamaha_ynca@gmail.com" },
 ]
-combine_as_imports = true
+readme = "README.md"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Topic :: Home Automation",
+]
+keywords = [
+  "custom component",
+  "custom integration",
+  "hacs",
+  "home-assistant",
+  "home-assistant-custom-component",
+  "homeassistant",
+  "integration",
+  "yamaha-avr",
+  "yamaha-receiver",
+]
+requires-python = ">=3.13"
 
-[tool.pylint.MASTER]
-py-version = "3.9"
+# Also update ynca version in manifest.json
+dependencies = ["ynca==5.23.0"]
+
+[project.urls]
+Documentation = "https://github.com/mvdwetering/yamaha_ynca"
+Changelog = "https://github.com/mvdwetering/yamaha_ynca/releases"
+Issues = "https://github.com/mvdwetering/yamaha_ynca/issues"
+Repository = "https://github.com/mvdwetering/yamaha_ynca"
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.15.0",
+  "ruff==0.9.7",
+  "pytest>=7.0.0",
+  "pytest-cov",
+  "pytest-mock",
+  "pytest-homeassistant-custom-component==0.13.210",
+  "awesomeversion>=24.0.0",
+  "homeassistant-stubs==2025.2.0",
+]
+
+[tool.coverage.report]
+exclude_also = [
+  # TYPE_CHECKING block is only executed while running mypy
+  "if TYPE_CHECKING:",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=custom_components/yamaha_ynca --cov-report=term-missing --cov-report=html"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff]
+src = ["custom_components/yamaha_ynca"]
+
+[tool.ruff.lint]
 ignore = [
-    "tests",
-]
-# Use a conservative default here; 2 should speed up most setups and not hurt
-# any too bad. Override on command line as appropriate.
-jobs = 2
-init-hook = """\
-    from pathlib import Path; \
-    import sys; \
+  "A005",   # It is just wrong
+  "ANN401", # Opiniated warning on disallowing dynamically typed expressions
+  # Ignoring missing docstrings. Most things should be clear and they tend to get out of date which is worse.
+  "D100", # Missing docstrings for public module
+  "D101", # Missing docstrings for public classes
+  "D102", # Missing docstrings for public methods
+  "D103", # Missing docstrings for public functions
+  "D104", # Missing docstrings in public package
+  "D105", # Missing docstrings in magic method
+  "D107", # Missing docstrings in __init__
 
-    from pylint.config import find_default_config_files; \
+  "D203",   # Conflicts with other rules
+  "D213",   # Conflicts with other rules
+  "RUF012", # Just broken
+  "TID252", # Relative imports
 
-    sys.path.append( \
-        str(Path(next(find_default_config_files())).parent.joinpath('pylint/plugins'))
-    ) \
-    """
-load-plugins = [
-    "pylint.extensions.code_style",
-    "pylint.extensions.typing",
-    "pylint_strict_informational",
-    "hass_constructor",
-    "hass_enforce_type_hints",
-    "hass_imports",
-    "hass_logger",
+  # Formatter conflicts
+  "COM812",
+  "COM819",
+  "D206",
+  "E501",
+  "ISC001",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "W191",
 ]
-persistent = false
-extension-pkg-allow-list = [
-    "av.audio.stream",
-    "av.stream",
-    "ciso8601",
-    "cv2",
+select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+  "S101",    # Asserts in tests is ok
+  "PLR2004", # Magic values in tests is ok(-ish)
 ]
 
-[tool.pylint.BASIC]
-class-const-naming-style = "any"
-good-names = [
-    "_",
-    "ev",
-    "ex",
-    "fp",
-    "i",
-    "id",
-    "j",
-    "k",
-    "Run",
-    "T",
-    "ip",
-]
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"homeassistant.helpers.area_registry" = "ar"
+"homeassistant.helpers.config_validation" = "cv"
+"homeassistant.helpers.device_registry" = "dr"
+"homeassistant.helpers.entity_registry" = "er"
+"homeassistant.helpers.issue_registry" = "ir"
+voluptuous = "vol"
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["custom_components", "ynca"]
+known-third-party = ["homeassistant"]
+combine-as-imports = true
 
 [tool.pylint."MESSAGES CONTROL"]
 # Reasons disabled:
-# format - handled by black
-# locally-disabled - it spams too much
+# format - handled by ruff
 # duplicate-code - unavoidable
-# cyclic-import - doesn't test if both import on load
-# abstract-class-little-used - prevents from setting right foundation
-# unused-argument - generic callbacks and setup methods create a lot of warnings
-# too-many-* - are not enforced for the sake of readability
-# too-few-* - same as too-many-*
-# abstract-method - with intro of async there are always methods missing
-# inconsistent-return-statements - doesn't handle raise
-# too-many-ancestors - it's too strict.
-# wrong-import-order - isort guards this
-# consider-using-f-string - str.format sometimes more readable
-# ---
-# Enable once current issues are fixed:
-# consider-using-namedtuple-or-dataclass (Pylint CodeStyle extension)
-# consider-using-assignment-expr (Pylint CodeStyle extension)
+# used-before-assignment - false positives with TYPE_CHECKING structures
 disable = [
-    "format",
-    "abstract-class-little-used",
-    "abstract-method",
-    "cyclic-import",
-    "duplicate-code",
-    "inconsistent-return-statements",
-    "locally-disabled",
-    "not-context-manager",
-    "too-few-public-methods",
-    "too-many-ancestors",
-    "too-many-arguments",
-    "too-many-branches",
-    "too-many-instance-attributes",
-    "too-many-lines",
-    "too-many-locals",
-    "too-many-public-methods",
-    "too-many-return-statements",
-    "too-many-statements",
-    "too-many-boolean-expressions",
-    "unused-argument",
-    "wrong-import-order",
-    "consider-using-f-string",
-    "consider-using-namedtuple-or-dataclass",
-    "consider-using-assignment-expr",
-]
-enable = [
-    #"useless-suppression",  # temporarily every now and then to clean them up
-    "use-symbolic-message-instead",
-]
-
-[tool.pylint.REPORTS]
-score = false
-
-[tool.pylint.TYPECHECK]
-ignored-classes = [
-    "_CountingAttr",  # for attrs
-]
-mixin-class-rgx = ".*[Mm]ix[Ii]n"
-
-[tool.pylint.FORMAT]
-expected-line-ending-format = "LF"
-
-[tool.pylint.EXCEPTIONS]
-overgeneral-exceptions = [
-    "BaseException",
-    "Exception",
-    "HomeAssistantError",
-]
-
-[tool.pylint.TYPING]
-runtime-typing = false
-
-[tool.pylint.CODE_STYLE]
-max-line-length-suggestions = 72
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = [
-    "tests",
-]
-norecursedirs = [
-    ".git",
-    "testing_config",
+  "abstract-method",
+  "duplicate-code",
+  "format",
+  "unexpected-keyword-arg",
+  "used-before-assignment",
 ]

@@ -1,14 +1,18 @@
 """Test the Yamaha (YNCA) config flow."""
+
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, call, patch
+from unittest.mock import AsyncMock, Mock, call, create_autospec, patch
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry # type: ignore[import]
-import ynca
-
-import custom_components.yamaha_ynca as yamaha_ynca
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.service import ServiceCall
+from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
+    MockConfigEntry,
+)
+
+from custom_components import yamaha_ynca
+from tests.mock_yncaconnection import YncaConnectionMock
+import ynca
 
 from .conftest import setup_integration
 
@@ -34,9 +38,7 @@ async def test_async_setup_entry(
     assert integration.entry.state is ConfigEntryState.LOADED
 
     assert len(mock_ynca.initialize.mock_calls) == 1
-    assert (
-        mock_ynca is integration.entry.runtime_data.api
-    )
+    assert mock_ynca is integration.entry.runtime_data.api
 
     assert len(device_reg.devices.keys()) == 5
 
@@ -53,9 +55,7 @@ async def test_async_setup_entry(
         assert device.configuration_url is None
 
     device = device_reg.async_get_device(
-        identifiers={
-            (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")
-        }
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")}
     )
     assert device.manufacturer == "Yamaha"
     assert device.model == "ModelName"
@@ -81,30 +81,88 @@ async def test_async_setup_entry_socket_has_configuration_url(
 
 
 async def test_async_setup_entry_audio_input_workaround_applied(
-    hass, device_reg, mock_ynca, mock_zone_main
+    hass, mock_ynca, mock_zone_main
 ):
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.modelname = "RX-V475"
 
-    integration = await setup_integration(
-        hass, mock_ynca
-    )
+    await setup_integration(hass, mock_ynca)
 
     assert mock_ynca.sys.inpnameaudio == "AUDIO"
 
+
 async def test_async_setup_entry_audio_input_workaround_not_applied(
-    hass, device_reg, mock_ynca, mock_zone_main
+    hass, mock_ynca, mock_zone_main
 ):
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.modelname = "RX-A6A"
 
-    integration = await setup_integration(
-        hass, mock_ynca
-    )
+    await setup_integration(hass, mock_ynca)
 
     assert getattr(mock_ynca.sys, "inpnameaudio", None) is None
+
+
+async def test_async_setup_entry_preset_removed(hass, mock_ynca, mock_zone_main):
+    """Test a successful setup entry."""
+    mock_ynca.main = mock_zone_main
+    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.netradio.id = ynca.constants.Subunit.NETRADIO
+
+    connection_mock = YncaConnectionMock()
+    connection_mock.setup_responses(
+        [
+            (
+                ("NETRADIO", "PRESET"),
+                [
+                    ("@RESTRICTED", "", ""),
+                ],
+            ),
+            (
+                ("NETRADIO", "AVAIL"),
+                [
+                    ("NETRADIO", "AVAIL", "Ready"),
+                ],
+            ),
+        ]
+    )
+
+    mock_ynca.get_raw_connection.return_value = connection_mock
+
+    await setup_integration(hass, mock_ynca)
+
+    assert hasattr(mock_ynca.netradio, "preset") is False
+
+
+async def test_async_setup_entry_preset_not_removed(hass, mock_ynca, mock_zone_main):
+    """Test a successful setup entry."""
+    mock_ynca.main = mock_zone_main
+    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.netradio.id = ynca.constants.Subunit.NETRADIO
+    mock_ynca.get_attr = Mock(
+        side_effect=lambda name, default=None: (
+            mock_ynca.netradio if name == "netradio" else default
+        )
+    )
+
+    connection_mock = YncaConnectionMock()
+    connection_mock.setup_responses(
+        [
+            (
+                ("NETRADIO", "AVAIL"),
+                [
+                    ("NETRADIO", "AVAIL", "Ready"),
+                ],
+            ),
+        ]
+    )
+
+    mock_ynca.get_raw_connection.return_value = connection_mock
+
+    await setup_integration(hass, mock_ynca)
+
+    assert hasattr(mock_ynca.netradio, "preset") is True
 
 
 async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
@@ -200,7 +258,6 @@ async def test_reload_on_disconnect(async_reload_mock, hass, mock_ynca, mock_zon
 
 async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zone3):
     """Test successful unload of entry."""
-
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
 
@@ -238,6 +295,7 @@ async def test_service_raw_ynca_command_handler(hass, mock_ynca):
     }
 
     service_call = ServiceCall(
+        hass,
         yamaha_ynca.DOMAIN,
         yamaha_ynca.SERVICE_SEND_RAW_YNCA,
         {
