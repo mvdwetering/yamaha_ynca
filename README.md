@@ -626,12 +626,23 @@ To add the Yamaha (YNCA) integration to your Home Assistant instance use this My
 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=yamaha_ynca)
 
-If the above My button doesn’t work, you can also perform the following steps manually:
+If the above My button doesn’t work, you can also perform the following steps manually
+
+<details>
+<summary>Manual configuration steps</summary>
 
 * Go to  Settings > Devices & Services.
 * Press the "Add Integration" button
 * Select the "Yamaha (YNCA)" integration from the list
 * Follow the instructions on screen to complete the setup
+
+</details>
+  
+<br/>
+
+>After the initial configuration is complete make sure to check out the integration options to configure available soundmodes, inputs and more to match your receiver because not everything can be autodetected.
+>
+>The integration options can be accessed through the cogwheel on the integrations page.
 
 ## Removal
 
