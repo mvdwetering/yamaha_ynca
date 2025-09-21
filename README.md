@@ -82,22 +82,22 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
-* Activate scenes (like the buttons on the front/remote control)
+* Activate scenes with button entities like the buttons on the front panel
 * Select and store [Presets](#presets) for radio or other sources
 * Send [remote control commands and IR codes](#remote-entity)
 * Several controllable settings (if supported by receiver):
-  * CINEMA DSP 3D mode
   * Adaptive DRC
+  * CINEMA DSP 3D mode
   * Compressed Music Enhancer
+  * Direct / Pure Direct
   * HDMI Out enable/disable
   * Initial volume
   * Max volume
   * Sleep timer
   * Surround Decoder
-  * Direct / Pure Direct
   * Speaker pattern selection
-  * Speaker bass/treble (default disabled)
   * Headphone bass/treble (default disabled)
+  * Speaker bass/treble (default disabled)
 
 ### Volume (dB) entity
 
