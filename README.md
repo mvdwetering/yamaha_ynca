@@ -113,7 +113,7 @@ The volume of a `media_player` entity in Home Assistant has to be in the range 0
 
 ### Presets
 
-Presets can be activated and stored with the integration for some inputsources that support it. The AM/FM or DAB radio input seems to work for all models. Other inputsources, which don't work on all models, are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR and USB. It seems that Presets for these inputsources work only on pre-2012 models. The integration will autodetect if presets are supported for the available sources.
+Presets can be activated and stored with the integration for some sources that support it. The AM/FM or DAB radio input seems to work for all models. Other sources, which don't work on all models, are: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR and USB. It seems that Presets for these sources work only on pre-2012 models. The integration will autodetect if presets are supported for the available sources.
 
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
