@@ -134,7 +134,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         schema[
             vol.Required(
                 CONF_SELECTED_SOUND_MODES,
-                default=self.options.get(CONF_SELECTED_SOUND_MODES, [all_sound_modes]),
+                default=self.options.get(CONF_SELECTED_SOUND_MODES, all_sound_modes),
             )
         ] = cv.multi_select(all_sound_modes)
 
