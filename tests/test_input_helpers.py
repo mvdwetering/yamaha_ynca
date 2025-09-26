@@ -52,11 +52,14 @@ def test_sourcemapping_inpname_some_set(mock_ynca):
 
     mapping = InputHelper.get_source_mapping(mock_ynca)
 
-    for input in ynca.Input:
-        if input is ynca.Input.HDMI4:
-            assert mapping[input] == "_INPNAMEHDMI4_"
+    for input_ in ynca.Input:
+        if input_ is ynca.Input.HDMI4:
+            assert mapping[input_] == "_INPNAMEHDMI4_"
+        elif input_ is ynca.Input.MAIN_ZONE_SYNC:
+            # Main Zone Sync should always be present
+            assert mapping[input_] == ynca.Input.MAIN_ZONE_SYNC.value
         else:
-            assert input not in mapping.keys()
+            assert input_ not in mapping
 
 
 def test_sourcemapping_inpnames_not_set(mock_ynca):
