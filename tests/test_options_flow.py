@@ -16,37 +16,8 @@ if TYPE_CHECKING:
 
 ALL_SOUND_MODES = [
     soundprg.value
-    for soundprg in [
-        ynca.SoundPrg.HALL_IN_MUNICH,
-        ynca.SoundPrg.HALL_IN_VIENNA,
-        ynca.SoundPrg.CHAMBER,
-        ynca.SoundPrg.CELLAR_CLUB,
-        ynca.SoundPrg.THE_ROXY_THEATRE,
-        ynca.SoundPrg.THE_BOTTOM_LINE,
-        ynca.SoundPrg.SPORTS,
-        ynca.SoundPrg.ACTION_GAME,
-        ynca.SoundPrg.ROLEPLAYING_GAME,
-        ynca.SoundPrg.MUSIC_VIDEO,
-        ynca.SoundPrg.STANDARD,
-        ynca.SoundPrg.SPECTACLE,
-        ynca.SoundPrg.SCI_FI,
-        ynca.SoundPrg.ADVENTURE,
-        ynca.SoundPrg.DRAMA,
-        ynca.SoundPrg.MONO_MOVIE,
-        ynca.SoundPrg.TWO_CH_STEREO,
-        ynca.SoundPrg.SURROUND_DECODER,
-        ynca.SoundPrg.HALL_IN_AMSTERDAM,
-        ynca.SoundPrg.CHURCH_IN_FREIBURG,
-        ynca.SoundPrg.CHURCH_IN_ROYAUMONT,
-        ynca.SoundPrg.VILLAGE_VANGUARD,
-        ynca.SoundPrg.WAREHOUSE_LOFT,
-        ynca.SoundPrg.RECITAL_OPERA,
-        ynca.SoundPrg.FIVE_CH_STEREO,
-        ynca.SoundPrg.SEVEN_CH_STEREO,
-        ynca.SoundPrg.NINE_CH_STEREO,
-        ynca.SoundPrg.ALL_CH_STEREO,
-        ynca.SoundPrg.ENHANCED,
-    ]
+    for soundprg in ynca.SoundPrg
+    if soundprg is not ynca.SoundPrg.UNKNOWN
 ]
 
 # These inputs will be assumed to be supported when they can not be detected by reading INPNAME<input>
