@@ -145,6 +145,10 @@ class InputHelper:
                 if not mapping.subunit_attribute_names:
                     source_mapping[mapping.ynca_input] = mapping.ynca_input.value
 
+        # Manually add Main Zone Sync because it can not be autodetected
+        if ynca.Input.MAIN_ZONE_SYNC not in source_mapping:
+            source_mapping[ynca.Input.MAIN_ZONE_SYNC] = ynca.Input.MAIN_ZONE_SYNC.value
+
         # Add sources from subunits
         for mapping in input_mappings:
             if mapping.ynca_input not in source_mapping:
