@@ -69,7 +69,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 
 ## Features
 
-## Overview
+### Overview
 
 * Full UI support for adding devices
 * Connect through serial cable, TCP/IP network or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
