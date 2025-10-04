@@ -5,6 +5,7 @@ Minimum required Home Assistant version is: 2025.2.0
 * [About Yamaha (YNCA)](#description)
 * [Working models](#working-models)
 * [Features](#features)
+  * [Overview](#overview)
   * [Volume (dB) entity](#volume-db-entity)
   * [Presets](#presets)
   * [Remote entity](#remote-entity)
@@ -68,6 +69,8 @@ If your receiver works but is not in the list, please post a message in the [dis
 
 ## Features
 
+### Overview
+
 * Full UI support for adding devices
 * Connect through serial cable, TCP/IP network or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
 * Local Push, so updates are instant
@@ -86,15 +89,16 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Select and store [Presets](#presets) for radio or other sources
 * Send [remote control commands and IR codes](#remote-entity)
 * Several controllable settings (if supported by receiver):
-  * Adaptive DRC
-  * CINEMA DSP 3D mode
-  * Compressed Music Enhancer
-  * Direct / Pure Direct
+  * Adaptive DRC enable/disable
+  * CINEMA DSP 3D mode enable/disable
+  * Compressed Music Enhancer enable/disable
+  * Direct / Pure Direct enable/disable
   * HDMI Out enable/disable
   * Initial volume
-  * Max volume
+  * Max volume level
   * Sleep timer
-  * Surround Decoder
+  * Surround:AI enable/disable
+  * Surround Decoder selection
   * Speaker pattern selection
   * Headphone bass/treble (default disabled)
   * Speaker bass/treble (default disabled)
