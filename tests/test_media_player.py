@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 import logging
 from unittest.mock import Mock, create_autospec, patch
 
@@ -691,6 +692,35 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     assert mp_entity.media_title == "SiriusIrSongName"
     assert mp_entity.media_channel == "ChannelName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+
+
+async def test_mediaplayer_media_position_duration(hass, mock_zone_main, mock_ynca):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.tidal = create_autospec(ynca.subunits.tidal.Tidal)
+    await setup_integration(hass, mock_ynca)
+
+    reg = er.async_get(hass)
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+
+    # Some subunits support duration/position
+    mock_zone_main.inp = ynca.Input.TIDAL
+
+    # Trigger state update
+    mock_ynca.tidal.elapsedtime = timedelta(
+        seconds=0
+    )  # Test with 0 to make sure it does not get skipped in an 'if'
+    mock_ynca.tidal.totaltime = timedelta(seconds=123)
+    tidal_callback = mock_ynca.tidal.register_update_callback.call_args.args[0]
+    tidal_callback("ELAPSEDTIME", "12")  # Value does not really matter
+    await hass.async_block_till_done()
+
+    # Duration/position data is available
+    state = hass.states.get(entity_id)
+    assert state.attributes["media_duration"] == 123
+    assert state.attributes["media_position"] == 0
+    assert state.attributes["media_position_updated_at"] is not None
 
 
 async def test_mediaplayer_entity_shuffle(
