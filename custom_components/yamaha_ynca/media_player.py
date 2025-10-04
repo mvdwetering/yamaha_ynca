@@ -553,6 +553,24 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         return None
 
+    @property
+    def media_position(self) -> int | None:
+        """Position of current playing media in seconds."""
+        if (subunit := self._get_input_subunit()) and (
+            elapsedtime := getattr(subunit, "elapsedtime", None)
+        ):
+            return int(elapsedtime.total_seconds())
+        return None
+
+    @property
+    def media_duration(self) -> int | None:
+        """Duration of current playing media in seconds."""
+        if (subunit := self._get_input_subunit()) and (
+            totaltime := getattr(subunit, "totaltime", None)
+        ):
+            return int(totaltime.total_seconds())
+        return None
+
     async def async_browse_media(
         self, media_content_type: str | None = None, media_content_id: str | None = None
     ) -> BrowseMedia:
