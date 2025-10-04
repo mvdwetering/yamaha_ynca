@@ -17,6 +17,7 @@ input_mappings: list[Mapping] = [
     # Inputs provided by subunits
     Mapping(ynca.Input.AIRPLAY, ["airplay"]),
     Mapping(ynca.Input.BLUETOOTH, ["bt"]),
+    Mapping(ynca.Input.DEEZER, ["deezer"]),
     Mapping(ynca.Input.IPOD, ["ipod"]),
     Mapping(ynca.Input.IPOD_USB, ["ipodusb"]),
     Mapping(ynca.Input.NAPSTER, ["napster"]),
@@ -29,6 +30,7 @@ input_mappings: list[Mapping] = [
     Mapping(ynca.Input.SIRIUS_IR, ["siriusir"]),
     Mapping(ynca.Input.SIRIUS_XM, ["siriusxm"]),
     Mapping(ynca.Input.SPOTIFY, ["spotify"]),
+    Mapping(ynca.Input.TIDAL, ["tidal"]),
     Mapping(ynca.Input.TUNER, ["tun", "dab"]),
     Mapping(ynca.Input.UAW, ["uaw"]),
     Mapping(ynca.Input.USB, ["usb"]),

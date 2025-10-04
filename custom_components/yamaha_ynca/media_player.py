@@ -22,6 +22,7 @@ from homeassistant.helpers import (
     entity_platform,
 )
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.util import dt
 import voluptuous as vol
 
 import ynca
@@ -137,13 +138,19 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._attr_unique_id = self._device_id
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
 
+        self._subunit_callbacks: dict[ynca.subunit.SubunitBase, Any] = {}
+
     def _get_zone_id(self) -> str:
         return str(self._zone.id)
 
     def _build_device_name(self) -> str:
         return build_zone_devicename(self._ynca, self._zone)
 
-    def update_callback(self, function: str | None, _value: Any) -> None:
+    def update_sys_callback(self, function: str | None, _value: Any) -> None:
+        if function and function.startswith("INPNAME"):
+            self.schedule_update_ha_state()
+
+    def update_zone_callback(self, function: str | None, _value: Any) -> None:
         if function == self._ZONENAME_FUNCTION:
             # Note that the mediaplayer does not have a name since it uses the devicename
             # So update the device name when the zonename changes to keep names as expected
@@ -151,8 +158,21 @@ class YamahaYncaZone(MediaPlayerEntity):
             device = registry.async_get_device(identifiers={(DOMAIN, self._device_id)})
             if device:
                 devicename = self._build_device_name()
-
                 registry.async_update_device(device.id, name=devicename)
+        if function is not None:
+            self.schedule_update_ha_state()
+
+    def update_subunit_callback(
+        self,
+        subunit: ynca.subunit.SubunitBase,
+        function: str | None,
+        _value: Any,
+    ) -> None:
+        if function is None or subunit != self._get_input_subunit():
+            return
+
+        if function == "ELAPSEDTIME":
+            self._attr_media_position_updated_at = dt.utcnow()
 
         self.schedule_update_ha_state()
 
@@ -168,21 +188,31 @@ class YamahaYncaZone(MediaPlayerEntity):
     async def async_added_to_hass(self) -> None:
         # Register to catch input renames on SYS
         self._ynca.sys.register_update_callback(  # type: ignore[union-attr]
-            self.update_callback
+            self.update_sys_callback
         )
-        self._zone.register_update_callback(self.update_callback)
+        self._zone.register_update_callback(self.update_zone_callback)
 
         for subunit in self._get_input_subunits():
-            subunit.register_update_callback(self.update_callback)
+
+            def callback(
+                function: str | None,
+                value: Any,
+                _subunit: ynca.subunit.SubunitBase = subunit,
+            ) -> None:
+                self.update_subunit_callback(_subunit, function, value)
+
+            subunit.register_update_callback(callback)
+            self._subunit_callbacks[subunit] = callback
 
     async def async_will_remove_from_hass(self) -> None:
         self._ynca.sys.unregister_update_callback(  # type: ignore[union-attr]
-            self.update_callback
+            self.update_sys_callback
         )
-        self._zone.unregister_update_callback(self.update_callback)
+        self._zone.unregister_update_callback(self.update_zone_callback)
 
-        for subunit in self._get_input_subunits():
-            subunit.unregister_update_callback(self.update_callback)
+        for subunit, callback in list(self._subunit_callbacks.items()):
+            subunit.unregister_update_callback(callback)
+        self._subunit_callbacks.clear()
 
     def _get_input_subunit(self) -> ynca.subunit.SubunitBase | None:
         if self._zone.inp is not None:
@@ -551,6 +581,24 @@ class YamahaYncaZone(MediaPlayerEntity):
         if channelname := getattr(subunit, "chname", None):
             return channelname
 
+        return None
+
+    @property
+    def media_position(self) -> int | None:
+        """Position of current playing media in seconds."""
+        if subunit := self._get_input_subunit():
+            elapsedtime = getattr(subunit, "elapsedtime", None)
+            if elapsedtime is not None:
+                return int(elapsedtime.total_seconds())
+        return None
+
+    @property
+    def media_duration(self) -> int | None:
+        """Duration of current playing media in seconds."""
+        if (subunit := self._get_input_subunit()) and (
+            totaltime := getattr(subunit, "totaltime", None)
+        ):
+            return int(totaltime.total_seconds())
         return None
 
     async def async_browse_media(
