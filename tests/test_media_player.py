@@ -333,6 +333,30 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO", "TUNER"]
 
 
+async def test_mediaplayer_entity_source_rename(hass, mock_zone_main, mock_ynca):
+    mock_ynca.main = mock_zone_main
+    mock_zone_main.inp = ynca.Input.HDMI3
+    mock_ynca.sys.inpnamehdmi3 = "HDMI3"
+    await setup_integration(hass, mock_ynca)
+
+    reg = er.async_get(hass)
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+
+    state = hass.states.get(entity_id)
+    assert state.attributes["source"] == "HDMI3"
+
+    # Change the name an trigger update callback
+    mock_ynca.sys.inpnamehdmi3 = "NEWNAME"
+    sys_callback = mock_ynca.sys.register_update_callback.call_args.args[0]
+    sys_callback("INPNAMEHDMI3", "NEWNAME")  # Value does not really matter
+    await hass.async_block_till_done()
+
+    state = hass.states.get(entity_id)
+    assert state.attributes["source"] == "NEWNAME"
+
+
 async def test_mediaplayer_entity_source_whitespace_handling(
     hass, mock_zone, mock_ynca
 ):
