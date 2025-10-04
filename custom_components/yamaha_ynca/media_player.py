@@ -210,9 +210,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         )
         self._zone.unregister_update_callback(self.update_zone_callback)
 
-        for subunit in self._get_input_subunits():
-            if callback := self._subunit_callbacks.get(subunit):
-                subunit.unregister_update_callback(callback)
+        for subunit, callback in list(self._subunit_callbacks.items()):
+            subunit.unregister_update_callback(callback)
+        self._subunit_callbacks.clear()
 
     def _get_input_subunit(self) -> ynca.subunit.SubunitBase | None:
         if self._zone.inp is not None:
