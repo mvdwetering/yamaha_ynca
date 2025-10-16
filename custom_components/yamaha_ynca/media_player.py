@@ -462,6 +462,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         """Enable/disable shuffle mode."""
         if (subunit := self._get_input_subunit()) and (hasattr(subunit, "shuffle")):
             subunit.shuffle = ynca.Shuffle.ON if shuffle else ynca.Shuffle.OFF
+            # On some subunits (TIDAL, probably Deezer) setting shuffle does not result
+            # in an event being sent from the receiver, so do manual update
+            self._ynca.get_raw_connection().get(subunit.id, "SHUFFLE")
 
     @property
     def repeat(self) -> str | None:
@@ -486,6 +489,9 @@ class YamahaYncaZone(MediaPlayerEntity):
                 subunit.repeat = ynca.Repeat.OFF
             elif repeat == RepeatMode.ONE:
                 subunit.repeat = ynca.Repeat.SINGLE
+            # On some subunits (TIDAL, probably Deezer) setting repeat does not result
+            # in an event being sent from the receiver, so do manual update
+            self._ynca.get_raw_connection().get(subunit.id, "REPEAT")
 
     def _is_radio_subunit(self, subunit: ynca.subunit.SubunitBase) -> bool:
         return (
