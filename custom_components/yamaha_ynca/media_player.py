@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components import media_source
@@ -85,9 +86,15 @@ async def async_setup_entry(
     ]
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(api, zone_attr_name):
-            selected_inputs = config_entry.options.get(zone_subunit.id, {}).get(
-                CONF_SELECTED_INPUTS, all_inputs
-            )
+            selected_inputs: list[str] = config_entry.options.get(
+                zone_subunit.id, {}
+            ).get(CONF_SELECTED_INPUTS, list(all_inputs))
+
+            # Main Zone Sync is part of all_inputs
+            # but main zone can't sync with itself, so remove it
+            if zone_subunit == api.main:
+                with contextlib.suppress(ValueError):
+                    selected_inputs.remove(ynca.Input.MAIN_ZONE_SYNC.value)
 
             entities.append(
                 YamahaYncaZone(
