@@ -56,6 +56,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | 2016 | AVENTAGE | RX-A660 |
 | | RX-V | RX-V481D, RX-V581, RX-V681 |
 | | TSR | TSR-7810 |
+| | Other | WXC-50 |
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
 | | RX-V | RX-V483, RX-V683 |
 | | HTR | HTR-4071 |
