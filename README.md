@@ -84,7 +84,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Source selection
   * Source names are taken from the receiver if provided
   * External inputs: AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
-  * Media sources: AirPlay, Bluetooth, iPod, iPod (USB), Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TUNER (AM/FM or DAB/FM), UAW, USB
+  * Media sources: AirPlay, Bluetooth, Deezer, iPod, iPod (USB), MusicCast Link, Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TIDAL, TUNER (AM/FM or DAB/FM), UAW, USB
   * Other: Main Zone Sync
 * Soundmode selection
 * Control playback state (depends on source)
