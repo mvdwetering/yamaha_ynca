@@ -60,7 +60,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
 | | RX-V | RX-V483, RX-V683 |
 | | HTR | HTR-4071 |
-| 2018 | AVENTAGE | RX-A3080 |
+| 2018 | AVENTAGE | RX-A880, RX-A3080 |
 | | RX-V | RX-V585, RX-V685, RX-V1085 |
 | | HTR | HTR-4072 |
 | | TSR | TSR-7850 |
