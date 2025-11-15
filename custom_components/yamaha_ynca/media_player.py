@@ -479,7 +479,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if (subunit := self._get_input_subunit()) and (
             repeat := getattr(subunit, "repeat", None)
         ):
-            if repeat == ynca.Repeat.SINGLE:
+            if repeat in (ynca.Repeat.SINGLE, ynca.Repeat.ONE):
                 return RepeatMode.ONE
             if repeat == ynca.Repeat.ALL:
                 return RepeatMode.ALL
@@ -495,7 +495,12 @@ class YamahaYncaZone(MediaPlayerEntity):
             elif repeat == RepeatMode.OFF:
                 subunit.repeat = ynca.Repeat.OFF
             elif repeat == RepeatMode.ONE:
-                subunit.repeat = ynca.Repeat.SINGLE
+                # CX-A5100 uses ONE instead of SINGLE
+                # seen on TIDAL subunit, lets assume that others do as well
+                if self._ynca.tidal is not None:
+                    subunit.repeat = ynca.Repeat.ONE
+                else:
+                    subunit.repeat = ynca.Repeat.SINGLE
             # On some subunits (TIDAL, probably Deezer) setting repeat does not result
             # in an event being sent from the receiver, so do manual update
             self._ynca.get_raw_connection().get(subunit.id, "REPEAT")
