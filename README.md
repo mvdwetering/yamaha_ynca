@@ -5,6 +5,7 @@ Minimum required Home Assistant version is: 2025.2.0
 * [About Yamaha (YNCA)](#description)
 * [Working models](#working-models)
 * [Features](#features)
+  * [Overview](#overview)
   * [Volume (dB) entity](#volume-db-entity)
   * [Presets](#presets)
   * [Remote entity](#remote-entity)
@@ -55,6 +56,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | 2016 | AVENTAGE | RX-A660 |
 | | RX-V | RX-V481D, RX-V581, RX-V681 |
 | | TSR | TSR-7810 |
+| | Other | WXC-50 |
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
 | | RX-V | RX-V483, RX-V683 |
 | | HTR | HTR-4071 |
@@ -68,6 +70,8 @@ If your receiver works but is not in the list, please post a message in the [dis
 
 ## Features
 
+### Overview
+
 * Full UI support for adding devices
 * Connect through serial cable, TCP/IP network or any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
 * Local Push, so updates are instant
@@ -78,7 +82,10 @@ If your receiver works but is not in the list, please post a message in the [dis
   * Standard Home Assistant media player
   * Separate [number entity with Volume in dB](#volume-db-entity)
 * Source selection
-  * Source names are taken from the receiver if supported
+  * Source names are taken from the receiver if provided
+  * External inputs: AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
+  * Media sources: AirPlay, Bluetooth, Deezer, iPod, iPod (USB), MusicCast Link, Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TIDAL, TUNER (AM/FM or DAB/FM), UAW, USB
+  * Other: Main Zone Sync
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
@@ -86,15 +93,16 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Select and store [Presets](#presets) for radio or other sources
 * Send [remote control commands and IR codes](#remote-entity)
 * Several controllable settings (if supported by receiver):
-  * Adaptive DRC
-  * CINEMA DSP 3D mode
-  * Compressed Music Enhancer
-  * Direct / Pure Direct
+  * Adaptive DRC enable/disable
+  * CINEMA DSP 3D mode enable/disable
+  * Compressed Music Enhancer enable/disable
+  * Direct / Pure Direct enable/disable
   * HDMI Out enable/disable
   * Initial volume
-  * Max volume
+  * Max volume level
   * Sleep timer
-  * Surround Decoder
+  * Surround:AI enable/disable
+  * Surround Decoder selection
   * Speaker pattern selection
   * Headphone bass/treble (default disabled)
   * Speaker bass/treble (default disabled)

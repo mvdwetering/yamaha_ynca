@@ -9,16 +9,16 @@ set -e
 # Determine the directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Get the previous version from pyproject.toml
+PREV_VERSION=$(grep -oP 'ynca==\K[0-9.]+' "$SCRIPT_DIR/pyproject.toml" | head -n1)
+
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <new_version>"
+  echo "Current version is: $PREV_VERSION"
   exit 1
 fi
 
-
 NEW_VERSION="$1"
-
-# Get the previous version from pyproject.toml
-PREV_VERSION=$(grep -oP 'ynca==\K[0-9.]+' "$SCRIPT_DIR/pyproject.toml" | head -n1)
 
 # Function to compare versions (returns 0 if $1 > $2)
 version_gt() {

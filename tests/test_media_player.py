@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 import logging
 from unittest.mock import Mock, create_autospec, patch
 
@@ -330,6 +331,30 @@ async def test_mediaplayer_entity_source_list(hass, mock_zone, mock_ynca):
     )
 
     assert mp_entity.source_list == ["Input HDMI 4", "NET RADIO", "TUNER"]
+
+
+async def test_mediaplayer_entity_source_rename(hass, mock_zone_main, mock_ynca):
+    mock_ynca.main = mock_zone_main
+    mock_zone_main.inp = ynca.Input.HDMI3
+    mock_ynca.sys.inpnamehdmi3 = "HDMI3"
+    await setup_integration(hass, mock_ynca)
+
+    reg = er.async_get(hass)
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+
+    state = hass.states.get(entity_id)
+    assert state.attributes["source"] == "HDMI3"
+
+    # Change the name an trigger update callback
+    mock_ynca.sys.inpnamehdmi3 = "NEWNAME"
+    sys_callback = mock_ynca.sys.register_update_callback.call_args.args[0]
+    sys_callback("INPNAMEHDMI3", "NEWNAME")  # Value does not really matter
+    await hass.async_block_till_done()
+
+    state = hass.states.get(entity_id)
+    assert state.attributes["source"] == "NEWNAME"
 
 
 async def test_mediaplayer_entity_source_whitespace_handling(
@@ -693,6 +718,35 @@ async def test_mediaplayer_mediainfo(mp_entity: YamahaYncaZone, mock_zone, mock_
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
 
+async def test_mediaplayer_media_position_duration(hass, mock_zone_main, mock_ynca):
+    mock_ynca.main = mock_zone_main
+    mock_ynca.tidal = create_autospec(ynca.subunits.tidal.Tidal)
+    await setup_integration(hass, mock_ynca)
+
+    reg = er.async_get(hass)
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+
+    # Some subunits support duration/position
+    mock_zone_main.inp = ynca.Input.TIDAL
+
+    # Trigger state update
+    mock_ynca.tidal.elapsedtime = timedelta(
+        seconds=0
+    )  # Test with 0 to make sure it does not get skipped in an 'if'
+    mock_ynca.tidal.totaltime = timedelta(seconds=123)
+    tidal_callback = mock_ynca.tidal.register_update_callback.call_args.args[0]
+    tidal_callback("ELAPSEDTIME", "12")  # Value does not really matter
+    await hass.async_block_till_done()
+
+    # Duration/position data is available
+    state = hass.states.get(entity_id)
+    assert state.attributes["media_duration"] == 123
+    assert state.attributes["media_position"] == 0
+    assert state.attributes["media_position_updated_at"] is not None
+
+
 async def test_mediaplayer_entity_shuffle(
     mp_entity: YamahaYncaZone, mock_zone, mock_ynca
 ):
@@ -735,6 +789,12 @@ async def test_mediaplayer_entity_repeat(
     assert mock_ynca.usb.repeat is ynca.Repeat.SINGLE
     assert mp_entity.repeat is RepeatMode.ONE
 
+    # Receiver models with Tidal use RepeatMod One iso Single
+    mock_ynca.tidal = create_autospec(ynca.subunits.tidal.Tidal)
+    mp_entity.set_repeat(RepeatMode.ONE)
+    assert mock_ynca.usb.repeat is ynca.Repeat.ONE
+    assert mp_entity.repeat is RepeatMode.ONE
+
     mp_entity.set_repeat(RepeatMode.ALL)
     assert mock_ynca.usb.repeat is ynca.Repeat.ALL
     assert mp_entity.repeat is RepeatMode.ALL
@@ -743,6 +803,50 @@ async def test_mediaplayer_entity_repeat(
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.NETRADIO = create_autospec(ynca.subunits.netradio.NetRadio)
     assert mp_entity.repeat is None
+
+
+async def test_mediaplayer_repeat_single_and_one(
+    hass, mock_zone_main, mock_ynca
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
+    await setup_integration(hass, mock_ynca)
+
+    reg = er.async_get(hass)
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+
+    # Select input with repeat
+    mock_zone_main.inp = ynca.Input.USB
+    usb_callback = mock_ynca.usb.register_update_callback.call_args.args[0]
+
+    # Trigger state update with Single
+    mock_ynca.usb.repeat = ynca.Repeat.SINGLE
+    usb_callback("REPEAT", "Single")
+    await hass.async_block_till_done()
+
+    # HA repeat is one
+    state = hass.states.get(entity_id)
+    assert state.attributes["repeat"] == "one"
+
+    # Change to other repeat mode
+    mock_ynca.usb.repeat = ynca.Repeat.OFF
+    usb_callback("REPEAT", "Off")
+    await hass.async_block_till_done()
+
+    # HA repeat is off
+    state = hass.states.get(entity_id)
+    assert state.attributes["repeat"] == "off"
+
+    # Trigger state update with One
+    mock_ynca.usb.repeat = ynca.Repeat.ONE
+    usb_callback("REPEAT", "One")
+    await hass.async_block_till_done()
+
+    # HA repeat is one
+    state = hass.states.get(entity_id)
+    assert state.attributes["repeat"] == "one"
 
 
 async def test_mediaplayer_entity_play_media_unsupported_media(

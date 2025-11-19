@@ -231,7 +231,8 @@ def main(args):
 
     if not Git.workarea_is_clean():
         logging.error("Workarea is not clean")
-        exit(1)
+        if not args.skip_clean_check:
+            exit(1)
 
     Git.fetch_tags()
 
@@ -286,7 +287,7 @@ def main(args):
             )
 
             # Changing from alpha to beta should bump the version before release
-            if manifest_version.alpha and next_manifest_version.beta:
+            if manifest_version.modifier_type != next_manifest_version.modifier_type:
                 next_version = next_manifest_version
             else:
                 next_version = manifest_version
@@ -366,6 +367,12 @@ if __name__ == "__main__":
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
         help="Define loglevel, default is INFO.",
+    )
+    parser.add_argument(
+        "--skip-clean-check",
+        help="Skip the workarea clean check, inteded to be used during development of this script.",
+        action="store_true",
+        default=False,
     )
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel)
