@@ -789,6 +789,12 @@ async def test_mediaplayer_entity_repeat(
     assert mock_ynca.usb.repeat is ynca.Repeat.SINGLE
     assert mp_entity.repeat is RepeatMode.ONE
 
+    # Receiver models with Tidal use RepeatMod One iso Single
+    mock_ynca.tidal = create_autospec(ynca.subunits.tidal.Tidal)
+    mp_entity.set_repeat(RepeatMode.ONE)
+    assert mock_ynca.usb.repeat is ynca.Repeat.ONE
+    assert mp_entity.repeat is RepeatMode.ONE
+
     mp_entity.set_repeat(RepeatMode.ALL)
     assert mock_ynca.usb.repeat is ynca.Repeat.ALL
     assert mp_entity.repeat is RepeatMode.ALL
@@ -797,6 +803,50 @@ async def test_mediaplayer_entity_repeat(
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.NETRADIO = create_autospec(ynca.subunits.netradio.NetRadio)
     assert mp_entity.repeat is None
+
+
+async def test_mediaplayer_repeat_single_and_one(
+    hass, mock_zone_main, mock_ynca
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.usb = create_autospec(ynca.subunits.usb.Usb)
+    await setup_integration(hass, mock_ynca)
+
+    reg = er.async_get(hass)
+    entity_id = reg.async_get_entity_id(
+        "media_player", yamaha_ynca.DOMAIN, "entry_id_MAIN"
+    )
+
+    # Select input with repeat
+    mock_zone_main.inp = ynca.Input.USB
+    usb_callback = mock_ynca.usb.register_update_callback.call_args.args[0]
+
+    # Trigger state update with Single
+    mock_ynca.usb.repeat = ynca.Repeat.SINGLE
+    usb_callback("REPEAT", "Single")
+    await hass.async_block_till_done()
+
+    # HA repeat is one
+    state = hass.states.get(entity_id)
+    assert state.attributes["repeat"] == "one"
+
+    # Change to other repeat mode
+    mock_ynca.usb.repeat = ynca.Repeat.OFF
+    usb_callback("REPEAT", "Off")
+    await hass.async_block_till_done()
+
+    # HA repeat is off
+    state = hass.states.get(entity_id)
+    assert state.attributes["repeat"] == "off"
+
+    # Trigger state update with One
+    mock_ynca.usb.repeat = ynca.Repeat.ONE
+    usb_callback("REPEAT", "One")
+    await hass.async_block_till_done()
+
+    # HA repeat is one
+    state = hass.states.get(entity_id)
+    assert state.attributes["repeat"] == "one"
 
 
 async def test_mediaplayer_entity_play_media_unsupported_media(

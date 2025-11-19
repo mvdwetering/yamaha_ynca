@@ -29,6 +29,7 @@ INPUT_SUBUNITS = [
     "deezer",
     "ipod",
     "ipodusb",
+    "mclink",
     "napster",
     "netradio",
     "pandora",

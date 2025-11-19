@@ -104,6 +104,7 @@ def test_sourcemapping_input_subunits(mock_ynca):
     assert mapping[ynca.Input.BLUETOOTH] == "Bluetooth"
     assert mapping[ynca.Input.IPOD] == "iPod"
     assert mapping[ynca.Input.IPOD_USB] == "iPod (USB)"
+    assert mapping[ynca.Input.MCLINK] == "MusicCast Link"
     assert mapping[ynca.Input.NAPSTER] == "Napster"
     assert mapping[ynca.Input.NETRADIO] == "NET RADIO"
     assert mapping[ynca.Input.PANDORA] == "Pandora"
@@ -177,12 +178,12 @@ def test_get_input_by_name(mock_ynca):
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
     # Available input
-    input = InputHelper.get_input_by_name(mock_ynca, "_INPNAMEUSB_")
-    assert input is ynca.Input.USB
+    input_ = InputHelper.get_input_by_name(mock_ynca, "_INPNAMEUSB_")
+    assert input_ is ynca.Input.USB
 
     # Unavailable input
-    input = InputHelper.get_input_by_name(mock_ynca, "Unknown")
-    assert input is None
+    input_ = InputHelper.get_input_by_name(mock_ynca, "Unknown")
+    assert input_ is None
 
 
 def test_get_subunit_for_input(mock_ynca):

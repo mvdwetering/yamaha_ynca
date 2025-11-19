@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components import media_source
@@ -85,9 +86,15 @@ async def async_setup_entry(
     ]
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(api, zone_attr_name):
-            selected_inputs = config_entry.options.get(zone_subunit.id, {}).get(
-                CONF_SELECTED_INPUTS, all_inputs
-            )
+            selected_inputs: list[str] = config_entry.options.get(
+                zone_subunit.id, {}
+            ).get(CONF_SELECTED_INPUTS, list(all_inputs))
+
+            # Main Zone Sync is part of all_inputs
+            # but main zone can't sync with itself, so remove it
+            if zone_subunit == api.main:
+                with contextlib.suppress(ValueError):
+                    selected_inputs.remove(ynca.Input.MAIN_ZONE_SYNC.value)
 
             entities.append(
                 YamahaYncaZone(
@@ -462,6 +469,9 @@ class YamahaYncaZone(MediaPlayerEntity):
         """Enable/disable shuffle mode."""
         if (subunit := self._get_input_subunit()) and (hasattr(subunit, "shuffle")):
             subunit.shuffle = ynca.Shuffle.ON if shuffle else ynca.Shuffle.OFF
+            # On some subunits (TIDAL, probably Deezer) setting shuffle does not result
+            # in an event being sent from the receiver, so do manual update
+            self._ynca.get_raw_connection().get(subunit.id, "SHUFFLE")
 
     @property
     def repeat(self) -> str | None:
@@ -469,7 +479,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if (subunit := self._get_input_subunit()) and (
             repeat := getattr(subunit, "repeat", None)
         ):
-            if repeat == ynca.Repeat.SINGLE:
+            if repeat in (ynca.Repeat.SINGLE, ynca.Repeat.ONE):
                 return RepeatMode.ONE
             if repeat == ynca.Repeat.ALL:
                 return RepeatMode.ALL
@@ -485,7 +495,15 @@ class YamahaYncaZone(MediaPlayerEntity):
             elif repeat == RepeatMode.OFF:
                 subunit.repeat = ynca.Repeat.OFF
             elif repeat == RepeatMode.ONE:
-                subunit.repeat = ynca.Repeat.SINGLE
+                # CX-A5100 uses ONE instead of SINGLE
+                # seen on TIDAL subunit, lets assume that others do as well
+                if self._ynca.tidal is not None:
+                    subunit.repeat = ynca.Repeat.ONE
+                else:
+                    subunit.repeat = ynca.Repeat.SINGLE
+            # On some subunits (TIDAL, probably Deezer) setting repeat does not result
+            # in an event being sent from the receiver, so do manual update
+            self._ynca.get_raw_connection().get(subunit.id, "REPEAT")
 
     def _is_radio_subunit(self, subunit: ynca.subunit.SubunitBase) -> bool:
         return (
