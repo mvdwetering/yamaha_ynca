@@ -15,5 +15,5 @@
   "requirements": [
     "ynca==5.26.0"
   ],
-  "version": "8.1.0b4"
+  "version": "8.1.0"
 }
