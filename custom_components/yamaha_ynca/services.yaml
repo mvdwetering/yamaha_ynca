@@ -2,8 +2,6 @@
 
 send_raw_ynca:
   target:
-    device:
-      integration: yamaha_ynca
     entity:
       integration: yamaha_ynca
       domain: media_player
