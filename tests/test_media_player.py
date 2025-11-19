@@ -805,7 +805,7 @@ async def test_mediaplayer_entity_repeat(
     assert mp_entity.repeat is None
 
 
-async def test_mediaplayer_repeat_singe_and_one(
+async def test_mediaplayer_repeat_single_and_one(
     hass, mock_zone_main, mock_ynca
 ) -> None:
     mock_ynca.main = mock_zone_main
