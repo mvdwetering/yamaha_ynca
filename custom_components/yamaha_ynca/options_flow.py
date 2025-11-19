@@ -228,9 +228,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             sorted(all_receiver_inputs.items(), key=lambda item: item[1].lower())
         )
 
+        # Remove Main Zone Sync from main zone because it can't sync with itself
+        if step_id == STEP_ID_MAIN:
+            all_receiver_inputs.pop(ynca.Input.MAIN_ZONE_SYNC.value, None)
+
         # Due to actual supported inputs of receiver is unknown at migration time the list of selected inputs
         # can contain inputs not detected as supported by the receiver
         all_receiver_input_ids = list(all_receiver_inputs.keys())
+
         selected_inputs = self.options.get(zone_id, {}).get(
             CONF_SELECTED_INPUTS, all_receiver_input_ids
         )

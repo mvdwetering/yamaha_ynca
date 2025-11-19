@@ -20,6 +20,7 @@ input_mappings: list[Mapping] = [
     Mapping(ynca.Input.DEEZER, ["deezer"]),
     Mapping(ynca.Input.IPOD, ["ipod"]),
     Mapping(ynca.Input.IPOD_USB, ["ipodusb"]),
+    Mapping(ynca.Input.MCLINK, ["mclink"]),
     Mapping(ynca.Input.NAPSTER, ["napster"]),
     Mapping(ynca.Input.NETRADIO, ["netradio"]),
     Mapping(ynca.Input.PANDORA, ["pandora"]),

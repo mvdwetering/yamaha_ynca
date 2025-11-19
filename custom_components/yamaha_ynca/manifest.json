@@ -1,7 +1,6 @@
 {
   "domain": "yamaha_ynca",
   "name": "Yamaha (YNCA)",
-
   "codeowners": [
     "@mvdwetering"
   ],
@@ -10,7 +9,9 @@
   "documentation": "https://github.com/mvdwetering/yamaha_ynca",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
-  "loggers": ["ynca"],
+  "loggers": [
+    "ynca"
+  ],
   "requirements": [
     "ynca==5.26.0"
   ],
