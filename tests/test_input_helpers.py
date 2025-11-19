@@ -102,6 +102,7 @@ def test_sourcemapping_input_subunits(mock_ynca):
 
     assert mapping[ynca.Input.AIRPLAY] == "AirPlay"
     assert mapping[ynca.Input.BLUETOOTH] == "Bluetooth"
+    assert mapping[ynca.Input.DEEZER] == "Deezer"
     assert mapping[ynca.Input.IPOD] == "iPod"
     assert mapping[ynca.Input.IPOD_USB] == "iPod (USB)"
     assert mapping[ynca.Input.MCLINK] == "MusicCast Link"
@@ -115,6 +116,7 @@ def test_sourcemapping_input_subunits(mock_ynca):
     assert mapping[ynca.Input.SIRIUS_IR] == "SIRIUS InternetRadio"
     assert mapping[ynca.Input.SIRIUS_XM] == "SiriusXM"
     assert mapping[ynca.Input.SPOTIFY] == "Spotify"
+    assert mapping[ynca.Input.TIDAL] == "TIDAL"
     assert mapping[ynca.Input.TUNER] == "TUNER"
     assert mapping[ynca.Input.UAW] == "UAW"
     assert mapping[ynca.Input.USB] == "USB"
