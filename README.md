@@ -38,6 +38,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | --- | --- | --- |
 | 2010 | AVENTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
 | | RX-V | RX-V867, RX-V1067, RX-V2067, RX-V3067 |
+| | HTR | HTR-8063 |
 | 2011 | AVENTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
 | | RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
 | | HTR | HTR-6064 |
