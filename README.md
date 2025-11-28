@@ -65,6 +65,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | | RX-V | RX-V585, RX-V685, RX-V1085 |
 | | HTR | HTR-4072 |
 | | TSR | TSR-7850 |
+| | Other | CX-A5200 |
 | 2020 | AVENTAGE | RX-A2A, RX-A4A, RX-A6A |
 | | RX-V | RX-V4A, RX-V6A |
 | | TSR | TSR-700 |
