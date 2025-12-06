@@ -50,9 +50,9 @@ dev = [
   "pytest>=7.0.0",
   "pytest-cov",
   "pytest-mock",
-  "pytest-homeassistant-custom-component==0.13.210",
+  "pytest-homeassistant-custom-component==0.13.285",
   "awesomeversion>=24.0.0",
-  "homeassistant-stubs==2025.2.0",
+  "homeassistant-stubs==2025.10.0",
 ]
 
 [tool.coverage.report]

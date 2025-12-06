@@ -137,7 +137,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall) -> None:
-    for config_entry_id in await async_extract_config_entry_ids(hass, call):
+    for config_entry_id in await async_extract_config_entry_ids(hass, call):  # type: ignore[arg-type]
         # Check if configentry is ours, could be others when targeting areas for example
         if (
             (config_entry := hass.config_entries.async_get_entry(config_entry_id))
