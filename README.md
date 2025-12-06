@@ -1,6 +1,6 @@
 # Yamaha YNCA
 
-Minimum required Home Assistant version is: 2025.2.0
+Minimum required Home Assistant version is: 2025.10.0
 
 * [About Yamaha (YNCA)](#description)
 * [Working models](#working-models)
