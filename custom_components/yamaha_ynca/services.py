@@ -18,7 +18,7 @@ SERVICE_STORE_PRESET = "store_preset"
 
 
 async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall) -> None:
-    for config_entry_id in await async_extract_config_entry_ids(hass, call):  # type: ignore[arg-type]
+    for config_entry_id in await async_extract_config_entry_ids(call):
         # Check if configentry is ours, could be others when targeting areas for example
         if (
             (config_entry := hass.config_entries.async_get_entry(config_entry_id))
