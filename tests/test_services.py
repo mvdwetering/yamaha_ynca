@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, call, patch
 
-from homeassistant.helpers.service import ServiceCall
+from homeassistant.exceptions import ServiceValidationError
+import pytest
 
 from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.services import SERVICE_SEND_RAW_YNCA
@@ -24,55 +25,35 @@ async def test_service_raw_ynca_command_handler(
     """Test sending raw YNCA command."""
     integration = await setup_integration(hass, mock_ynca)
 
-    service_call = ServiceCall(
-        hass,
+    await hass.services.async_call(
         yamaha_ynca.DOMAIN,
         SERVICE_SEND_RAW_YNCA,
         {
             "config_entry_id": integration.entry.entry_id,
             "raw_data": "# Ignore this\n@COMMAND:TO_SEND=1\nMore stuff to ignore\n@COMMAND:TO_SEND=2",
         },
+        blocking=True,
     )
+    await hass.async_block_till_done()
 
-    await yamaha_ynca.services.async_handle_send_raw_ynca(hass, service_call)
     mock_ynca.send_raw.assert_has_calls(
         [call("@COMMAND:TO_SEND=1"), call("@COMMAND:TO_SEND=2")]
     )
 
 
-@patch("custom_components.yamaha_ynca.services.async_handle_send_raw_ynca")
-async def test_service_raw_ynca_command(
-    async_handle_send_raw_ynca_mock: AsyncMock,
+async def test_service_raw_ynca_command_handler_invalid_config_entry_id(
     hass: HomeAssistant,
-    mock_ynca: YncaApi,
-    mock_zone_main: object,
 ) -> None:
-    """Test sending raw YNCA command."""
-    mock_ynca.main = mock_zone_main
-    integration = await setup_integration(hass, mock_ynca)
+    """Test sending invalid config_entry_id."""
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            yamaha_ynca.DOMAIN,
+            SERVICE_SEND_RAW_YNCA,
+            {
+                "config_entry_id": "does_not_exist",
+                "raw_data": "@COMMAND:TO_SEND=1",
+            },
+            blocking=True,
+        )
 
-    # Service call is done, but does not work due to no configentries found
-    await hass.services.async_call(
-        yamaha_ynca.DOMAIN,
-        SERVICE_SEND_RAW_YNCA,
-        {
-            "config_entry_id": integration.entry.entry_id,
-            "raw_data": "COMMAND_TO_SEND",
-        },
-        blocking=True,
-    )
     await hass.async_block_till_done()
-
-    # Check
-    async_handle_send_raw_ynca_mock.assert_called_once()
-    assert len(async_handle_send_raw_ynca_mock.call_args.args) == 2
-
-    assert async_handle_send_raw_ynca_mock.call_args.args[0] == hass
-
-    service_call = async_handle_send_raw_ynca_mock.call_args.args[1]
-    assert service_call.domain == yamaha_ynca.DOMAIN
-    assert service_call.service == SERVICE_SEND_RAW_YNCA
-    assert service_call.data == {
-        "config_entry_id": integration.entry.entry_id,
-        "raw_data": "COMMAND_TO_SEND",
-    }
