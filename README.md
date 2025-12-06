@@ -94,6 +94,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Activate scenes with button entities like the buttons on the front panel
 * Select and store [Presets](#presets) for radio or other sources
 * Send [remote control commands and IR codes](#remote-entity)
+* Party mode switch
 * Several controllable settings (if supported by receiver):
   * Adaptive DRC enable/disable
   * CINEMA DSP 3D mode enable/disable
