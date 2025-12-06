@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 from homeassistant import config_entries
+from homeassistant.helpers import selector
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
@@ -19,7 +20,6 @@ from .const import (
     DATA_MODELNAME,
     DATA_ZONES,
     MAX_NUMBER_OF_SCENES,
-    NUMBER_OF_SCENES_AUTODETECT,
     TWOCHDECODER_STRINGS,
 )
 from .input_helpers import InputHelper
@@ -254,19 +254,21 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ] = cv.multi_select(all_receiver_inputs)
 
         # Number of scenes for zone
-        # Use a select so we can have nice distinct values presented with Autodetect and 0-12
-        number_of_scenes_list = {NUMBER_OF_SCENES_AUTODETECT: "Auto detect"}
-        for scene_id in range(MAX_NUMBER_OF_SCENES + 1):
-            number_of_scenes_list[scene_id] = str(scene_id)
-
         schema[
             vol.Required(
                 CONF_NUMBER_OF_SCENES,
-                default=self.options.get(zone_id, {}).get(
-                    CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
-                ),
+                default=self.options.get(zone_id, {}).get(CONF_NUMBER_OF_SCENES, 0),
             )
-        ] = vol.In(number_of_scenes_list)
+        ] = vol.All(
+            selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0,
+                    max=MAX_NUMBER_OF_SCENES,
+                    mode=selector.NumberSelectorMode.BOX,
+                ),
+            ),
+            vol.Coerce(int),
+        )
 
         return self.async_show_form(
             step_id=step_id,
