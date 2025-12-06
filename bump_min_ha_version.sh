@@ -64,5 +64,8 @@ sed -i "s/homeassistant-stubs==[0-9.]*/homeassistant-stubs==$NEW_VERSION/" "$SCR
 # Update pytest-homeassistant-custom-component
 sed -i "s/pytest-homeassistant-custom-component==[0-9.]*/pytest-homeassistant-custom-component==$PYTEST_HA_VERSION/" "$SCRIPT_DIR/pyproject.toml"
 
-echo "Minimum HA version bumped to $NEW_VERSION in hacs.json and pyproject.toml files."
+# Update minimum HA version in README.md
+sed -i "s/Minimum required Home Assistant version is: [0-9.]*/Minimum required Home Assistant version is: $NEW_VERSION/" "$SCRIPT_DIR/README.md"
+
+echo "Minimum HA version bumped to $NEW_VERSION in hacs.json, pyproject.toml, and README.md files."
 echo "pytest-homeassistant-custom-component updated to $PYTEST_HA_VERSION."
