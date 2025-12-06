@@ -56,6 +56,7 @@ async def test_async_setup_entry(
 
     mock_ynca.sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
     mock_ynca.sys.hdmiout2 = ynca.HdmiOutOnOff.ON
+    mock_ynca.sys.party = ynca.Party.OFF
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -75,7 +76,7 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 11
+    assert len(entities) == 12
 
 
 async def test_switch_entity_fields(mock_zone):

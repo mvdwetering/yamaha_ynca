@@ -148,6 +148,9 @@
       "hdmiout2": {
         "name": "HDMI Out 2"
       },
+      "party": {
+        "name": "Party mode"
+      },
       "puredirmode": {
         "name": "Pure Direct"
       },
