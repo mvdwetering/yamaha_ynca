@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 from homeassistant.helpers.entity import EntityCategory
@@ -13,6 +14,9 @@ from custom_components.yamaha_ynca.switch import (
 )
 from tests.conftest import setup_integration
 import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",
@@ -40,7 +44,10 @@ TEST_ENTITY_DESCRIPTION_DIRMODE = YncaSwitchEntityDescription(
 
 @patch("custom_components.yamaha_ynca.switch.YamahaYncaSwitch", autospec=True)
 async def test_async_setup_entry(
-    yamahayncaswitch_mock, hass, mock_ynca, mock_zone_main
+    yamahayncaswitch_mock: Mock,
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.adaptivedrc = ynca.AdaptiveDrc.OFF
@@ -79,7 +86,7 @@ async def test_async_setup_entry(
     assert len(entities) == 12
 
 
-async def test_switch_entity_fields(mock_zone) -> None:
+async def test_switch_entity_fields(mock_zone: Mock) -> None:
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
@@ -100,7 +107,9 @@ async def test_switch_entity_fields(mock_zone) -> None:
     assert entity.is_on is False
 
 
-async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main) -> None:
+async def test_switch_associated_zone_handling(
+    mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_sys = mock_ynca.sys
     mock_main = mock_zone_main
 
@@ -126,7 +135,9 @@ async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main) -> Non
     assert entity.is_on is False
 
 
-async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main) -> None:
+async def test_hdmiout_not_supported_at_all(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = None
     mock_ynca.main.lipsynchdmiout2offset = None
@@ -138,7 +149,7 @@ async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main) -> 
 
 
 async def test_hdmiout_supported_with_one_hdmi_output(
-    hass, mock_ynca, mock_zone_main
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
@@ -151,7 +162,7 @@ async def test_hdmiout_supported_with_one_hdmi_output(
 
 
 async def test_hdmiout_supported_with_two_hdmi_outputs(
-    hass, mock_ynca, mock_zone_main
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
@@ -163,7 +174,7 @@ async def test_hdmiout_supported_with_two_hdmi_outputs(
     assert hdmiout is None
 
 
-async def test_dirmode(mock_zone_main) -> None:
+async def test_dirmode(mock_zone_main: Mock) -> None:
     entity = YamahaYncaSwitch(
         "ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE
     )
