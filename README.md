@@ -685,9 +685,8 @@ This action allows sending raw YNCA commands. It is intended for debugging only.
 
 ```yaml
 action: yamaha_ynca.send_raw_ynca
-target:
-  entity_id: media_player.rx_a810_main
 data:
+  config_entry_id: 84bcdb836062423ee2c8abd7a9ed444e
   raw_data: "@MAIN:INP=HDMI3"
 ```
 

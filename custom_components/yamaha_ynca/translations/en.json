@@ -219,11 +219,19 @@
       }
     }
   },
+  "exceptions": {
+    "config_entry_not_found": {
+      "message": "Config entry with id '{config_entry_id}' not found."
+    }
+  },
   "services": {
     "send_raw_ynca": {
       "name": "Send raw YNCA command",
       "description": "Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Yamaha (YNCA) integration.",
       "fields": {
+        "config_entry_id": {
+          "name": "Yamaha (YNCA) instance"
+        },
         "raw_data": {
           "name": "Raw YNCA data",
           "description": "Raw YNCA data to send. One command per line. Needs to follow YNCA format @SUBUNIT:FUNCTION=VALUE"
