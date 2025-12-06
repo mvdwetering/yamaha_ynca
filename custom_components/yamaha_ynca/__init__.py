@@ -31,6 +31,7 @@ from .const import (
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
 from .input_helpers import InputHelper
 from .migrations import async_migrate_entry as migrations_async_migrate_entry
+from .services import async_setup_services
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -156,6 +157,8 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, _config: ConfigType) -> bool:
     """Set up Yamaha (YNCA) integration."""
+
+    async_setup_services(hass)
 
     async def async_handle_send_raw_ynca_local(call: ServiceCall) -> None:
         await async_handle_send_raw_ynca(hass, call)
