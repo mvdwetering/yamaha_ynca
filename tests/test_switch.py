@@ -41,7 +41,7 @@ TEST_ENTITY_DESCRIPTION_DIRMODE = YncaSwitchEntityDescription(
 @patch("custom_components.yamaha_ynca.switch.YamahaYncaSwitch", autospec=True)
 async def test_async_setup_entry(
     yamahayncaswitch_mock, hass, mock_ynca, mock_zone_main
-):
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.adaptivedrc = ynca.AdaptiveDrc.OFF
     mock_ynca.main.enhancer = ynca.Enhancer.OFF
@@ -79,7 +79,7 @@ async def test_async_setup_entry(
     assert len(entities) == 12
 
 
-async def test_switch_entity_fields(mock_zone):
+async def test_switch_entity_fields(mock_zone) -> None:
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
@@ -100,7 +100,7 @@ async def test_switch_entity_fields(mock_zone):
     assert entity.is_on is False
 
 
-async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
+async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main) -> None:
     mock_sys = mock_ynca.sys
     mock_main = mock_zone_main
 
@@ -126,7 +126,7 @@ async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
     assert entity.is_on is False
 
 
-async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = None
     mock_ynca.main.lipsynchdmiout2offset = None
@@ -137,7 +137,9 @@ async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
     assert hdmiout is None
 
 
-async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_supported_with_one_hdmi_output(
+    hass, mock_ynca, mock_zone_main
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = None  # This indicates no HDMI2
@@ -148,7 +150,9 @@ async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone
     assert hdmiout is not None
 
 
-async def test_hdmiout_supported_with_two_hdmi_outputs(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_supported_with_two_hdmi_outputs(
+    hass, mock_ynca, mock_zone_main
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = 123  # This indicates HDMI2
@@ -159,7 +163,7 @@ async def test_hdmiout_supported_with_two_hdmi_outputs(hass, mock_ynca, mock_zon
     assert hdmiout is None
 
 
-async def test_dirmode(hass, mock_ynca, mock_zone_main):
+async def test_dirmode(mock_zone_main) -> None:
     entity = YamahaYncaSwitch(
         "ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE
     )
