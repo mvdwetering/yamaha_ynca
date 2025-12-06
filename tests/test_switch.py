@@ -174,13 +174,14 @@ async def test_hdmiout_supported_with_two_hdmi_outputs(
     assert hdmiout is None
 
 
+# Accessing private _connection is not ideal, but not sure how I want to handle it properly yet
 async def test_dirmode(mock_zone_main: Mock) -> None:
     entity = YamahaYncaSwitch(
         "ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE
     )
 
-    mock_zone_main._connection = Mock()
-    mock_zone_main._connection.get = Mock()
+    mock_zone_main._connection = Mock()  # noqa: SLF001
+    mock_zone_main._connection.get = Mock()  # noqa: SLF001
 
     # Check handling of updates from YNCA
     await entity.async_added_to_hass()
@@ -191,7 +192,7 @@ async def test_dirmode(mock_zone_main: Mock) -> None:
     # Dirmode triggers update
     callback("DIRMODE", None)
     entity.schedule_update_ha_state.assert_called_once()
-    mock_zone_main._connection.get.assert_not_called()
+    mock_zone_main._connection.get.assert_not_called()  # noqa: SLF001
 
     # Straight does not trigger update, but requests update for DIRMODE
     entity.schedule_update_ha_state.reset_mock()
@@ -199,20 +200,24 @@ async def test_dirmode(mock_zone_main: Mock) -> None:
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
 
-    mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
+    mock_zone_main._connection.get.assert_called_once_with(  # noqa: SLF001
+        "MAIN", "DIRMODE"
+    )
 
     # Receiving STRAIGHT again within 500ms does not request an update
-    mock_zone_main._connection.get.reset_mock()
+    mock_zone_main._connection.get.reset_mock()  # noqa: SLF001
 
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
-    mock_zone_main._connection.get.assert_not_called()
+    mock_zone_main._connection.get.assert_not_called()  # noqa: SLF001
 
     # But after the cooldown expires it requests again
     await asyncio.sleep(0.51)
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
-    mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
+    mock_zone_main._connection.get.assert_called_once_with(  # noqa: SLF001
+        "MAIN", "DIRMODE"
+    )
 
     # Cleanup on exit
     await entity.async_will_remove_from_hass()
