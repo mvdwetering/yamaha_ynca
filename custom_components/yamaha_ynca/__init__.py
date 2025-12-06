@@ -25,7 +25,6 @@ from .const import (
     DOMAIN,
     LOGGER,
     MANUFACTURER_NAME,
-    SERVICE_SEND_RAW_YNCA,
     ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
@@ -137,21 +136,6 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall) -> None:
-    for config_entry_id in await async_extract_config_entry_ids(hass, call):  # type: ignore[arg-type]
-        # Check if configentry is ours, could be others when targeting areas for example
-        if (
-            (config_entry := hass.config_entries.async_get_entry(config_entry_id))
-            and (config_entry.domain == DOMAIN)
-            and (domain_entry_info := config_entry.runtime_data)
-        ):
-            # Handle actual call
-            for line in call.data.get("raw_data").splitlines():
-                line = line.strip()  # noqa: PLW2901
-                if line.startswith("@"):
-                    domain_entry_info.api.send_raw(line)
-
-
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
@@ -159,13 +143,6 @@ async def async_setup(hass: HomeAssistant, _config: ConfigType) -> bool:
     """Set up Yamaha (YNCA) integration."""
 
     async_setup_services(hass)
-
-    async def async_handle_send_raw_ynca_local(call: ServiceCall) -> None:
-        await async_handle_send_raw_ynca(hass, call)
-
-    hass.services.async_register(
-        DOMAIN, SERVICE_SEND_RAW_YNCA, async_handle_send_raw_ynca_local
-    )
 
     return True
 

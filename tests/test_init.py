@@ -15,6 +15,7 @@ from tests.mock_yncaconnection import YncaConnectionMock
 import ynca
 
 from .conftest import setup_integration
+from custom_components.yamaha_ynca.services import SERVICE_SEND_RAW_YNCA, ATTR_RAW_DATA
 
 
 async def test_async_setup_entry(
@@ -289,28 +290,28 @@ async def test_service_raw_ynca_command_handler(hass, mock_ynca):
 
     # There must be a better way than patching it this way,
     # but can't figure it out and this works...
-    yamaha_ynca.async_extract_config_entry_ids = AsyncMock()
-    yamaha_ynca.async_extract_config_entry_ids.return_value = {
+    yamaha_ynca.services.async_extract_config_entry_ids = AsyncMock()
+    yamaha_ynca.services.async_extract_config_entry_ids.return_value = {
         integration.entry.entry_id
     }
 
     service_call = ServiceCall(
         hass,
         yamaha_ynca.DOMAIN,
-        yamaha_ynca.SERVICE_SEND_RAW_YNCA,
+        SERVICE_SEND_RAW_YNCA,
         {
             "device_id": "device_id",
             "raw_data": "# Ignore this\n@COMMAND:TO_SEND=1\nMore stuff to ignore\n@COMMAND:TO_SEND=2",
         },
     )
 
-    await yamaha_ynca.async_handle_send_raw_ynca(hass, service_call)
+    await yamaha_ynca.services.async_handle_send_raw_ynca(hass, service_call)
     mock_ynca.send_raw.assert_has_calls(
         [call("@COMMAND:TO_SEND=1"), call("@COMMAND:TO_SEND=2")]
     )
 
 
-@patch("custom_components.yamaha_ynca.async_handle_send_raw_ynca")
+@patch("custom_components.yamaha_ynca.services.async_handle_send_raw_ynca")
 async def test_service_raw_ynca_command(
     async_handle_send_raw_ynca_mock, hass, mock_ynca, mock_zone_main
 ):
@@ -321,7 +322,7 @@ async def test_service_raw_ynca_command(
     # Service call is done, but does not work due to no configentries found
     await hass.services.async_call(
         yamaha_ynca.DOMAIN,
-        yamaha_ynca.SERVICE_SEND_RAW_YNCA,
+        SERVICE_SEND_RAW_YNCA,
         {
             "device_id": f"{integration.entry.entry_id}_MAIN",
             "raw_data": "COMMAND_TO_SEND",
@@ -338,7 +339,7 @@ async def test_service_raw_ynca_command(
 
     service_call = async_handle_send_raw_ynca_mock.call_args.args[1]
     assert service_call.domain == yamaha_ynca.DOMAIN
-    assert service_call.service == yamaha_ynca.SERVICE_SEND_RAW_YNCA
+    assert service_call.service == SERVICE_SEND_RAW_YNCA
     assert service_call.data == {
         "device_id": f"{integration.entry.entry_id}_MAIN",
         "raw_data": "COMMAND_TO_SEND",
