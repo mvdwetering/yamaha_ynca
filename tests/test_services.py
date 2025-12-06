@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from unittest.mock import call, patch
+from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock, call, patch
 
 from homeassistant.helpers.service import ServiceCall
 
@@ -11,8 +12,15 @@ from custom_components.yamaha_ynca.services import SERVICE_SEND_RAW_YNCA
 
 from .conftest import setup_integration
 
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
-async def test_service_raw_ynca_command_handler(hass, mock_ynca) -> None:
+    from ynca import YncaApi
+
+
+async def test_service_raw_ynca_command_handler(
+    hass: HomeAssistant, mock_ynca: YncaApi
+) -> None:
     """Test sending raw YNCA command."""
     integration = await setup_integration(hass, mock_ynca)
 
@@ -34,7 +42,10 @@ async def test_service_raw_ynca_command_handler(hass, mock_ynca) -> None:
 
 @patch("custom_components.yamaha_ynca.services.async_handle_send_raw_ynca")
 async def test_service_raw_ynca_command(
-    async_handle_send_raw_ynca_mock, hass, mock_ynca, mock_zone_main
+    async_handle_send_raw_ynca_mock: AsyncMock,
+    hass: HomeAssistant,
+    mock_ynca: YncaApi,
+    mock_zone_main: object,
 ) -> None:
     """Test sending raw YNCA command."""
     mock_ynca.main = mock_zone_main
