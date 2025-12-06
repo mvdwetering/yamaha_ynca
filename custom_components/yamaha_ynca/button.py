@@ -34,14 +34,8 @@ async def async_setup_entry(
     for zone_attr_name in ZONE_ATTRIBUTE_NAMES:
         if zone_subunit := getattr(domain_entry_data.api, zone_attr_name):
             number_of_scenes = config_entry.options.get(zone_subunit.id, {}).get(
-                CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
+                CONF_NUMBER_OF_SCENES
             )
-            if number_of_scenes == NUMBER_OF_SCENES_AUTODETECT:
-                number_of_scenes = 0
-                for scene_id in range(1, MAX_NUMBER_OF_SCENES + 1):
-                    if getattr(zone_subunit, f"scene{scene_id}name"):
-                        number_of_scenes += 1
-            number_of_scenes = min(MAX_NUMBER_OF_SCENES, number_of_scenes)
 
             entities.extend(
                 YamahaYncaSceneButton(config_entry.entry_id, zone_subunit, scene_id)
