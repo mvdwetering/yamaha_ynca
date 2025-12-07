@@ -44,9 +44,7 @@ def test_sourcemapping_inpnames_set(mock_ynca: Mock) -> None:
 
 
 def test_sourcemapping_inpname_some_set(mock_ynca: Mock) -> None:
-    """Scenario when a receiver supports some of the inputs and therefore
-    responds with only a subset of INPNAMEs
-    """
+    """Scenario when a receiver supports some of the inputs."""
     # Setup 1 input name
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
 
@@ -63,9 +61,7 @@ def test_sourcemapping_inpname_some_set(mock_ynca: Mock) -> None:
 
 
 def test_sourcemapping_inpnames_not_set(mock_ynca: Mock) -> None:
-    """Some receivers do not report INPNAMES at all
-    Check that they all known are reported with default names
-    """
+    """Some receivers do not report INPNAMES at all. Check that they all known are reported with default names."""
     mapping = InputHelper.get_source_mapping(mock_ynca)
 
     assert mapping[ynca.Input.AUDIO2] == "AUDIO2"
@@ -93,7 +89,7 @@ def test_sourcemapping_inpnames_not_set(mock_ynca: Mock) -> None:
 
 
 def test_sourcemapping_input_subunits(mock_ynca: Mock) -> None:
-    """Check names of input subunits"""
+    """Check names of input subunits."""
     # Setup subunits with dummy value, but it is good enough for building sourcelist
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, True)
@@ -123,7 +119,7 @@ def test_sourcemapping_input_subunits(mock_ynca: Mock) -> None:
 
 
 def test_sourcemapping_no_duplicates(mock_ynca: Mock) -> None:
-    """Should be no duplicates, e.g. avoid USB is in the list twice"""
+    """Should be no duplicates, e.g. avoid USB is in the list twice."""
     # Setup subunits with dummy value, but it is good enough for building sourcelist
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, True)
@@ -138,9 +134,7 @@ def test_sourcemapping_no_duplicates(mock_ynca: Mock) -> None:
 
 
 def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca: Mock) -> None:
-    """Inputs mentioned multiple times (like USB)
-    should use inpname<input> over default inputsubunit name
-    """
+    """Inputs mentioned multiple times (like USB) should use inpname<input> over default inputsubunit name."""
     mock_ynca.usb = True
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
@@ -150,7 +144,7 @@ def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca: Mock) -> None:
 
 
 def test_sourcemapping_trim_whitepspace(mock_ynca: Mock) -> None:
-    """Check that (leading and trailing) whitespace is trimmed from names"""
+    """Check that (leading and trailing) whitespace is trimmed from names."""
     mock_ynca.sys.inpnamehdmi1 = "No spaces"
     mock_ynca.sys.inpnamehdmi2 = "   Leading spaces"
     mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
@@ -209,5 +203,5 @@ def test_get_input_for_subunit_no_input() -> None:
     t.id = Mock()
     t.id.value = "test_subunit"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         InputHelper.get_input_for_subunit(t)

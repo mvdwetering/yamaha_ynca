@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
 from custom_components import yamaha_ynca
@@ -20,10 +19,12 @@ from tests.conftest import setup_integration
 import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
+    from homeassistant.core import HomeAssistant
+
     from ynca.subunits.zone import ZoneBase
 
 
-TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
+TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(
     key="hdmiout",
     entity_category=EntityCategory.CONFIG,
     enum=ynca.HdmiOut,
@@ -32,8 +33,8 @@ TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(  # type: ignore
 )
 
 
-def get_entity_description_by_key(key: str):
-    return [e for e in ENTITY_DESCRIPTIONS if e.key == key][0]
+def get_entity_description_by_key(key: str) -> YncaSelectEntityDescription:
+    return next(e for e in ENTITY_DESCRIPTIONS if e.key == key)
 
 
 async def test_async_setup_entry(
@@ -251,7 +252,9 @@ async def test_select_surrounddecoder_entity_options_some_selected_in_configentr
     assert entity.options == ["auto", "dolby_pl", "dolby_plii_movie"]
 
 
-async def test_hdmiout_not_supported_at_all(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
+async def test_hdmiout_not_supported_at_all(
+    hass, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = None
     mock_ynca.main.lipsynchdmiout2offset = None
@@ -262,7 +265,9 @@ async def test_hdmiout_not_supported_at_all(hass, mock_ynca: Mock, mock_zone_mai
     assert hdmiout is None
 
 
-async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
+async def test_hdmiout_supported_with_one_hdmi_output(
+    hass, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = None  # This indicates no HDMI2

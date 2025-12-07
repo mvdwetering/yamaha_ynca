@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 from unittest.mock import DEFAULT, Mock, patch
 
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry
 import pytest
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
@@ -19,6 +15,13 @@ from pytest_homeassistant_custom_component.common import (  # type: ignore[impor
 from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.helpers import DomainEntryData
 import ynca
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Generator
+
+    from homeassistant.const import Platform
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers import device_registry as dr
 
 MODELNAME = "ModelName"
 
@@ -164,7 +167,7 @@ def create_mock_zone(spec: type[ynca.subunits.zone.ZoneBase] | None = None) -> M
 
 
 @pytest.fixture
-def mock_ynca(hass: HomeAssistant) -> Mock:
+def mock_ynca() -> Mock:
     """Create a mocked YNCA instance without any inputs or subunits."""
     mock_ynca = Mock(
         spec=ynca.YncaApi,
@@ -200,12 +203,16 @@ def mock_ynca(hass: HomeAssistant) -> Mock:
 
 
 @pytest.fixture
-def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
+def device_reg(hass: HomeAssistant) -> dr.DeviceRegistry:
     """Return an empty, loaded, registry."""
     return mock_device_registry(hass)
 
 
-def create_mock_config_entry(modelname: str | None = None, zones: list[str] | None = None, serial_url: str | None = None) -> MockConfigEntry:
+def create_mock_config_entry(
+    modelname: str | None = None,
+    zones: list[str] | None = None,
+    serial_url: str | None = None,
+) -> MockConfigEntry:
     return MockConfigEntry(
         version=7,
         minor_version=8,
@@ -235,7 +242,7 @@ class DisabledEntity:
 async def setup_integration(
     hass: HomeAssistant,
     mock_ynca: ynca.YncaApi,
-    skip_setup: bool = False,
+    skip_setup: bool = False,  # noqa: FBT001, FBT002
     serial_url: str = "SerialUrl",
 ) -> Integration:
     zones = []
@@ -261,7 +268,9 @@ async def setup_integration(
 
     if not skip_setup:
 
-        def side_effect(*args, **kwargs):
+        def side_effect(
+            *args, **kwargs  # noqa: ANN002, ANN003, ARG001
+        ) -> ynca.YncaApi:
             nonlocal on_disconnect
             on_disconnect = args[1]
             return DEFAULT

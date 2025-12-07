@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import Mock, call, patch
 
 from custom_components import yamaha_ynca
@@ -10,10 +11,17 @@ from custom_components.yamaha_ynca.button import (
 
 from .conftest import setup_integration
 
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_autodetect_number_of_scenes(
-    yamahayncascenebutton_mock: Mock, hass, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone2: Mock
+    yamahayncascenebutton_mock: Mock,
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+    mock_zone_zone2: Mock,
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.zonename = "_MAIN_"
@@ -44,7 +52,10 @@ async def test_async_setup_entry_autodetect_number_of_scenes(
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_configured_number_of_scenes(
-    yamahayncascenebutton_mock: Mock, hass, mock_ynca: Mock, mock_zone_zone2: Mock
+    yamahayncascenebutton_mock: Mock,
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_zone2: Mock,
 ) -> None:
     mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone2.zonename = "_ZONE2_"

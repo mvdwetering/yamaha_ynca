@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import create_autospec
+from unittest.mock import Mock, create_autospec
 
 from homeassistant.data_entry_flow import FlowResultType
 
@@ -55,7 +55,7 @@ ALL_PHYSICAL_INPUTS = [
 ]
 
 
-async def test_options_flow_navigate_all_screens(
+async def test_options_flow_navigate_all_screens(  # noqa: PLR0913
     hass: HomeAssistant,
     mock_ynca: Mock,
     mock_zone_main: Mock,

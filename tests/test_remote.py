@@ -16,7 +16,11 @@ import ynca
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)
 async def test_async_setup_entry(
-    yamahayncazoneremote_mock: Mock, hass, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone3: Mock
+    yamahayncazoneremote_mock: Mock,
+    hass,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+    mock_zone_zone3: Mock,
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
@@ -62,11 +66,9 @@ async def test_remote_send_codes_mapped(mock_ynca: Mock, mock_zone_zone3: Mock) 
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, codes)
 
     # Setting value
-    expected_call_count = 0
-    for name, code in codes.items():
+    for expected_call_count, (name, code) in enumerate(codes.items(), start=1):
         entity.send_command([code])
 
-        expected_call_count += 1
         assert mock_ynca.sys.remotecode.call_count == expected_call_count
 
         if name.startswith("code1"):
@@ -76,17 +78,19 @@ async def test_remote_send_codes_mapped(mock_ynca: Mock, mock_zone_zone3: Mock) 
         elif name.startswith("code3"):
             mock_ynca.sys.remotecode.assert_called_with("1234ABCD")
         else:
-            assert False
+            pytest.fail(f"Unexpected code name: {name}")
 
 
-async def test_remote_send_codes_raw_formats(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
+async def test_remote_send_codes_raw_formats(
+    mock_ynca: Mock, mock_zone_zone3: Mock
+) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
     entity.send_command(["12ABCD"])
     mock_ynca.sys.remotecode.assert_called_with("12EDABCD")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         entity.send_command(["not a valid code"])
 
 
