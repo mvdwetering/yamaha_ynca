@@ -659,20 +659,20 @@ During configuration provide the following information depending on your connect
 
 ### Serial
 
-Serial port
+**Serial port**
 : Serial port device name e.g. /dev/ttyUSB0
 
 ### Network connection
 
-Host
+**Host**
 : IP address or hostname of the device e.g. 192.168.1.123
 
-Port
+**Port**
 : The YNCA port for the receiver. The default is 50000 and rarely needs to be changed.
 
 ### PySerial URL handler (advanced)
 
-URL Handler
+**URL Handler**
 : Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
 
 <br/>
@@ -689,20 +689,20 @@ The integration options can be accessed via the cogwheel icon ⚙️ under `Sett
 
 This screen provides general options.
 
-Sound modes
+**Sound modes**
 : Select the soundmodes supported by your receiver. These sound modes will be made available in the `media_player` entities for zones that support sound modes.
 
-Surround decoders
+**Surround decoders**
 : Select the surround decoders supported by your receiver. This option is only shown if your receiver supports selecting surround decoders.
 
 ### Main zone / Zone 2, 3, 4 settings
 
 This screen provides options that apply to the specific zone. There is a screen for each zone supported by the receiver.
 
-Inputs
+**Inputs**
 : Select the inputs supported by the zone. This option configures which sources are available in the `media_player` entity for the zone.
 
-Number of scenes
+**Number of scenes**
 : Select the amount of scenes supported by the zone. This option defines the amount of scene buttons that will be created for the zone.
 
 ## Removal
