@@ -653,7 +653,7 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 </details>
 
-</br>
+<br/>
 
 During configuration provide the following information depending on your connection method.
 
@@ -675,7 +675,7 @@ Port
 URL Handler
 : Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
 
-</br>
+<br/>
 
 > After the initial configuration use the integration options (see next section) to configure the integration to match the capabilities of your receiver.
 
