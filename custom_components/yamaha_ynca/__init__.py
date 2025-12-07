@@ -14,7 +14,6 @@ from homeassistant.config_entries import ConfigEntry, OperationNotAllowed, Unkno
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
-from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
 
 import ynca
 
@@ -141,7 +140,6 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, _config: ConfigType) -> bool:
     """Set up Yamaha (YNCA) integration."""
-
     async_setup_services(hass)
 
     return True
