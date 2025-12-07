@@ -9,7 +9,7 @@ from tests.conftest import INPUT_SUBUNITS
 import ynca
 
 
-def test_sourcemapping_inpnames_set(mock_ynca):
+def test_sourcemapping_inpnames_set(mock_ynca: Mock) -> None:
     # Setup external input names
     mock_sys = mock_ynca.sys
     for attribute in dir(mock_sys):
@@ -43,10 +43,8 @@ def test_sourcemapping_inpnames_set(mock_ynca):
     assert mapping[ynca.Input.USB] == "_INPNAMEUSB_"
 
 
-def test_sourcemapping_inpname_some_set(mock_ynca):
-    """Scenario when a receiver supports some of the inputs and therefore
-    responds with only a subset of INPNAMEs
-    """
+def test_sourcemapping_inpname_some_set(mock_ynca: Mock) -> None:
+    """Scenario when a receiver supports some of the inputs."""
     # Setup 1 input name
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
 
@@ -62,10 +60,8 @@ def test_sourcemapping_inpname_some_set(mock_ynca):
             assert input_ not in mapping
 
 
-def test_sourcemapping_inpnames_not_set(mock_ynca):
-    """Some receivers do not report INPNAMES at all
-    Check that they all known are reported with default names
-    """
+def test_sourcemapping_inpnames_not_set(mock_ynca: Mock) -> None:
+    """Some receivers do not report INPNAMES at all. Check that they all known are reported with default names."""
     mapping = InputHelper.get_source_mapping(mock_ynca)
 
     assert mapping[ynca.Input.AUDIO2] == "AUDIO2"
@@ -92,8 +88,8 @@ def test_sourcemapping_inpnames_not_set(mock_ynca):
     assert mapping[ynca.Input.USB] == "USB"
 
 
-def test_sourcemapping_input_subunits(mock_ynca):
-    """Check names of input subunits"""
+def test_sourcemapping_input_subunits(mock_ynca: Mock) -> None:
+    """Check names of input subunits."""
     # Setup subunits with dummy value, but it is good enough for building sourcelist
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, True)
@@ -122,8 +118,8 @@ def test_sourcemapping_input_subunits(mock_ynca):
     assert mapping[ynca.Input.USB] == "USB"
 
 
-def test_sourcemapping_no_duplicates(mock_ynca):
-    """Should be no duplicates, e.g. avoid USB is in the list twice"""
+def test_sourcemapping_no_duplicates(mock_ynca: Mock) -> None:
+    """Should be no duplicates, e.g. avoid USB is in the list twice."""
     # Setup subunits with dummy value, but it is good enough for building sourcelist
     for input_subunit in INPUT_SUBUNITS:
         setattr(mock_ynca, input_subunit, True)
@@ -137,10 +133,8 @@ def test_sourcemapping_no_duplicates(mock_ynca):
     assert len(mapping.values()) == len(set(mapping.values()))
 
 
-def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca):
-    """Inputs mentioned multiple times (like USB)
-    should use inpname<input> over default inputsubunit name
-    """
+def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca: Mock) -> None:
+    """Inputs mentioned multiple times (like USB) should use inpname<input> over default inputsubunit name."""
     mock_ynca.usb = True
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
@@ -149,8 +143,8 @@ def test_sourcemapping_input_duplicates_prefer_inpname(mock_ynca):
     assert mapping[ynca.Input.USB] == "_INPNAMEUSB_"
 
 
-def test_sourcemapping_trim_whitepspace(mock_ynca):
-    """Check that (leading and trailing) whitespace is trimmed from names"""
+def test_sourcemapping_trim_whitepspace(mock_ynca: Mock) -> None:
+    """Check that (leading and trailing) whitespace is trimmed from names."""
     mock_ynca.sys.inpnamehdmi1 = "No spaces"
     mock_ynca.sys.inpnamehdmi2 = "   Leading spaces"
     mock_ynca.sys.inpnamehdmi3 = "Trailing spaces   "
@@ -164,7 +158,7 @@ def test_sourcemapping_trim_whitepspace(mock_ynca):
     assert mapping[ynca.Input.HDMI4] == "Leading and trailing spaces"
 
 
-def test_get_name_of_input(mock_ynca):
+def test_get_name_of_input(mock_ynca: Mock) -> None:
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
     # Available input
@@ -176,7 +170,7 @@ def test_get_name_of_input(mock_ynca):
     assert name is None
 
 
-def test_get_input_by_name(mock_ynca):
+def test_get_input_by_name(mock_ynca: Mock) -> None:
     mock_ynca.sys.inpnameusb = "_INPNAMEUSB_"
 
     # Available input
@@ -188,7 +182,7 @@ def test_get_input_by_name(mock_ynca):
     assert input_ is None
 
 
-def test_get_subunit_for_input(mock_ynca):
+def test_get_subunit_for_input(mock_ynca: Mock) -> None:
     mock_ynca.usb = True
 
     # Available subunit
@@ -204,10 +198,10 @@ def test_get_subunit_for_input(mock_ynca):
     assert subunit is None
 
 
-def test_get_input_for_subunit_no_input():
+def test_get_input_for_subunit_no_input() -> None:
     t = create_autospec(ynca.subunits.tun.Tun)
     t.id = Mock()
     t.id.value = "test_subunit"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         InputHelper.get_input_for_subunit(t)

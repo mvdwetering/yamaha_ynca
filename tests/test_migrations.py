@@ -19,16 +19,17 @@ from custom_components.yamaha_ynca.migrations import LEGACY_CONF_HIDDEN_SOUND_MO
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
+    from homeassistant.helpers import device_registry as dr
 
 
 @pytest.fixture
-def device_reg(hass):
+def device_reg(hass: HomeAssistant) -> dr.DeviceRegistry:
     """Return an empty, loaded, registry."""
     return mock_device_registry(hass)
 
 
-async def test_async_migration_entry(hass: HomeAssistant):
-    """Full chain of migrations should result in last version"""
+async def test_async_migration_entry(hass: HomeAssistant) -> None:
+    """Full chain of migrations should result in last version."""
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -49,8 +50,8 @@ async def test_async_migration_entry(hass: HomeAssistant):
     assert new_entry.minor_version == 8
 
 
-async def test_async_migration_entry_downgrade(hass: HomeAssistant):
-    """Downgrade not supported"""
+async def test_async_migration_entry_downgrade(hass: HomeAssistant) -> None:
+    """Downgrade not supported."""
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -66,7 +67,7 @@ async def test_async_migration_entry_downgrade(hass: HomeAssistant):
     assert migration_success is False  # Downgrade is not supported
 
 
-async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
+async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -89,7 +90,7 @@ async def test_async_migration_entry_version_v1_to_v2(hass: HomeAssistant):
     assert new_entry.data["serial_url"] == "SerialPort"
 
 
-async def test_async_migration_entry_version_v2_to_v3(hass: HomeAssistant):
+async def test_async_migration_entry_version_v2_to_v3(hass: HomeAssistant) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -111,7 +112,7 @@ async def test_async_migration_entry_version_v2_to_v3(hass: HomeAssistant):
 
 async def test_async_migration_entry_version_v3_to_v4_hidden_soundmodes(
     hass: HomeAssistant,
-):
+) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -137,7 +138,7 @@ async def test_async_migration_entry_version_v3_to_v4_hidden_soundmodes(
 
 async def test_async_migration_entry_version_v3_to_v4_no_hidden_soundmodes(
     hass: HomeAssistant,
-):
+) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -158,7 +159,9 @@ async def test_async_migration_entry_version_v3_to_v4_no_hidden_soundmodes(
     assert new_entry.options.get(LEGACY_CONF_HIDDEN_SOUND_MODES, None) is None
 
 
-async def test_async_migration_entry_version_v4_to_v5_is_ipaddress(hass: HomeAssistant):
+async def test_async_migration_entry_version_v4_to_v5_is_ipaddress(
+    hass: HomeAssistant,
+) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -180,7 +183,7 @@ async def test_async_migration_entry_version_v4_to_v5_is_ipaddress(hass: HomeAss
 
 async def test_async_migration_entry_version_v4_to_v5_is_ipaddress_and_port(
     hass: HomeAssistant,
-):
+) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -202,7 +205,7 @@ async def test_async_migration_entry_version_v4_to_v5_is_ipaddress_and_port(
 
 async def test_async_migration_entry_version_v4_to_v5_is_not_ipaddress(
     hass: HomeAssistant,
-):
+) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -222,7 +225,7 @@ async def test_async_migration_entry_version_v4_to_v5_is_not_ipaddress(
     assert new_entry.data["serial_url"] == "not an ip address"
 
 
-async def test_async_migration_entry_version_v5_to_v6(hass: HomeAssistant):
+async def test_async_migration_entry_version_v5_to_v6(hass: HomeAssistant) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -261,7 +264,9 @@ async def test_async_migration_entry_version_v5_to_v6(hass: HomeAssistant):
     ]
 
 
-async def test_async_migration_entry_version_v5_to_v6_no_data(hass: HomeAssistant):
+async def test_async_migration_entry_version_v5_to_v6_no_data(
+    hass: HomeAssistant,
+) -> None:
     old_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -287,7 +292,10 @@ async def test_async_migration_entry_version_v5_to_v6_no_data(hass: HomeAssistan
     assert "ZONE4" not in new_entry.options
 
 
-async def test_async_migration_entry_version_v6_to_v7(device_reg, hass: HomeAssistant):
+async def test_async_migration_entry_version_v6_to_v7(
+    device_reg: dr.DeviceRegistry,
+    hass: HomeAssistant,
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -323,7 +331,7 @@ async def test_async_migration_entry_version_v6_to_v7(device_reg, hass: HomeAssi
 
 async def test_async_migration_entry_version_v7_1_to_v7_2_no_audio_workaround(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -350,7 +358,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_no_audio_workaround(
 
 async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -375,7 +383,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_with_audio_workaround(
 
 async def test_async_migration_entry_version_v7_1_to_v7_2_no_zones_data(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -401,7 +409,7 @@ async def test_async_migration_entry_version_v7_1_to_v7_2_no_zones_data(
 
 async def test_async_migration_entry_version_v7_2_to_v7_3_has_twochdecoder(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -413,7 +421,7 @@ async def test_async_migration_entry_version_v7_2_to_v7_3_has_twochdecoder(
     config_entry.add_to_hass(hass)
 
     mock_entity_registry = mock_registry(hass)
-    mock_button_entity_entry = mock_entity_registry.async_get_or_create(
+    mock_entity_registry.async_get_or_create(
         Platform.SELECT,
         yamaha_ynca.DOMAIN,
         f"{config_entry.entry_id}_MAIN_twochdecoder",
@@ -447,7 +455,7 @@ async def test_async_migration_entry_version_v7_2_to_v7_3_has_twochdecoder(
 
 async def test_async_migration_entry_version_v7_2_to_v7_3_no_twochdecoder(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -471,7 +479,7 @@ async def test_async_migration_entry_version_v7_2_to_v7_3_no_twochdecoder(
 
 async def test_async_migration_entry_version_v7_3_to_v7_4(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -498,7 +506,7 @@ async def test_async_migration_entry_version_v7_3_to_v7_4(
 
 async def test_async_migration_entry_version_v7_4_to_v7_5(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -525,7 +533,7 @@ async def test_async_migration_entry_version_v7_4_to_v7_5(
 
 async def test_async_migration_entry_version_v7_5_to_v7_6(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -553,7 +561,7 @@ async def test_async_migration_entry_version_v7_5_to_v7_6(
 
 async def test_async_migration_entry_version_v7_6_to_v7_7(
     hass: HomeAssistant,
-):
+) -> None:
     # Make sure to use a model that has sound modes in ynca modelinfo
     # DOES NOT EXIST is for robustness
     config_entry = MockConfigEntry(
@@ -585,7 +593,7 @@ async def test_async_migration_entry_version_v7_6_to_v7_7(
 
 async def test_async_migration_entry_version_v7_6_to_v7_7_nothing_hidden(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
@@ -616,7 +624,7 @@ async def test_async_migration_entry_version_v7_6_to_v7_7_nothing_hidden(
 
 async def test_async_migration_entry_version_v7_7_to_v7_8(
     hass: HomeAssistant,
-):
+) -> None:
     # Make sure to use a model that has inputs in ynca modelinfo
     # DOES NOT EXIST is for robustness
     config_entry = MockConfigEntry(
@@ -649,7 +657,7 @@ async def test_async_migration_entry_version_v7_7_to_v7_8(
 
 async def test_async_migration_entry_version_v7_7_to_v7_8_nothing_hidden(
     hass: HomeAssistant,
-):
+) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
         entry_id="entry_id",
