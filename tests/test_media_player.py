@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import timedelta
-import logging
 from unittest.mock import Mock, create_autospec, patch
 
 from homeassistant.components.media_player import (
@@ -12,7 +11,7 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 import pytest
 from pytest_unordered import unordered
@@ -1070,11 +1069,5 @@ async def test_mediaplayer_entity_store_preset_warning(
 ):
     mock_zone.inp = ynca.Input.HDMI1  # Does not support presets
 
-    mp_entity.store_preset(12)
-    assert caplog.record_tuples == [
-        (
-            "custom_components.yamaha_ynca",
-            logging.WARNING,
-            "Unable to store preset 12 for current input HDMI1",
-        )
-    ]
+    with pytest.raises(ServiceValidationError):
+        mp_entity.store_preset(12)
