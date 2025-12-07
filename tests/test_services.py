@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, call, patch
+from unittest.mock import call
 
 from homeassistant.exceptions import ServiceValidationError
 import pytest
@@ -19,9 +19,7 @@ if TYPE_CHECKING:
     from ynca import YncaApi
 
 
-async def test_service_raw_ynca_command_handler(
-    hass: HomeAssistant, mock_ynca: YncaApi
-) -> None:
+async def test_service_raw_ynca(hass: HomeAssistant, mock_ynca: YncaApi) -> None:
     """Test sending raw YNCA command."""
     integration = await setup_integration(hass, mock_ynca)
 
@@ -41,10 +39,12 @@ async def test_service_raw_ynca_command_handler(
     )
 
 
-async def test_service_raw_ynca_command_handler_invalid_config_entry_id(
-    hass: HomeAssistant,
+async def test_service_raw_ynca_invalid_config_entry_id(
+    hass: HomeAssistant, mock_ynca: YncaApi
 ) -> None:
     """Test sending invalid config_entry_id."""
+    await setup_integration(hass, mock_ynca)
+
     with pytest.raises(ServiceValidationError):
         await hass.services.async_call(
             yamaha_ynca.DOMAIN,

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.components.media_player import DOMAIN as MEDIA_PLAYER_DOMAIN
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import ATTR_CONFIG_ENTRY_ID
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ServiceValidationError
@@ -28,7 +29,7 @@ async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall) -> 
         call.data.get(ATTR_CONFIG_ENTRY_ID)
     )
 
-    if config_entry is None:
+    if config_entry is None or config_entry.state is not ConfigEntryState.LOADED:
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="config_entry_not_found",
