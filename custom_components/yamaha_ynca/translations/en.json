@@ -222,6 +222,9 @@
   "exceptions": {
     "config_entry_not_found": {
       "message": "Config entry with id {config_entry_id} is invalid or not loaded."
+    },
+    "store_preset_not_supported_by_input": {
+      "message": "Storing presets is not supported by current input {input}."
     }
   },
   "services": {

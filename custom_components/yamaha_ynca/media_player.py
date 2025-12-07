@@ -16,7 +16,7 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import (
     device_registry as dr,
 )
@@ -801,10 +801,10 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.mem(preset_id)
             return
 
-        LOGGER.warning(
-            "Unable to store preset %s for current input %s",
-            preset_id,
-            self._zone.inp.value if self._zone.inp else "None",
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="store_preset_not_supported_by_input",
+            translation_placeholders={"input": str(self._zone.inp)},
         )
 
 
