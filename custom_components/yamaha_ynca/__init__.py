@@ -223,6 +223,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
         return False
 
     def on_disconnect() -> None:
+        LOGGER.info("%s disconnected", entry.title)
+
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
         # OperationNotAllowed => Can not reload during setup, which is fine, so just let it go
@@ -240,6 +242,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
     initialized = await hass.async_add_executor_job(initialize_ynca, ynca_receiver)
 
     if initialized:
+        LOGGER.info("%s connected", entry.title)
+
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
         await preset_support_detection_hack(hass, ynca_receiver)
