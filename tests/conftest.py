@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
@@ -51,7 +51,9 @@ INPUT_SUBUNITS = [
 
 
 @pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations) -> None:
+def auto_enable_custom_integrations(
+    enable_custom_integrations: pytest.Fixture,  # noqa: ARG001
+) -> None:
     return
 
 
@@ -268,9 +270,7 @@ async def setup_integration(
 
     if not skip_setup:
 
-        def side_effect(
-            *args, **kwargs  # noqa: ANN002, ANN003, ARG001
-        ) -> ynca.YncaApi:
+        def side_effect(*args: Any, **kwargs: Any) -> ynca.YncaApi:  # noqa: ARG001
             nonlocal on_disconnect
             on_disconnect = args[1]
             return DEFAULT

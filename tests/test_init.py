@@ -116,7 +116,7 @@ async def test_async_setup_entry_audio_input_workaround_not_applied(
 
 
 async def test_async_setup_entry_preset_removed(
-    hass, mock_ynca: Mock, mock_zone_main: Mock
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
@@ -149,7 +149,7 @@ async def test_async_setup_entry_preset_removed(
 
 
 async def test_async_setup_entry_preset_not_removed(
-    hass, mock_ynca: Mock, mock_zone_main: Mock
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
@@ -181,7 +181,7 @@ async def test_async_setup_entry_preset_not_removed(
 
 
 async def test_async_setup_entry_fails_with_connection_error(
-    hass, mock_ynca: Mock
+    hass: HomeAssistant, mock_ynca: Mock
 ) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
@@ -199,7 +199,7 @@ async def test_async_setup_entry_fails_with_connection_error(
 
 
 async def test_async_setup_entry_fails_with_connection_failed(
-    hass, mock_ynca: Mock
+    hass: HomeAssistant, mock_ynca: Mock
 ) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
@@ -217,7 +217,7 @@ async def test_async_setup_entry_fails_with_connection_failed(
 
 
 async def test_async_setup_entry_fails_with_initialization_failed_error(
-    hass, mock_ynca: Mock
+    hass: HomeAssistant, mock_ynca: Mock
 ) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
@@ -236,7 +236,9 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(
     await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
-async def test_async_setup_entry_fails_unknown_reason(hass, mock_ynca: Mock) -> None:
+async def test_async_setup_entry_fails_unknown_reason(
+    hass: HomeAssistant, mock_ynca: Mock
+) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
@@ -249,7 +251,9 @@ async def test_async_setup_entry_fails_unknown_reason(hass, mock_ynca: Mock) -> 
     assert integration.entry.state is ConfigEntryState.SETUP_ERROR
 
 
-async def test_async_unload_entry(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
+async def test_async_unload_entry(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
@@ -263,7 +267,7 @@ async def test_async_unload_entry(hass, mock_ynca: Mock, mock_zone_main: Mock) -
 
 @patch("homeassistant.config_entries.ConfigEntries.async_reload")
 async def test_reload_on_disconnect(
-    async_reload_mock: Mock, hass, mock_ynca: Mock, mock_zone_main: Mock
+    async_reload_mock: Mock, hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
@@ -278,7 +282,7 @@ async def test_reload_on_disconnect(
 
 
 async def test_update_configentry(
-    hass, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone3: Mock
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone3: Mock
 ) -> None:
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
