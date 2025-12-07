@@ -217,6 +217,7 @@ async def test_mediaplayer_entity_zoneb_turn_on_off(
 async def test_mediaplayer_entity_mute_volume(
     mp_entity: YamahaYncaZone, mock_zone: Mock
 ) -> None:
+    mp_entity.mute_volume(mute=True)
     assert mock_zone.mute is ynca.Mute.ON
     assert mp_entity.is_volume_muted
 
