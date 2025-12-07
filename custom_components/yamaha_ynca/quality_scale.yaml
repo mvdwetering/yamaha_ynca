@@ -30,7 +30,10 @@ rules:
   entity-unavailable: done
   integration-owner: done
   log-when-unavailable: todo
-  parallel-updates: todo
+  parallel-updates:
+    status: exempt
+    comment: |
+      Integration is push based.
   reauthentication-flow:
     status: exempt
     comment: |
