@@ -70,10 +70,16 @@ async def test_mediaplayer_entity(
     mp_entity.schedule_update_ha_state = Mock()
 
     zone_callback("FUNCTION", "VALUE")
-    mp_entity.schedule_update_ha_state.call_count == 1
+    assert mp_entity.schedule_update_ha_state.call_count == 1
 
+    # No update when not selected input
+    mock_zone.inp = ynca.Input.HDMI1
     netradio_callback("FUNCTION", "VALUE")
-    mp_entity.schedule_update_ha_state.call_count == 2
+    assert mp_entity.schedule_update_ha_state.call_count == 1
+
+    mock_zone.inp = ynca.Input.NETRADIO
+    netradio_callback("FUNCTION", "VALUE")
+    assert mp_entity.schedule_update_ha_state.call_count == 2
 
     await mp_entity.async_will_remove_from_hass()
     mock_zone.unregister_update_callback.assert_called_once_with(zone_callback)
