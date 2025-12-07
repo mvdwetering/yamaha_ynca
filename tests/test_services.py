@@ -1,4 +1,4 @@
-"""Test the Yamaha (YNCA) config flow."""
+"""Test the Yamaha (YNCA) services/actions."""
 
 from __future__ import annotations
 
