@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 import pytest
@@ -13,11 +14,14 @@ from custom_components.yamaha_ynca.remote import (
 from tests.conftest import setup_integration
 import ynca
 
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)
 async def test_async_setup_entry(
     yamahayncazoneremote_mock: Mock,
-    hass,
+    hass: HomeAssistant,
     mock_ynca: Mock,
     mock_zone_main: Mock,
     mock_zone_zone3: Mock,

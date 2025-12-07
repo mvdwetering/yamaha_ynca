@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 from homeassistant.components.number import NumberDeviceClass
@@ -17,6 +18,9 @@ from custom_components.yamaha_ynca.number import (
 )
 from tests.conftest import setup_integration
 import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 
 def native_max_value_fn(_associated_zone: ynca.subunits.zone.ZoneBase) -> float:
@@ -43,7 +47,7 @@ TEST_ENTITY_DESCRIPTION = YncaNumberEntityDescription(
 async def test_async_setup_entry(
     yamahayncanumberinitialvolume_mock: Mock,
     yamahayncanumber_mock: Mock,
-    hass,
+    hass: HomeAssistant,
     mock_ynca: Mock,
     mock_zone_main: Mock,
 ) -> None:
@@ -82,7 +86,11 @@ async def test_async_setup_entry(
     assert len(entities) == 6
 
 
-async def test_number_entity(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
+async def test_number_entity(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
     entity_under_test = "number.modelname_main_max_volume"
 
     mock_zone_main.maxvol = 0
@@ -106,7 +114,11 @@ async def test_number_entity(hass, mock_ynca: Mock, mock_zone_main: Mock) -> Non
 
 
 @pytest.mark.usefixtures("entity_registry_enabled_by_default")
-async def test_number_entity_volume(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
+async def test_number_entity_volume(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
     entity_under_test = "number.modelname_main_volume_db"
 
     mock_zone_main.vol = -5

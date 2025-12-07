@@ -293,7 +293,8 @@ async def test_async_migration_entry_version_v5_to_v6_no_data(
 
 
 async def test_async_migration_entry_version_v6_to_v7(
-    device_reg, hass: HomeAssistant
+    device_reg: dr.DeviceRegistry,
+    hass: HomeAssistant,
 ) -> None:
     config_entry = MockConfigEntry(
         domain=yamaha_ynca.DOMAIN,
