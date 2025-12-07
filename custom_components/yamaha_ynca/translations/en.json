@@ -230,7 +230,8 @@
       "description": "Send raw YNCA commands, intended for debugging. Responses can be seen in the 'history' part of the diagnostics file or in the Home Assistant logs after enabling debug logging on the Yamaha (YNCA) integration.",
       "fields": {
         "config_entry_id": {
-          "name": "Yamaha (YNCA) instance"
+          "name": "Yamaha (YNCA) instance",
+          "description": "The config entry representing the Yamaha receiver to handle the command(s)."
         },
         "raw_data": {
           "name": "Raw YNCA data",
