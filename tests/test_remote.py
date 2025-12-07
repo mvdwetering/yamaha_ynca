@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 import pytest
@@ -13,11 +14,18 @@ from custom_components.yamaha_ynca.remote import (
 from tests.conftest import setup_integration
 import ynca
 
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)
 async def test_async_setup_entry(
-    yamahayncazoneremote_mock, hass, mock_ynca, mock_zone_main, mock_zone_zone3
-):
+    yamahayncazoneremote_mock: Mock,
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+    mock_zone_zone3: Mock,
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
 
@@ -38,7 +46,7 @@ async def test_async_setup_entry(
     assert len(entities) == 2
 
 
-async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
+async def test_remote_entity_fields(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     assert entity.unique_id == "ReceiverUniqueId_ZONE3_remote"
@@ -47,7 +55,7 @@ async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
     }
 
 
-async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
+async def test_remote_send_codes_mapped(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     codes = {
         "code1": "12-AB",
         "code2": "12-CDEF",
@@ -62,11 +70,9 @@ async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, codes)
 
     # Setting value
-    expected_call_count = 0
-    for name, code in codes.items():
+    for expected_call_count, (name, code) in enumerate(codes.items(), start=1):
         entity.send_command([code])
 
-        expected_call_count += 1
         assert mock_ynca.sys.remotecode.call_count == expected_call_count
 
         if name.startswith("code1"):
@@ -76,21 +82,23 @@ async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
         elif name.startswith("code3"):
             mock_ynca.sys.remotecode.assert_called_with("1234ABCD")
         else:
-            assert False
+            pytest.fail(f"Unexpected code name: {name}")
 
 
-async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
+async def test_remote_send_codes_raw_formats(
+    mock_ynca: Mock, mock_zone_zone3: Mock
+) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
     entity.send_command(["12ABCD"])
     mock_ynca.sys.remotecode.assert_called_with("12EDABCD")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         entity.send_command(["not a valid code"])
 
 
-async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
+async def test_remote_send_num_repeats(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -99,7 +107,7 @@ async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
     mock_ynca.sys.remotecode.assert_any_call("1234ABCD")
 
 
-async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
+async def test_remote_send_delay_secs(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -110,7 +118,7 @@ async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
     assert end - start < 0.500
 
 
-async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
+async def test_remote_turn_on_off(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
     entity = YamahaYncaZoneRemote(
@@ -127,7 +135,7 @@ async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
     mock_ynca.sys.remotecode.assert_called_with("90ABCDEF")
 
 
-async def test_remote_is_on(mock_ynca, mock_zone_zone3):
+async def test_remote_is_on(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
     entity = YamahaYncaZoneRemote(
@@ -143,7 +151,7 @@ async def test_remote_is_on(mock_ynca, mock_zone_zone3):
     assert entity.is_on is True
 
 
-async def test_remote_update_state(mock_ynca, mock_zone_zone3):
+async def test_remote_update_state(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
     entity = YamahaYncaZoneRemote(

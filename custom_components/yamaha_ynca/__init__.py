@@ -14,7 +14,6 @@ from homeassistant.config_entries import ConfigEntry, OperationNotAllowed, Unkno
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
-from homeassistant.helpers.service import ServiceCall, async_extract_config_entry_ids
 
 import ynca
 
@@ -25,12 +24,12 @@ from .const import (
     DOMAIN,
     LOGGER,
     MANUFACTURER_NAME,
-    SERVICE_SEND_RAW_YNCA,
     ZONE_ATTRIBUTE_NAMES,
 )
 from .helpers import DomainEntryData, receiver_requires_audio_input_workaround
 from .input_helpers import InputHelper
 from .migrations import async_migrate_entry as migrations_async_migrate_entry
+from .services import async_setup_services
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -136,33 +135,12 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall) -> None:
-    for config_entry_id in await async_extract_config_entry_ids(hass, call):
-        # Check if configentry is ours, could be others when targeting areas for example
-        if (
-            (config_entry := hass.config_entries.async_get_entry(config_entry_id))
-            and (config_entry.domain == DOMAIN)
-            and (domain_entry_info := config_entry.runtime_data)
-        ):
-            # Handle actual call
-            for line in call.data.get("raw_data").splitlines():
-                line = line.strip()  # noqa: PLW2901
-                if line.startswith("@"):
-                    domain_entry_info.api.send_raw(line)
-
-
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, _config: ConfigType) -> bool:
     """Set up Yamaha (YNCA) integration."""
-
-    async def async_handle_send_raw_ynca_local(call: ServiceCall) -> None:
-        await async_handle_send_raw_ynca(hass, call)
-
-    hass.services.async_register(
-        DOMAIN, SERVICE_SEND_RAW_YNCA, async_handle_send_raw_ynca_local
-    )
+    async_setup_services(hass)
 
     return True
 
@@ -245,6 +223,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
         return False
 
     def on_disconnect() -> None:
+        LOGGER.info("%s disconnected", entry.title)
+
         # Reload the entry on disconnect.
         # HA will take care of re-init and retries
         # OperationNotAllowed => Can not reload during setup, which is fine, so just let it go
@@ -262,6 +242,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
     initialized = await hass.async_add_executor_job(initialize_ynca, ynca_receiver)
 
     if initialized:
+        LOGGER.info("%s connected", entry.title)
+
         await update_device_registry(hass, entry, ynca_receiver)
         await update_configentry(hass, entry, ynca_receiver)
         await preset_support_detection_hack(hass, ynca_receiver)

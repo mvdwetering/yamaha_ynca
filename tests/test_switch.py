@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 from homeassistant.helpers.entity import EntityCategory
@@ -13,6 +14,9 @@ from custom_components.yamaha_ynca.switch import (
 )
 from tests.conftest import setup_integration
 import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 TEST_ENTITY_DESCRIPTION = YncaSwitchEntityDescription(
     key="enhancer",
@@ -40,8 +44,11 @@ TEST_ENTITY_DESCRIPTION_DIRMODE = YncaSwitchEntityDescription(
 
 @patch("custom_components.yamaha_ynca.switch.YamahaYncaSwitch", autospec=True)
 async def test_async_setup_entry(
-    yamahayncaswitch_mock, hass, mock_ynca, mock_zone_main
-):
+    yamahayncaswitch_mock: Mock,
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.adaptivedrc = ynca.AdaptiveDrc.OFF
     mock_ynca.main.enhancer = ynca.Enhancer.OFF
@@ -56,6 +63,7 @@ async def test_async_setup_entry(
 
     mock_ynca.sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
     mock_ynca.sys.hdmiout2 = ynca.HdmiOutOnOff.ON
+    mock_ynca.sys.party = ynca.Party.OFF
 
     integration = await setup_integration(hass, mock_ynca)
     add_entities_mock = Mock()
@@ -75,10 +83,10 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 11
+    assert len(entities) == 12
 
 
-async def test_switch_entity_fields(mock_zone):
+async def test_switch_entity_fields(mock_zone: Mock) -> None:
     entity = YamahaYncaSwitch("ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION)
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_enhancer"
@@ -99,7 +107,9 @@ async def test_switch_entity_fields(mock_zone):
     assert entity.is_on is False
 
 
-async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
+async def test_switch_associated_zone_handling(
+    mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_sys = mock_ynca.sys
     mock_main = mock_zone_main
 
@@ -125,7 +135,9 @@ async def test_switch_associated_zone_handling(mock_ynca, mock_zone_main):
     assert entity.is_on is False
 
 
-async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_not_supported_at_all(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = None
     mock_ynca.main.lipsynchdmiout2offset = None
@@ -136,7 +148,9 @@ async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
     assert hdmiout is None
 
 
-async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_supported_with_one_hdmi_output(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = None  # This indicates no HDMI2
@@ -147,7 +161,9 @@ async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone
     assert hdmiout is not None
 
 
-async def test_hdmiout_supported_with_two_hdmi_outputs(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_supported_with_two_hdmi_outputs(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = 123  # This indicates HDMI2
@@ -158,13 +174,14 @@ async def test_hdmiout_supported_with_two_hdmi_outputs(hass, mock_ynca, mock_zon
     assert hdmiout is None
 
 
-async def test_dirmode(hass, mock_ynca, mock_zone_main):
+# Accessing private _connection is not ideal, but not sure how I want to handle it properly yet
+async def test_dirmode(mock_zone_main: Mock) -> None:
     entity = YamahaYncaSwitch(
         "ReceiverUniqueId", mock_zone_main, TEST_ENTITY_DESCRIPTION_DIRMODE
     )
 
-    mock_zone_main._connection = Mock()
-    mock_zone_main._connection.get = Mock()
+    mock_zone_main._connection = Mock()  # noqa: SLF001
+    mock_zone_main._connection.get = Mock()  # noqa: SLF001
 
     # Check handling of updates from YNCA
     await entity.async_added_to_hass()
@@ -175,7 +192,7 @@ async def test_dirmode(hass, mock_ynca, mock_zone_main):
     # Dirmode triggers update
     callback("DIRMODE", None)
     entity.schedule_update_ha_state.assert_called_once()
-    mock_zone_main._connection.get.assert_not_called()
+    mock_zone_main._connection.get.assert_not_called()  # noqa: SLF001
 
     # Straight does not trigger update, but requests update for DIRMODE
     entity.schedule_update_ha_state.reset_mock()
@@ -183,20 +200,24 @@ async def test_dirmode(hass, mock_ynca, mock_zone_main):
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
 
-    mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
+    mock_zone_main._connection.get.assert_called_once_with(  # noqa: SLF001
+        "MAIN", "DIRMODE"
+    )
 
     # Receiving STRAIGHT again within 500ms does not request an update
-    mock_zone_main._connection.get.reset_mock()
+    mock_zone_main._connection.get.reset_mock()  # noqa: SLF001
 
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
-    mock_zone_main._connection.get.assert_not_called()
+    mock_zone_main._connection.get.assert_not_called()  # noqa: SLF001
 
     # But after the cooldown expires it requests again
     await asyncio.sleep(0.51)
     callback("STRAIGHT", None)
     entity.schedule_update_ha_state.assert_not_called()
-    mock_zone_main._connection.get.assert_called_once_with("MAIN", "DIRMODE")
+    mock_zone_main._connection.get.assert_called_once_with(  # noqa: SLF001
+        "MAIN", "DIRMODE"
+    )
 
     # Cleanup on exit
     await entity.async_will_remove_from_hass()

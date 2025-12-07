@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import create_autospec
+from unittest.mock import Mock, create_autospec
 
 from homeassistant.data_entry_flow import FlowResultType
 
@@ -55,13 +55,13 @@ ALL_PHYSICAL_INPUTS = [
 ]
 
 
-async def test_options_flow_navigate_all_screens(
+async def test_options_flow_navigate_all_screens(  # noqa: PLR0913
     hass: HomeAssistant,
-    mock_ynca,
-    mock_zone_main,
-    mock_zone_zone2,
-    mock_zone_zone3,
-    mock_zone_zone4,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+    mock_zone_zone2: Mock,
+    mock_zone_zone3: Mock,
+    mock_zone_zone4: Mock,
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.zone2 = mock_zone_zone2
@@ -151,7 +151,7 @@ async def test_options_flow_navigate_all_screens(
     }
 
 
-async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> None:
+async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca: Mock) -> None:
     """Test optionsflow when there is no connection."""
     integration = await setup_integration(hass, mock_ynca)
     integration.entry.runtime_data = None  # Pretend connection failed
@@ -170,7 +170,7 @@ async def test_options_flow_no_connection(hass: HomeAssistant, mock_ynca) -> Non
     assert result["type"] == FlowResultType.CREATE_ENTRY
 
 
-async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
+async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca: Mock) -> None:
     # Set a modelname that is in the modelinfo that does not support all SoundPrg values
     mock_ynca.sys.modelname = "RX-A810"
 
@@ -207,7 +207,7 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca) -> None:
 
 
 async def test_options_flow_surrounddecoders(
-    hass: HomeAssistant, mock_ynca, mock_zone_main
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     mock_zone_main.twochdecoder = ynca.TwoChDecoder.Auro3d
     mock_ynca.main = mock_zone_main
@@ -258,7 +258,7 @@ async def test_options_flow_surrounddecoders(
 
 
 async def test_options_flow_zone_inputs(
-    hass: HomeAssistant, mock_ynca, mock_zone_main
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
@@ -300,7 +300,7 @@ async def test_options_flow_zone_inputs(
 
 
 async def test_options_flow_configure_nof_scenes(
-    hass: HomeAssistant, mock_ynca, mock_zone_main
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
 ) -> None:
     mock_ynca.main = mock_zone_main
 

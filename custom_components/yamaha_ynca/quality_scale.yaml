@@ -1,7 +1,7 @@
 rules:
   # Bronze
   action-setup: done
-  appropriate-polling:  # Exempt is taken from Onkyo, but docs say no exceptions...
+  appropriate-polling:
     status: exempt
     comment: |
       This integration uses a push API. No polling required.
@@ -23,14 +23,17 @@ rules:
   unique-config-entry: done
 
   # Silver
-  action-exceptions: todo
+  action-exceptions: done
   config-entry-unloading: done
-  docs-configuration-parameters: todo
-  docs-installation-parameters: todo
+  docs-configuration-parameters: done
+  docs-installation-parameters: done
   entity-unavailable: done
   integration-owner: done
-  log-when-unavailable: todo
-  parallel-updates: todo
+  log-when-unavailable: done
+  parallel-updates:
+    status: exempt
+    comment: |
+      Integration is push based.
   reauthentication-flow:
     status: exempt
     comment: |
@@ -55,25 +58,31 @@ rules:
   docs-supported-functions: todo
   docs-troubleshooting: todo
   docs-use-cases: todo
-  dynamic-devices: todo
+  dynamic-devices:
+    status: exempt
+    comment: |
+      This integration has a fixed single device.
   entity-category: done
   entity-device-class: done
   entity-disabled-by-default: done
   entity-translations: done
-  exception-translations: todo
+  exception-translations: done
   icon-translations: done
   reconfiguration-flow: done
   repair-issues:
     status: done
     comment: |
-      Note that this integration currently does trigger repairs.
-  stale-devices: todo
+      This integration currently does not trigger repairs.
+  stale-devices:
+    status: exempt
+    comment: |
+      This integration has a fixed single device.
 
   # Platinum
   async-dependency:
     status: todo
     comment: |
-      This implies a complete rewrite of the communication library and integration. That is a lot of work. Probably not going to happen.
+      This implies a complete rewrite of the communication library and integration. That is a lot of work. Does not seem worth the effort right now, so probably not going to happen.
   inject-websession:
     status: done
     comment: |

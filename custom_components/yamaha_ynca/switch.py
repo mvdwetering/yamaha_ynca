@@ -154,6 +154,13 @@ SYS_ENTITY_DESCRIPTIONS = [
         off=ynca.HdmiOutOnOff.OFF,
         associated_zone_attr="main",
     ),
+    YncaSwitchEntityDescription(
+        key="party",
+        icon="mdi:party-popper",
+        on=ynca.Party.ON,
+        off=ynca.Party.OFF,
+        associated_zone_attr="main",
+    ),
 ]
 
 

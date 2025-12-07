@@ -16,27 +16,22 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import (
-    config_validation as cv,
     device_registry as dr,
-    entity_platform,
 )
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import dt
-import voluptuous as vol
 
 import ynca
 
 from . import YamahaYncaConfigEntry, build_zone_devicename, build_zoneb_devicename
 from .const import (
-    ATTR_PRESET_ID,
     CONF_SELECTED_INPUTS,
     CONF_SELECTED_SOUND_MODES,
     DOMAIN,
     LOGGER,
     NUM_PRESETS,
-    SERVICE_STORE_PRESET,
     ZONE_ATTRIBUTE_NAMES,
     ZONE_MAX_VOLUME,
     ZONE_MIN_VOLUME,
@@ -65,15 +60,6 @@ async def async_setup_entry(
 ) -> None:
     domain_entry_data = config_entry.runtime_data
     api = domain_entry_data.api
-
-    platform = entity_platform.async_get_current_platform()
-    platform.async_register_entity_service(
-        SERVICE_STORE_PRESET,
-        {
-            vol.Required(ATTR_PRESET_ID): cv.positive_int,
-        },
-        "store_preset",
-    )
 
     entities: list[MediaPlayerEntity] = []
 
@@ -815,10 +801,10 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.mem(preset_id)
             return
 
-        LOGGER.warning(
-            "Unable to store preset %s for current input %s",
-            preset_id,
-            self._zone.inp.value if self._zone.inp else "None",
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="store_preset_not_supported_by_input",
+            translation_placeholders={"input": str(self._zone.inp)},
         )
 
 

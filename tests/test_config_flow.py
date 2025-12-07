@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from typing import TYPE_CHECKING
+from unittest.mock import Mock, patch
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
 import ynca
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 
 async def test_menu_form(hass: HomeAssistant) -> None:
@@ -94,7 +97,7 @@ async def test_advanced_connect(hass: HomeAssistant) -> None:
     assert len(mock_setup_entry.mock_calls) == 1
 
 
-async def test_abort_on_duplicate_entry(hass: HomeAssistant, mock_ynca) -> None:
+async def test_abort_on_duplicate_entry(hass: HomeAssistant, mock_ynca: Mock) -> None:
     await setup_integration(hass, mock_ynca)
 
     # Flow goes to menu with connection options
@@ -189,7 +192,7 @@ async def test_unhandled_exception(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "unknown"}
 
 
-async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
+async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca: Mock) -> None:
     integration = await setup_integration(hass, mock_ynca, serial_url="old_serial_port")
 
     # Flow goes to menu with connection options
@@ -240,7 +243,7 @@ async def test_reconfigure_serial(hass: HomeAssistant, mock_ynca) -> None:
     assert result2["reason"] == "reconfigure_successful"
 
 
-async def test_reconfigure_network(hass: HomeAssistant, mock_ynca) -> None:
+async def test_reconfigure_network(hass: HomeAssistant, mock_ynca: Mock) -> None:
     integration = await setup_integration(
         hass, mock_ynca, serial_url="socket://old_hostname_or_ipaddress:12345"
     )

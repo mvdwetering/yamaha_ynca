@@ -1,6 +1,6 @@
 # Yamaha YNCA
 
-Minimum required Home Assistant version is: 2025.2.0
+Minimum required Home Assistant version is: 2025.10.0
 
 * [About Yamaha (YNCA)](#description)
 * [Working models](#working-models)
@@ -13,6 +13,7 @@ Minimum required Home Assistant version is: 2025.2.0
   * [Home Assistant Community Store (HACS)](#home-assistant-community-store-hacs)
   * [Manual download](#manual-download)
 * [Configuration](#configuration)
+* [Options](#options)
 * [Removal](#removal)
 * [Actions](#actions)
   * [Action yamaha_ynca.store_preset](#action-yamaha_yncastore_preset)
@@ -38,6 +39,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | --- | --- | --- |
 | 2010 | AVENTAGE | RX-A700, RX-A800, RX-A1000, RX-A2000, RX-A3000 |
 | | RX-V | RX-V867, RX-V1067, RX-V2067, RX-V3067 |
+| | HTR | HTR-8063 |
 | 2011 | AVENTAGE | RX-A710, RX-A810, RX-A1010, RX-A2010, RX-A3010 |
 | | RX-V | RX-V671, RX-V771, RX-V871, RX-V1071, RX-V2071, RX-V3071 |
 | | HTR | HTR-6064 |
@@ -60,12 +62,13 @@ If your receiver works but is not in the list, please post a message in the [dis
 | 2017 | AVENTAGE | RX-A870, RX-A2070, RX-A3070 |
 | | RX-V | RX-V483, RX-V683 |
 | | HTR | HTR-4071 |
-| 2018 | AVENTAGE | RX-A3080 |
+| 2018 | AVENTAGE | RX-A880, RX-A3080 |
 | | RX-V | RX-V585, RX-V685, RX-V1085 |
 | | HTR | HTR-4072 |
 | | TSR | TSR-7850 |
+| | Other | CX-A5200 |
 | 2020 | AVENTAGE | RX-A2A, RX-A4A, RX-A6A |
-| | RX-V | RX-V4A |
+| | RX-V | RX-V4A, RX-V6A |
 | | TSR | TSR-700 |
 
 ## Features
@@ -92,6 +95,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 * Activate scenes with button entities like the buttons on the front panel
 * Select and store [Presets](#presets) for radio or other sources
 * Send [remote control commands and IR codes](#remote-entity)
+* Party mode switch
 * Several controllable settings (if supported by receiver):
   * Adaptive DRC enable/disable
   * CINEMA DSP 3D mode enable/disable
@@ -651,9 +655,55 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 <br/>
 
-> After initial configuration, check the integration options (sound modes, inputs, etc.) to match your receiver; not everything can be autodetected.
->
-> You can access the integration options via the cogwheel⚙️ on `Settings > Devices & Services > Yamaha (YNCA) > Your Receiver`.
+During configuration provide the following information depending on your connection method.
+
+### Serial
+
+**Serial port**
+: Serial port device name e.g. /dev/ttyUSB0
+
+### Network connection
+
+**Host**
+: IP address or hostname of the device e.g. 192.168.1.123
+
+**Port**
+: The YNCA port for the receiver. The default is 50000 and rarely needs to be changed.
+
+### PySerial URL handler (advanced)
+
+**URL Handler**
+: Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+
+<br/>
+
+> After the initial configuration use the integration options (see next section) to configure the integration to match the capabilities of your receiver.
+
+## Options
+
+Options for the Yamaha (YNCA) integration can be used to configure capabilities of your receiver like available sound modes, inputs and more.
+
+The integration options can be accessed via the cogwheel icon ⚙️ under `Settings > Devices & Services > Yamaha (YNCA) > Your Receiver`. The settings are organized in multiple screens providing the following options.
+
+### General settings
+
+This screen provides general options.
+
+**Sound modes**
+: Select the soundmodes supported by your receiver. These sound modes will be made available in the `media_player` entities for zones that support sound modes.
+
+**Surround decoders**
+: Select the surround decoders supported by your receiver. This option is only shown if your receiver supports selecting surround decoders.
+
+### Main zone / Zone 2, 3, 4 settings
+
+This screen provides options that apply to the specific zone. There is a screen for each zone supported by the receiver.
+
+**Inputs**
+: Select the inputs supported by the zone. This option configures which sources are available in the `media_player` entity for the zone.
+
+**Number of scenes**
+: Select the amount of scenes supported by the zone. This option defines the amount of scene buttons that will be created for the zone.
 
 ## Removal
 
@@ -682,9 +732,8 @@ This action allows sending raw YNCA commands. It is intended for debugging only.
 
 ```yaml
 action: yamaha_ynca.send_raw_ynca
-target:
-  entity_id: media_player.rx_a810_main
 data:
+  config_entry_id: 84bcdb836062423ee2c8abd7a9ed444e
   raw_data: "@MAIN:INP=HDMI3"
 ```
 

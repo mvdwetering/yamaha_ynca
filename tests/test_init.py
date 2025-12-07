@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, Mock, call, create_autospec, patch
+from typing import TYPE_CHECKING
+from unittest.mock import Mock, create_autospec, patch
 
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.helpers.service import ServiceCall
 from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
     MockConfigEntry,
 )
@@ -16,16 +16,20 @@ import ynca
 
 from .conftest import setup_integration
 
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers import device_registry as dr
 
-async def test_async_setup_entry(
-    hass,
-    device_reg,
-    mock_ynca,
-    mock_zone_main_with_zoneb,
-    mock_zone_zone2,
-    mock_zone_zone3,
-    mock_zone_zone4,
-):
+
+async def test_async_setup_entry(  # noqa: PLR0913
+    hass: HomeAssistant,
+    device_reg: dr.DeviceRegistry,
+    mock_ynca: Mock,
+    mock_zone_main_with_zoneb: Mock,
+    mock_zone_zone2: Mock,
+    mock_zone_zone3: Mock,
+    mock_zone_zone4: Mock,
+) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main_with_zoneb
     mock_ynca.zone2 = mock_zone_zone2
@@ -48,6 +52,7 @@ async def test_async_setup_entry(
                 (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_{zone_id}")
             }
         )
+        assert device is not None
         assert device.manufacturer == "Yamaha"
         assert device.model == "ModelName"
         assert device.sw_version == "Version"
@@ -57,6 +62,8 @@ async def test_async_setup_entry(
     device = device_reg.async_get_device(
         identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")}
     )
+
+    assert device is not None
     assert device.manufacturer == "Yamaha"
     assert device.model == "ModelName"
     assert device.sw_version == "Version"
@@ -65,8 +72,11 @@ async def test_async_setup_entry(
 
 
 async def test_async_setup_entry_socket_has_configuration_url(
-    hass, device_reg, mock_ynca, mock_zone_main
-):
+    hass: HomeAssistant,
+    device_reg: dr.DeviceRegistry,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
 
@@ -77,12 +87,13 @@ async def test_async_setup_entry_socket_has_configuration_url(
     device = device_reg.async_get_device(
         identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_MAIN")}
     )
+    assert device is not None
     assert device.configuration_url == "http://1.2.3.4"
 
 
 async def test_async_setup_entry_audio_input_workaround_applied(
-    hass, mock_ynca, mock_zone_main
-):
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.modelname = "RX-V475"
@@ -93,8 +104,8 @@ async def test_async_setup_entry_audio_input_workaround_applied(
 
 
 async def test_async_setup_entry_audio_input_workaround_not_applied(
-    hass, mock_ynca, mock_zone_main
-):
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.modelname = "RX-A6A"
@@ -104,7 +115,9 @@ async def test_async_setup_entry_audio_input_workaround_not_applied(
     assert getattr(mock_ynca.sys, "inpnameaudio", None) is None
 
 
-async def test_async_setup_entry_preset_removed(hass, mock_ynca, mock_zone_main):
+async def test_async_setup_entry_preset_removed(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
@@ -135,7 +148,9 @@ async def test_async_setup_entry_preset_removed(hass, mock_ynca, mock_zone_main)
     assert hasattr(mock_ynca.netradio, "preset") is False
 
 
-async def test_async_setup_entry_preset_not_removed(hass, mock_ynca, mock_zone_main):
+async def test_async_setup_entry_preset_not_removed(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
@@ -165,7 +180,9 @@ async def test_async_setup_entry_preset_not_removed(hass, mock_ynca, mock_zone_m
     assert hasattr(mock_ynca.netradio, "preset") is True
 
 
-async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
+async def test_async_setup_entry_fails_with_connection_error(
+    hass: HomeAssistant, mock_ynca: Mock
+) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
@@ -181,7 +198,9 @@ async def test_async_setup_entry_fails_with_connection_error(hass, mock_ynca):
     await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
-async def test_async_setup_entry_fails_with_connection_failed(hass, mock_ynca):
+async def test_async_setup_entry_fails_with_connection_failed(
+    hass: HomeAssistant, mock_ynca: Mock
+) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
@@ -198,8 +217,8 @@ async def test_async_setup_entry_fails_with_connection_failed(hass, mock_ynca):
 
 
 async def test_async_setup_entry_fails_with_initialization_failed_error(
-    hass, mock_ynca
-):
+    hass: HomeAssistant, mock_ynca: Mock
+) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
@@ -217,7 +236,9 @@ async def test_async_setup_entry_fails_with_initialization_failed_error(
     await hass.config_entries.async_unload(integration.entry.entry_id)
 
 
-async def test_async_setup_entry_fails_unknown_reason(hass, mock_ynca):
+async def test_async_setup_entry_fails_unknown_reason(
+    hass: HomeAssistant, mock_ynca: Mock
+) -> None:
     """Test a successful setup entry."""
     integration = await setup_integration(hass, mock_ynca, skip_setup=True)
 
@@ -230,7 +251,9 @@ async def test_async_setup_entry_fails_unknown_reason(hass, mock_ynca):
     assert integration.entry.state is ConfigEntryState.SETUP_ERROR
 
 
-async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
+async def test_async_unload_entry(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
@@ -243,7 +266,9 @@ async def test_async_unload_entry(hass, mock_ynca, mock_zone_main):
 
 
 @patch("homeassistant.config_entries.ConfigEntries.async_reload")
-async def test_reload_on_disconnect(async_reload_mock, hass, mock_ynca, mock_zone_main):
+async def test_reload_on_disconnect(
+    async_reload_mock: Mock, hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
     integration = await setup_integration(hass, mock_ynca)
@@ -256,7 +281,9 @@ async def test_reload_on_disconnect(async_reload_mock, hass, mock_ynca, mock_zon
     assert len(async_reload_mock.mock_calls) == 1
 
 
-async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zone3):
+async def test_update_configentry(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone3: Mock
+) -> None:
     """Test successful unload of entry."""
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
@@ -281,65 +308,3 @@ async def test_update_configentry(hass, mock_ynca, mock_zone_main, mock_zone_zon
     assert "ZONE2" not in entry.data["zones"]
     assert "ZONE3" in entry.data["zones"]
     assert "ZONE4" not in entry.data["zones"]
-
-
-async def test_service_raw_ynca_command_handler(hass, mock_ynca):
-    """Test sending raw YNCA command."""
-    integration = await setup_integration(hass, mock_ynca)
-
-    # There must be a better way than patching it this way,
-    # but can't figure it out and this works...
-    yamaha_ynca.async_extract_config_entry_ids = AsyncMock()
-    yamaha_ynca.async_extract_config_entry_ids.return_value = {
-        integration.entry.entry_id
-    }
-
-    service_call = ServiceCall(
-        hass,
-        yamaha_ynca.DOMAIN,
-        yamaha_ynca.SERVICE_SEND_RAW_YNCA,
-        {
-            "device_id": "device_id",
-            "raw_data": "# Ignore this\n@COMMAND:TO_SEND=1\nMore stuff to ignore\n@COMMAND:TO_SEND=2",
-        },
-    )
-
-    await yamaha_ynca.async_handle_send_raw_ynca(hass, service_call)
-    mock_ynca.send_raw.assert_has_calls(
-        [call("@COMMAND:TO_SEND=1"), call("@COMMAND:TO_SEND=2")]
-    )
-
-
-@patch("custom_components.yamaha_ynca.async_handle_send_raw_ynca")
-async def test_service_raw_ynca_command(
-    async_handle_send_raw_ynca_mock, hass, mock_ynca, mock_zone_main
-):
-    """Test sending raw YNCA command."""
-    mock_ynca.main = mock_zone_main
-    integration = await setup_integration(hass, mock_ynca)
-
-    # Service call is done, but does not work due to no configentries found
-    await hass.services.async_call(
-        yamaha_ynca.DOMAIN,
-        yamaha_ynca.SERVICE_SEND_RAW_YNCA,
-        {
-            "device_id": f"{integration.entry.entry_id}_MAIN",
-            "raw_data": "COMMAND_TO_SEND",
-        },
-        blocking=True,
-    )
-    await hass.async_block_till_done()
-
-    # Check
-    async_handle_send_raw_ynca_mock.assert_called_once()
-    assert len(async_handle_send_raw_ynca_mock.call_args.args) == 2
-
-    assert async_handle_send_raw_ynca_mock.call_args.args[0] == hass
-
-    service_call = async_handle_send_raw_ynca_mock.call_args.args[1]
-    assert service_call.domain == yamaha_ynca.DOMAIN
-    assert service_call.service == yamaha_ynca.SERVICE_SEND_RAW_YNCA
-    assert service_call.data == {
-        "device_id": f"{integration.entry.entry_id}_MAIN",
-        "raw_data": "COMMAND_TO_SEND",
-    }
