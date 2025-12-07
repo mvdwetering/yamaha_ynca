@@ -58,25 +58,31 @@ rules:
   docs-supported-functions: todo
   docs-troubleshooting: todo
   docs-use-cases: todo
-  dynamic-devices: todo
+  dynamic-devices:
+    status: exempt
+    comment: |
+      This integration has a fixed single device.
   entity-category: done
   entity-device-class: done
   entity-disabled-by-default: done
   entity-translations: done
-  exception-translations: todo
+  exception-translations: done
   icon-translations: done
   reconfiguration-flow: done
   repair-issues:
     status: done
     comment: |
-      Note that this integration currently does trigger repairs.
-  stale-devices: todo
+      This integration currently does not trigger repairs.
+  stale-devices:
+    status: exempt
+    comment: |
+      This integration has a fixed single device.
 
   # Platinum
   async-dependency:
     status: todo
     comment: |
-      This implies a complete rewrite of the communication library and integration. That is a lot of work. Probably not going to happen.
+      This implies a complete rewrite of the communication library and integration. That is a lot of work. Does not seem worth the effort right now, so probably not going to happen.
   inject-websession:
     status: done
     comment: |
