@@ -1,11 +1,12 @@
 # Describes the format for available Yamaha (YNCA) services
 
 send_raw_ynca:
-  target:
-    entity:
-      integration: yamaha_ynca
-      domain: media_player
   fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: yamaha_ynca
     raw_data:
       example: "@MAIN:INP=HDMI3"
       required: true
