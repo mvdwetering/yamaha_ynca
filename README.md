@@ -13,6 +13,7 @@ Minimum required Home Assistant version is: 2025.10.0
   * [Home Assistant Community Store (HACS)](#home-assistant-community-store-hacs)
   * [Manual download](#manual-download)
 * [Configuration](#configuration)
+* [Options](#options)
 * [Removal](#removal)
 * [Actions](#actions)
   * [Action yamaha_ynca.store_preset](#action-yamaha_yncastore_preset)
@@ -652,11 +653,57 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 </details>
 
-<br/>
+</br>
 
-> After initial configuration, check the integration options (sound modes, inputs, etc.) to match your receiver; not everything can be autodetected.
->
-> You can access the integration options via the cogwheel⚙️ on `Settings > Devices & Services > Yamaha (YNCA) > Your Receiver`.
+During configuration provide the following information depening on your connection method.
+
+### Serial
+
+Serial port
+: Serial port device name e.g. /dev/ttyUSB0
+
+### Network connection
+
+Host
+: IP address or hostname of the device e.g. 192.168.1.123
+
+Port
+: The YNCA port for the receiver. The default is 50000 and rarely needs to be changed.
+
+### PySerial URL handler (advanced)
+
+URL Handler
+: Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+
+</br>
+
+> After the initial configuration use the integration options (see next section) to configure the integration to match the capabilities of your receiver.
+
+## Options
+
+Options for the Yamaha (YNCA) integration can be used to configure capabilities of your receiver like available sound modes, inputs and more.
+
+The integration options can be accessed via the cogwheel icon ⚙️ under `Settings > Devices & Services > Yamaha (YNCA) > Your Receiver`. The settings are organized in multiple screens providing the following options.
+
+### General settings
+
+This screen provides general options.
+
+Sound modes
+: Select the soundmodes supported by your receiver. These sound modes will be made available in the `media_player` entities for zones that support sound modes.
+
+Surround decoders
+: Select the surroud decoders supported by your receiver. This option is only shown if your receiver supports selecting surround decoders.
+
+### Main zone / Zone 2, 3, 4 settings
+
+This screen provides options that apply to the specific zone. There is a screen for each zone supported by the receiver.
+
+Inputs
+: Select the inputs supported by the zone. This option configures which sources are available in the `media_player` entity for the zone.
+
+Number of scenes
+: Select the amount of scenes supported by the zone. This option defines the amount of scene buttons that will be created for the zone.
 
 ## Removal
 
