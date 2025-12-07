@@ -16,8 +16,8 @@ import ynca
 
 @patch("custom_components.yamaha_ynca.remote.YamahaYncaZoneRemote", autospec=True)
 async def test_async_setup_entry(
-    yamahayncazoneremote_mock, hass, mock_ynca, mock_zone_main, mock_zone_zone3
-):
+    yamahayncazoneremote_mock: Mock, hass, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone3: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.zone3 = mock_zone_zone3
 
@@ -38,7 +38,7 @@ async def test_async_setup_entry(
     assert len(entities) == 2
 
 
-async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
+async def test_remote_entity_fields(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     assert entity.unique_id == "ReceiverUniqueId_ZONE3_remote"
@@ -47,7 +47,7 @@ async def test_remote_entity_fields(mock_ynca, mock_zone_zone3):
     }
 
 
-async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
+async def test_remote_send_codes_mapped(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     codes = {
         "code1": "12-AB",
         "code2": "12-CDEF",
@@ -79,7 +79,7 @@ async def test_remote_send_codes_mapped(mock_ynca, mock_zone_zone3):
             assert False
 
 
-async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
+async def test_remote_send_codes_raw_formats(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -90,7 +90,7 @@ async def test_remote_send_codes_raw_formats(mock_ynca, mock_zone_zone3):
         entity.send_command(["not a valid code"])
 
 
-async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
+async def test_remote_send_num_repeats(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -99,7 +99,7 @@ async def test_remote_send_num_repeats(mock_ynca, mock_zone_zone3):
     mock_ynca.sys.remotecode.assert_any_call("1234ABCD")
 
 
-async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
+async def test_remote_send_delay_secs(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     entity = YamahaYncaZoneRemote("ReceiverUniqueId", mock_ynca, mock_zone_zone3, {})
 
     # Setting value
@@ -110,7 +110,7 @@ async def test_remote_send_delay_secs(mock_ynca, mock_zone_zone3):
     assert end - start < 0.500
 
 
-async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
+async def test_remote_turn_on_off(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
     entity = YamahaYncaZoneRemote(
@@ -127,7 +127,7 @@ async def test_remote_turn_on_off(mock_ynca, mock_zone_zone3):
     mock_ynca.sys.remotecode.assert_called_with("90ABCDEF")
 
 
-async def test_remote_is_on(mock_ynca, mock_zone_zone3):
+async def test_remote_is_on(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
     entity = YamahaYncaZoneRemote(
@@ -143,7 +143,7 @@ async def test_remote_is_on(mock_ynca, mock_zone_zone3):
     assert entity.is_on is True
 
 
-async def test_remote_update_state(mock_ynca, mock_zone_zone3):
+async def test_remote_update_state(mock_ynca: Mock, mock_zone_zone3: Mock) -> None:
     mock_zone_zone3.pwr = ynca.Pwr.STANDBY
 
     entity = YamahaYncaZoneRemote(

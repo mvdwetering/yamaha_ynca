@@ -13,8 +13,8 @@ from .conftest import setup_integration
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_autodetect_number_of_scenes(
-    yamahayncascenebutton_mock, hass, mock_ynca, mock_zone_main, mock_zone_zone2
-):
+    yamahayncascenebutton_mock: Mock, hass, mock_ynca: Mock, mock_zone_main: Mock, mock_zone_zone2: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.zonename = "_MAIN_"
     mock_ynca.main.scene1name = "SCENE_1"
@@ -44,8 +44,8 @@ async def test_async_setup_entry_autodetect_number_of_scenes(
 
 @patch("custom_components.yamaha_ynca.button.YamahaYncaSceneButton", autospec=True)
 async def test_async_setup_entry_configured_number_of_scenes(
-    yamahayncascenebutton_mock, hass, mock_ynca, mock_zone_zone2
-):
+    yamahayncascenebutton_mock: Mock, hass, mock_ynca: Mock, mock_zone_zone2: Mock
+) -> None:
     mock_ynca.zone2 = mock_zone_zone2
     mock_ynca.zone2.zonename = "_ZONE2_"
 
@@ -78,7 +78,7 @@ async def test_async_setup_entry_configured_number_of_scenes(
     assert len(entities) == 11
 
 
-async def test_button_entity_with_names(mock_zone):
+async def test_button_entity_with_names(mock_zone: Mock) -> None:
     mock_zone.zonename = "ZoneName"
     mock_zone.scene1name = "SceneName One"
 
@@ -91,7 +91,7 @@ async def test_button_entity_with_names(mock_zone):
     assert entity.name == "SceneName One"
 
 
-async def test_button_entity_no_names(mock_zone):
+async def test_button_entity_no_names(mock_zone: Mock) -> None:
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
     assert entity.unique_id == "ReceiverUniqueId_ZoneId_scene_1"
@@ -101,7 +101,7 @@ async def test_button_entity_no_names(mock_zone):
     assert entity.name == "Scene 1"
 
 
-async def test_button_entity_behavior(mock_zone):
+async def test_button_entity_behavior(mock_zone: Mock) -> None:
     entity = YamahaYncaSceneButton("ReceiverUniqueId", mock_zone, "1")
 
     # Pressing button sends message

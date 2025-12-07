@@ -48,7 +48,7 @@ INPUT_SUBUNITS = [
 
 
 @pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
+def auto_enable_custom_integrations(enable_custom_integrations) -> None:
     return
 
 
@@ -64,12 +64,12 @@ def entity_registry_enabled_by_default() -> Generator[None]:
 
 
 @pytest.fixture
-def mock_zone():
+def mock_zone() -> Mock:
     return create_mock_zone()
 
 
 @pytest.fixture
-def mock_zone_main():
+def mock_zone_main() -> Mock:
     main_mock = create_mock_zone(ynca.subunits.zone.Main)
 
     main_mock.pwrb = None
@@ -84,7 +84,7 @@ def mock_zone_main():
 
 
 @pytest.fixture
-def mock_zone_main_with_zoneb(mock_zone_main):
+def mock_zone_main_with_zoneb(mock_zone_main: Mock) -> Mock:
     main_mock_with_zoneb = mock_zone_main
     main_mock_with_zoneb.pwrb = ynca.PwrB.ON
     main_mock_with_zoneb.zonebavail = ynca.ZoneBAvail.READY
@@ -95,26 +95,26 @@ def mock_zone_main_with_zoneb(mock_zone_main):
 
 
 @pytest.fixture
-def mock_zone_zone2():
+def mock_zone_zone2() -> Mock:
     return create_mock_zone(ynca.subunits.zone.Zone2)
 
 
 @pytest.fixture
-def mock_zone_zone3():
+def mock_zone_zone3() -> Mock:
     return create_mock_zone(ynca.subunits.zone.Zone3)
 
 
 @pytest.fixture
-def mock_zone_zone4():
+def mock_zone_zone4() -> Mock:
     return create_mock_zone(ynca.subunits.zone.Zone4)
 
 
 @pytest.fixture
-def mock_config_entry():
+def mock_config_entry() -> MockConfigEntry:
     return create_mock_config_entry()
 
 
-def create_mock_zone(spec=None):
+def create_mock_zone(spec: type[ynca.subunits.zone.ZoneBase] | None = None) -> Mock:
     """Create a mocked Zone instance."""
     zone = Mock(
         spec=spec or ynca.subunits.zone.ZoneBase,
@@ -164,7 +164,7 @@ def create_mock_zone(spec=None):
 
 
 @pytest.fixture
-def mock_ynca(hass):
+def mock_ynca(hass: HomeAssistant) -> Mock:
     """Create a mocked YNCA instance without any inputs or subunits."""
     mock_ynca = Mock(
         spec=ynca.YncaApi,
@@ -205,7 +205,7 @@ def device_reg(hass: HomeAssistant) -> device_registry.DeviceRegistry:
     return mock_device_registry(hass)
 
 
-def create_mock_config_entry(modelname=None, zones=None, serial_url=None):
+def create_mock_config_entry(modelname: str | None = None, zones: list[str] | None = None, serial_url: str | None = None) -> MockConfigEntry:
     return MockConfigEntry(
         version=7,
         minor_version=8,
@@ -233,11 +233,11 @@ class DisabledEntity:
 
 
 async def setup_integration(
-    hass,
+    hass: HomeAssistant,
     mock_ynca: ynca.YncaApi,
-    skip_setup=False,
-    serial_url="SerialUrl",
-):
+    skip_setup: bool = False,
+    serial_url: str = "SerialUrl",
+) -> Integration:
     zones = []
     if mock_ynca.main:
         zones.append("MAIN")

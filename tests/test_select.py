@@ -37,10 +37,10 @@ def get_entity_description_by_key(key: str):
 
 
 async def test_async_setup_entry(
-    hass,
+    hass: HomeAssistant,
     mock_ynca: ynca.YncaApi,
     mock_zone_main: ZoneBase,
-):
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OUT1_PLUS_2
     mock_ynca.main.lipsynchdmiout2offset = 123
@@ -60,7 +60,7 @@ async def test_async_setup_entry(
     assert len(entities) == 5
 
 
-async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
+async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry) -> None:
     entity = YamahaYncaSelect(
         mock_config_entry, "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
@@ -85,7 +85,7 @@ async def test_select_entity_fields(mock_zone: ZoneBase, mock_config_entry):
 
 async def test_select_initial_volume_mode_entity_select_option(
     mock_zone: ZoneBase, mock_config_entry
-):
+) -> None:
     entity = YamahaYncaSelectInitialVolumeMode(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -139,7 +139,7 @@ async def test_select_initial_volume_mode_entity_select_option(
 
 async def test_select_initial_volume_mode_entity_current_option(
     mock_zone: ZoneBase, mock_config_entry
-):
+) -> None:
     entity = YamahaYncaSelectInitialVolumeMode(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -176,7 +176,7 @@ async def test_select_initial_volume_mode_entity_current_option(
 
 async def test_select_surrounddecoder_entity_current_option(
     mock_zone: ZoneBase, mock_config_entry
-):
+) -> None:
     entity = YamahaYncaSelectSurroundDecoder(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -208,7 +208,7 @@ async def test_select_surrounddecoder_entity_current_option(
 
 async def test_select_surrounddecoder_entity_options_nothing_selection_in_configentry(
     mock_zone: ZoneBase, mock_config_entry
-):
+) -> None:
     entity = YamahaYncaSelectSurroundDecoder(
         mock_config_entry,
         "ReceiverUniqueId",
@@ -232,7 +232,7 @@ async def test_select_surrounddecoder_entity_options_nothing_selection_in_config
 
 async def test_select_surrounddecoder_entity_options_some_selected_in_configentry(
     hass: HomeAssistant, mock_zone: ZoneBase, mock_config_entry
-):
+) -> None:
     await hass.config_entries.async_add(mock_config_entry)
     hass.config_entries.async_update_entry(
         mock_config_entry,
@@ -251,7 +251,7 @@ async def test_select_surrounddecoder_entity_options_some_selected_in_configentr
     assert entity.options == ["auto", "dolby_pl", "dolby_plii_movie"]
 
 
-async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_not_supported_at_all(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = None
     mock_ynca.main.lipsynchdmiout2offset = None
@@ -262,7 +262,7 @@ async def test_hdmiout_not_supported_at_all(hass, mock_ynca, mock_zone_main):
     assert hdmiout is None
 
 
-async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone_main):
+async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca: Mock, mock_zone_main: Mock) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = None  # This indicates no HDMI2
@@ -274,8 +274,8 @@ async def test_hdmiout_supported_with_one_hdmi_output(hass, mock_ynca, mock_zone
 
 
 async def test_hdmiout_supported_but_with_two_hdmi_outputs(
-    hass, mock_ynca, mock_zone_main
-):
+    hass, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.main.hdmiout = ynca.HdmiOut.OFF
     mock_ynca.main.lipsynchdmiout2offset = 123  # This indicates HDMI2

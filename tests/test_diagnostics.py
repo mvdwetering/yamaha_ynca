@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from unittest.mock import Mock
+
 from homeassistant.core import HomeAssistant
 
 from custom_components.yamaha_ynca.diagnostics import async_get_config_entry_diagnostics
 from tests.conftest import setup_integration
 
 
-async def test_diagnostics(hass: HomeAssistant, mock_ynca):
+async def test_diagnostics(hass: HomeAssistant, mock_ynca: Mock) -> None:
     integration = await setup_integration(hass, mock_ynca)
     integration.mock_ynca.get_communication_log_items.return_value = ["testdata"]
 
