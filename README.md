@@ -655,7 +655,7 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 </br>
 
-During configuration provide the following information depening on your connection method.
+During configuration provide the following information depending on your connection method.
 
 ### Serial
 
@@ -693,7 +693,7 @@ Sound modes
 : Select the soundmodes supported by your receiver. These sound modes will be made available in the `media_player` entities for zones that support sound modes.
 
 Surround decoders
-: Select the surroud decoders supported by your receiver. This option is only shown if your receiver supports selecting surround decoders.
+: Select the surround decoders supported by your receiver. This option is only shown if your receiver supports selecting surround decoders.
 
 ### Main zone / Zone 2, 3, 4 settings
 
