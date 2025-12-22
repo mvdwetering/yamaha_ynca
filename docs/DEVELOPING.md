@@ -10,7 +10,7 @@ As an example lets add the ExtraBass switch.
 
 First the `ynca` needs to support the command. For info on how to add it there see <https://github.com/mvdwetering/ynca/tree/master/docs>. Next make sure to update the `ynca` version used by the integration contains that command. Use the `bump_ynca_version.sh` script to update the version in all the required places (during development you can also install the ynca package in the venv).
 
-Next the related entity platform should be extended. In this case we will be adding a switch, so `switch.py`is the file to be. Other entity platforms can be updated in a similar way.
+Next the related entity platform should be extended. In this case we will be adding a switch, so `switch.py` is the file to edit. Other entity platforms can be updated similarly.
 
 To add the new command switch it is enough to just add a new [entity description](https://developers.home-assistant.io/docs/core/entity/#entity-description) entry to the ZONE_ENTITY_DESCRIPTIONS list like below.
 
