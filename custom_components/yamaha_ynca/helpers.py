@@ -72,8 +72,7 @@ def extract_protocol_version(ynca_sys_version: str | None) -> tuple[int, int]:
         if len(protocol_version_parts) == 2:  # noqa: PLR2004
             major = int(protocol_version_parts[0])
             minor = int(protocol_version_parts[1])
+            return (major, minor)
     except ValueError:
         pass
-    else:
-        return (major, minor)
     return (0, 0)
