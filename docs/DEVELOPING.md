@@ -24,7 +24,7 @@ To add the new command switch it is enough to just add a new [entity description
 ```
 
 The `key` field is the attribute name in the ynca package, it is also used as translation key.
-More info about `entity_category` can be found [here in the Home Asssitant developer documentation](https://developers.home-assistant.io/docs/core/entity/).
+More info about `entity_category` can be found [here in the Home Assistant developer documentation](https://developers.home-assistant.io/docs/core/entity/).
 The `on`and `off` fields are the values to be used when turning the switch on/off.
 
 Check out the documentation of `YncaSwitchEntityDescription` for more details.
