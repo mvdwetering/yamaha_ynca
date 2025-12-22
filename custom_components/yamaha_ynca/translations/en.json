@@ -139,6 +139,9 @@
       "enhancer": {
         "name": "Compressed Music Enhancer"
       },
+      "exbass": {
+        "name": "Extra Bass"
+      },
       "hdmiout": {
         "name": "HDMI Out"
       },
