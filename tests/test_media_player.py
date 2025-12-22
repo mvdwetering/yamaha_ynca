@@ -836,8 +836,8 @@ async def test_mediaplayer_entity_repeat(
     assert mock_ynca.usb.repeat is ynca.Repeat.SINGLE
     assert mp_entity.repeat is RepeatMode.ONE
 
-    # Receiver models with Tidal use RepeatMode One iso Single
-    mock_ynca.tidal = create_autospec(ynca.subunits.tidal.Tidal)
+    # Receiver models with protocol version >=4 use RepeatMode One iso Single
+    mock_ynca.sys.version = "2.86/4.41"
     mp_entity.set_repeat(RepeatMode.ONE)
     assert mock_ynca.usb.repeat is ynca.Repeat.ONE
     assert mp_entity.repeat is RepeatMode.ONE
