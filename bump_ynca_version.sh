@@ -13,12 +13,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PREV_VERSION=$(grep -oP 'ynca==\K[0-9.]+' "$SCRIPT_DIR/pyproject.toml" | head -n1)
 
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <new_version>"
   echo "Current version is: $PREV_VERSION"
-  exit 1
+  read -p "Enter new version: " NEW_VERSION
+else
+  NEW_VERSION="$1"
 fi
-
-NEW_VERSION="$1"
 
 # Function to compare versions (returns 0 if $1 > $2)
 version_gt() {
@@ -57,3 +56,13 @@ sed -i "s/ynca==[0-9.]*/ynca==$NEW_VERSION/" "$SCRIPT_DIR/pyproject.toml"
 sed -i "s/ynca==[0-9.]*/ynca==$NEW_VERSION/" "$SCRIPT_DIR/custom_components/yamaha_ynca/manifest.json"
 
 echo "Version bumped to $NEW_VERSION in pyproject.toml and manifest.json files."
+
+# Ask for confirmation to create a branch and commit
+read -p "Do you want to create a branch, commit the change and push? (y/n): " CONFIRM
+if [[ "$CONFIRM" == "y" ]]; then
+  BRANCH_NAME="bump_ynca_$NEW_VERSION"
+  git checkout -b "$BRANCH_NAME"
+  git add pyproject.toml custom_components/yamaha_ynca/manifest.json
+  git commit -m "Bump version to $NEW_VERSION"
+  git push origin "$BRANCH_NAME"
+fi
