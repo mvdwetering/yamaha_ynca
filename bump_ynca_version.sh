@@ -12,12 +12,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Get the previous version from pyproject.toml
 PREV_VERSION=$(grep -oP 'ynca==\K[0-9.]+' "$SCRIPT_DIR/pyproject.toml" | head -n1)
 
+echo "Current version is: $PREV_VERSION"
 if [ $# -ne 1 ]; then
-  echo "Current version is: $PREV_VERSION"
   read -p "Enter new version: " NEW_VERSION
 else
   NEW_VERSION="$1"
 fi
+echo "New version is: $NEW_VERSION"
 
 # Function to compare versions (returns 0 if $1 > $2)
 version_gt() {
