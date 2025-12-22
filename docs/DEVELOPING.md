@@ -18,8 +18,8 @@ To add the new command switch it is enough to just add a new [entity description
     YncaSwitchEntityDescription(
         key="exbass",
         entity_category=EntityCategory.CONFIG,
-        on=ynca.ExtraBass.AUTO,
-        off=ynca.ExtraBass.OFF,
+        on=ynca.ExBass.AUTO,
+        off=ynca.ExBass.OFF,
     ),
 ```
 
