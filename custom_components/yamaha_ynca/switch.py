@@ -75,6 +75,12 @@ ZONE_ENTITY_DESCRIPTIONS = [
         off=ynca.Enhancer.OFF,
     ),
     YncaSwitchEntityDescription(
+        key="exbass",
+        entity_category=EntityCategory.CONFIG,
+        on=ynca.ExBass.AUTO,
+        off=ynca.ExBass.OFF,
+    ),
+    YncaSwitchEntityDescription(
         key="hdmiout",
         icon="mdi:hdmi-port",
         entity_category=EntityCategory.CONFIG,
