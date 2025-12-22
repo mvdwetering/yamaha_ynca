@@ -18,5 +18,7 @@ def test_extract_protocol_version() -> None:
     assert extract_protocol_version("2.86/4.41") == (4, 41)
 
     # Some invalid versions
+    assert extract_protocol_version("1.2") == (0, 0)
+    assert extract_protocol_version("1.2/1.2.3") == (0, 0)
     assert extract_protocol_version("invalid") == (0, 0)
     assert extract_protocol_version(None) == (0, 0)
