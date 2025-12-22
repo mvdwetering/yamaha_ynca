@@ -59,3 +59,21 @@ def subunit_supports_entitydescription_key(
     entity_description: EntityDescription, subunit: SubunitBase
 ) -> bool:
     return getattr(subunit, entity_description.key, None) is not None
+
+
+def extract_protocol_version(ynca_sys_version: str | None) -> tuple[int, int]:
+    """Return protocol version as tuple (major, minor)."""
+    if ynca_sys_version is None:
+        return (0, 0)
+
+    try:
+        _, protocol = ynca_sys_version.split("/")
+        protocol_version_parts = protocol.split(".")
+        if len(protocol_version_parts) == 2:  # noqa: PLR2004
+            major = int(protocol_version_parts[0])
+            minor = int(protocol_version_parts[1])
+    except ValueError:
+        pass
+    else:
+        return (major, minor)
+    return (0, 0)
