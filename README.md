@@ -4,11 +4,10 @@ Minimum required Home Assistant version is: 2025.10.0
 
 * [About Yamaha (YNCA)](#description)
 * [Working models](#working-models)
-* [Features](#features)
-  * [Overview](#overview)
+* [Supported functionality](#supported-functionality)
+  * [Entities](#entities)
   * [Volume (dB) entity](#volume-db-entity)
   * [Presets](#presets)
-  * [Remote entity](#remote-entity)
 * [Data Updates](#data-updates)
 * [Known Limigations](#known-limitations)
 * [Downloading](#downloading)
@@ -72,105 +71,76 @@ If your receiver works but is not in the list, please post a message in the [dis
 | | RX-V | RX-V4A, RX-V6A |
 | | TSR | TSR-700 |
 
-## Features
+## Supported functionality
 
-### Overview
+The integration has full UI support for adding devices.
 
-* Full UI support for adding devices
-* Connect through serial cable or network
-* Local Push, so updates are instant
-* Support for zones (each zone is a device in Home Assistant)
+Each zone on the receiver is exposed as a separate device in Home Assistant which can expose the following entities if supported by that zone.
+
+### Entities
+
+#### Button
+
+* Scene buttons to activate scenes like the buttons on the front panel. If the amount of buttons is incorrect it can be changed in the [integration options](#options).
+
+#### Mediaplayer
+
+The mediaplayer entity supports:
+
 * Power on/off
 * Mute/Unmute
-* Volume control
-  * Standard Home Assistant media player
-  * Separate [number entity with Volume in dB](#volume-db-entity)
+* Volume control (there is a separate [number entity with Volume in dB](#volume-db-entity) if you prefer the dB unit)
 * Source selection
-  * Source names are taken from the receiver if provided (only on older models)
+  * Source names are taken from the receiver if possible (only on older models)
   * External inputs:
-    AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
+    AUDIO, AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
   * Media sources:
     AirPlay, Bluetooth, Deezer, iPod, iPod (USB), MusicCast Link, Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TIDAL, TUNER (AM/FM or DAB/FM), UAW, USB
   * Other:
     Main Zone Sync
 * Soundmode selection
 * Control playback state (depends on source)
-* Provide metadata like artist, album, song (depends on source)
-* Activate scenes with button entities like the buttons on the front panel
-* Select and store [Presets](#presets) for radio or other sources
-* Send [remote control commands and IR codes](#remote-entity)
-* Party mode switch
-* Several controllable settings (if supported by receiver):
-  * Adaptive DRC enable/disable
-  * CINEMA DSP 3D mode enable/disable
-  * Compressed Music Enhancer enable/disable
-  * Direct / Pure Direct enable/disable
-  * Extra Bass enable/disable
-  * HDMI Out enable/disable
-  * Initial volume
-  * Max volume level
-  * Sleep timer
-  * Surround:AI enable/disable
-  * Surround Decoder selection
-  * Speaker pattern selection
-  * Headphone bass/treble (default disabled)
-  * Speaker bass/treble (default disabled)
+* Provide metadata like artist name, album name, song name (depends on source)
 
-### Volume (dB) entity
+#### Number
 
-The "Volume (dB)" entity was added to simplify volume control in Home Assistant. It is a number entity that controls the volume of a zone, like the volume in the media_player, but using the familiar dB unit instead of the percent numbers.
+* Headphone bass (default disabled)
+* Headphone treble (default disabled)
+* Initial volume
+* Max volume level
+* Speaker bass (default disabled)
+* Speaker treble (default disabled)
+* [Volume in dB](#volume-db-entity)
 
-<details>
-<summary>
-Background
-</summary>
+#### Select
 
-The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
-</details>
+* HDMI Out
+* Sleep timer
+* Surround Decoder selection
+* Speaker pattern selection
 
-### Presets
+#### Switch
 
-Presets can be activated and stored with the integration for some sources that support it. The AM/FM or DAB radio input seems to work for all models. Other sources that may support presets on some models include: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, and USB. Presets for these sources seem to work only on pre‑2012 models. The integration will auto‑detect whether presets are supported for available sources.
+Following switch entities allow enable/disable of the related feature.
 
-Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
+* Adaptive DRC
+* CINEMA DSP 3D mode
+* Compressed Music Enhancer
+* Direct / Pure Direct
+* Extra Bass
+* HDMI Out
+* Party mode
+* Surround:AI
 
-Due to limitations on the protocol the integration can only show the preset number, no name or what is stored.
+#### Remote
 
-#### Manage presets
-
-Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). But you can also store them from within Home Assistant with the [store_preset action](#action-yamaha_yncastore_preset)
-
-#### Media content format
-
-In some cases it is not possible to browse for presets in the UI and it is needed to manually provide the `media_content_id` and `media_content_type`.
-
-The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
-
-| Input                    | Content ID                        |
-|--------------------------|-----------------------------------|
-| Napster                  | napster:preset:1                  |
-| Netradio                 | netradio:preset:1                 |
-| Pandora                  | pandora:preset:1                  |
-| PC                       | pc:preset:1                       |
-| Rhapsody                 | rhap:preset:1                     |
-| Sirius                   | sirius:preset:1                   |
-| SiriusIR                 | siriusir:preset:1                 |
-| Tuner (AM/FM)            | tun:preset:1                      |
-| Tuner (DAB), FM presets  | dab:fmpreset:1                    |
-| Tuner (DAB), DAB presets | dab:dabpreset:1                   |
-| USB                      | usb:preset:1                      |
-
-### Remote entity
-
-The remote entity allows sending remote control codes and commands to the receiver. There is a remote entity for each zone.
-
-The current list of commands is below, check the "commands" attribute of the remote entity for the most up-to-date version. Note that this command list does not take zone capabilities into account, just that there is a known remote control IR code for that command.
+The remote entity supports the following commands. Note that this command list does not take zone capabilities into account, just that there is a known remote control IR code for that command.
 
 > on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
 
-More remote control commands exist, but for now the commands included are the ones that are not available on the normal entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
+More remote control IR codes exist, but for now the commands included are the ones that are not available on the other entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
 
-Next to sending the predefined commands it is possible to send IR codes directly in case you need to send something that is not in the commands list. The Yamaha IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
+Next to sending the predefined commands it is possible to send remote control IR codes directly in case you need to send something that is not in the commands list. The Yamaha remote control IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
 
 Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
 
@@ -184,7 +154,7 @@ data:
   command: receiver_power_toggle
 ```
 
-In case you want to have buttons on a dashboard to send the commands the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations.
+In case you want to have buttons on a dashboard to send the commands in a layout that mimics a remote control the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations.
 
 ![image](https://github.com/mvdwetering/yamaha_ynca/assets/732514/321181e2-81c3-4a1d-8084-8efceb94f7ff)
 
@@ -605,6 +575,50 @@ cards:
 
 </details>
 
+### Volume (dB) entity
+
+The "Volume (dB)" entity was added to simplify volume control in Home Assistant. It is a number entity that controls the volume of a zone, like the volume in the media_player, but using the familiar dB unit instead of the percent numbers.
+
+<details>
+<summary>
+Background
+</summary>
+
+The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
+</details>
+
+### Presets
+
+Presets can be activated and stored with the integration for sources that support it. The AM/FM or DAB radio input seems to work for all models. Other sources that may support presets on some models include: Napster, Netradio, Pandora, PC, Rhapsody, Sirius, SiriusIR, and USB. Presets for these sources seem to work only on pre‑2012 models. The integration will auto‑detect whether presets are supported for available sources.
+
+Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
+
+Due to limitations on the protocol the integration can only show the preset number, no name or what is stored.
+
+#### Manage presets
+
+Some presets can be managed in the Yamaha AV Control app (e.g. Tuner presets). But you can also store them from within Home Assistant with the [store_preset action](#action-yamaha_yncastore_preset)
+
+#### Media content format
+
+In some cases it is not possible to browse for presets in the UI and it is needed to manually provide the `media_content_id` and `media_content_type`.
+
+The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
+
+| Input                    | Content ID                        |
+|--------------------------|-----------------------------------|
+| Napster                  | napster:preset:1                  |
+| Netradio                 | netradio:preset:1                 |
+| Pandora                  | pandora:preset:1                  |
+| PC                       | pc:preset:1                       |
+| Rhapsody                 | rhap:preset:1                     |
+| Sirius                   | sirius:preset:1                   |
+| SiriusIR                 | siriusir:preset:1                 |
+| Tuner (AM/FM)            | tun:preset:1                      |
+| Tuner (DAB), FM presets  | dab:fmpreset:1                    |
+| Tuner (DAB), DAB presets | dab:dabpreset:1                   |
+| USB                      | usb:preset:1                      |
+
 ## Data updates
 
 The receiver pushes updates directly to Home Assistant so entity states will update instantly.
@@ -779,7 +793,7 @@ data:
 
   The non-working buttons can be disabled in the integration configuration by selecting "0" for number of scenes instead of "Auto detect".
 
-  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote entity](#remote-entity).
+  As a workaround the scenes can be activated by sending the scene commands by performing the `remote.send_command` action on the [Remote entity](#remote).
 
 ```yaml
 action: remote.send_command

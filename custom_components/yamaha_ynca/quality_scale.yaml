@@ -63,7 +63,13 @@ rules:
       (it seems even some Platinum integrations don't have this section?)
   docs-known-limitations: done
   docs-supported-devices: done
-  docs-supported-functions: todo
+  docs-supported-functions:
+    status: done
+    comment: |
+      Not entirely convinced splitting up entities by type is that useful. 
+      As a user I think I am more interested in what functionality is supported for my device,
+      rather than which exact entity types are created.
+      Splitting up by control/configuration/diagnostic might be more useful.
   docs-troubleshooting:
     status: done
     comment: |
