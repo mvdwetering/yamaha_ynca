@@ -23,7 +23,7 @@ Minimum required Home Assistant version is: 2025.10.0
 
 ## Description
 
-Yamaha (YNCA) is a custom integration for Home Assistant to support [Yamaha AV receivers](https://uk.yamaha.com/en/audio/home-audio/products/av-receivers-amps/) that support the YNCA protocol (serial and network).
+Yamaha (YNCA) is a custom integration for Home Assistant to support [Yamaha AV receivers](https://uk.yamaha.com/en/audio/home-audio/products/av-receivers-amps/) using the YNCA protocol over serial or network connections.
 
 For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
 
@@ -85,10 +85,13 @@ If your receiver works but is not in the list, please post a message in the [dis
   * Standard Home Assistant media player
   * Separate [number entity with Volume in dB](#volume-db-entity)
 * Source selection
-  * Source names are taken from the receiver if provided
-  * External inputs: AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
-  * Media sources: AirPlay, Bluetooth, Deezer, iPod, iPod (USB), MusicCast Link, Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TIDAL, TUNER (AM/FM or DAB/FM), UAW, USB
-  * Other: Main Zone Sync
+  * Source names are taken from the receiver if provided (only on older models)
+  * External inputs:
+    AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
+  * Media sources:
+    AirPlay, Bluetooth, Deezer, iPod, iPod (USB), MusicCast Link, Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TIDAL, TUNER (AM/FM or DAB/FM), UAW, USB
+  * Other:
+    Main Zone Sync
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist, album, song (depends on source)
@@ -142,19 +145,19 @@ In some cases it is not possible to browse for presets in the UI and it is neede
 
 The `media_content_type` is always "music". The `media_content_id` format is listed in the table below. Replace the "1" at the end with the preset number you need.
 
-| Input         | Content ID                        |
-|---------------|-----------------------------------|
-| Napster       | napster:preset:1                  |
-| Netradio      | netradio:preset:1                 |
-| Pandora       | pandora:preset:1                  |
-| PC            | pc:preset:1                       |
-| Rhapsody      | rhap:preset:1                     |
-| Sirius        | sirius:preset:1                   |
-| SiriusIR      | siriusir:preset:1                 |
-| Tuner (AM/FM) | tun:preset:1                      |
-| Tuner (DAB), FM presets | dab:fmpreset:1          |
-| Tuner (DAB), DAB presets | dab:dabpreset:1        |
-| USB           | usb:preset:1                      |
+| Input                    | Content ID                        |
+|--------------------------|-----------------------------------|
+| Napster                  | napster:preset:1                  |
+| Netradio                 | netradio:preset:1                 |
+| Pandora                  | pandora:preset:1                  |
+| PC                       | pc:preset:1                       |
+| Rhapsody                 | rhap:preset:1                     |
+| Sirius                   | sirius:preset:1                   |
+| SiriusIR                 | siriusir:preset:1                 |
+| Tuner (AM/FM)            | tun:preset:1                      |
+| Tuner (DAB), FM presets  | dab:fmpreset:1                    |
+| Tuner (DAB), DAB presets | dab:dabpreset:1                   |
+| USB                      | usb:preset:1                      |
 
 ### Remote entity
 
