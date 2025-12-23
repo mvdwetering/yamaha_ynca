@@ -101,6 +101,7 @@ If your receiver works but is not in the list, please post a message in the [dis
   * CINEMA DSP 3D mode enable/disable
   * Compressed Music Enhancer enable/disable
   * Direct / Pure Direct enable/disable
+  * Extra Bass enable/disable
   * HDMI Out enable/disable
   * Initial volume
   * Max volume level
