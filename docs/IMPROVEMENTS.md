@@ -18,7 +18,7 @@ If all autodetection is limited to initial setup it should also be possible to o
 
 Challenges:
 
-* Need to migrate existing configentries on first run after this feature has been added. I think "old" config entries will have empty lists for inputs/scenes if the user never touched the integration opitions. Probably best to migrate the autodetected settings one-by-one. E.g. first scenes, then inputs
+* Need to migrate existing configentries on first run after this feature has been added. I think "old" config entries will have empty lists for inputs/scenes if the user never touched the integration options. Probably best to migrate the autodetected settings one-by-one. E.g. first scenes, then inputs
 * Auto detection needs more info than the current `ynca.connection_check()` provides. This quick check was added because the full `ynca.initialize()` takes a very long time. Maybe extend the `connection_check()` with INPNAMES and SCENENAMES?
 
 ## Add discovery
