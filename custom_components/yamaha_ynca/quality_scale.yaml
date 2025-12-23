@@ -51,13 +51,30 @@ rules:
     status: exempt
     comment: |
       This integration cannot discover devices.
-  docs-data-update: todo
-  docs-examples: todo
-  docs-known-limitations: todo
+  docs-data-update: done
+  docs-examples:
+    status: todo
+    comment: |
+      Skipping for now, because I am not really a fan of the yaml examples in the documentation. 
+      They always require a lot of tuning for your own setup and always just look complicated.
+      Since the entities offered by this integration are rather straightforward,
+      I don't see much value in adding yaml automation examples, you can easily use the UI nowadays.
+      Having the use-cases section to inspire people is way more useful, I like that one.
+      (it seems even some Platinum integrations don't have this section?)
+  docs-known-limitations: done
   docs-supported-devices: done
-  docs-supported-functions: todo
-  docs-troubleshooting: todo
-  docs-use-cases: todo
+  docs-supported-functions:
+    status: done
+    comment: |
+      Not entirely convinced splitting up entities by type is that useful. 
+      As a user I think I am more interested in what functionality is supported for my device,
+      rather than which exact entity types are created.
+      Splitting up by control/configuration/diagnostic might be more useful.
+  docs-troubleshooting:
+    status: done
+    comment: |
+      Troubleshooting is part of the Q & A section.
+  docs-use-cases: done
   dynamic-devices:
     status: exempt
     comment: |

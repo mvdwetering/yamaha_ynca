@@ -36,7 +36,7 @@ from .const import (
     ZONE_MAX_VOLUME,
     ZONE_MIN_VOLUME,
 )
-from .helpers import scale
+from .helpers import extract_protocol_version, scale
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -481,9 +481,8 @@ class YamahaYncaZone(MediaPlayerEntity):
             elif repeat == RepeatMode.OFF:
                 subunit.repeat = ynca.Repeat.OFF
             elif repeat == RepeatMode.ONE:
-                # CX-A5100 uses ONE instead of SINGLE
-                # seen on TIDAL subunit, lets assume that others do as well
-                if self._ynca.tidal is not None:
+                # CX-A5100 uses ONE instead of SINGLE. Lets assume it is due to protocol version 4
+                if extract_protocol_version(self._ynca.sys.version) >= (4, 0):  # type: ignore[union-attr]
                     subunit.repeat = ynca.Repeat.ONE
                 else:
                     subunit.repeat = ynca.Repeat.SINGLE
