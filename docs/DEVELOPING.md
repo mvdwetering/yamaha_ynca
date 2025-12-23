@@ -35,12 +35,13 @@ Other commands
 
 ## Release
 
-- Run the `release.sh` script. Often no alpha/beta is needed, so just release it
-- After pushing the CI will create a draft release. Wait for it to be ready.
+- Run the `release.sh` script. Often no alpha/beta is needed, so just release it. Make sure to switch back to dev once done.
+- After pushing the CI will create [a draft release](https://github.com/mvdwetering/yamaha_ynca/releases). Wait for it to be ready.
 - Cleanup the release notes if needed.
+- Add breaking changes section if needed.
 - Tick the discussion thread box.
-- Tick the pre-release box if it is an alpha/beta.
-- Save the release.
+- Tick the pre-release box if it is an alpha/beta. Also mention in the release notes that it is an alpha/beta for testing.
+- Publish the release.
 
 ## Add an entity
 
