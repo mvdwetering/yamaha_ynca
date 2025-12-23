@@ -65,11 +65,11 @@ To add the new command switch it is enough to just add a new [entity description
 
 The `key` field is the attribute name in the ynca package, it is also used as translation key.
 More info about `entity_category` can be found [here in the Home Assistant developer documentation](https://developers.home-assistant.io/docs/core/entity/).
-The `on`and `off` fields are the enum values to be used when turning the switch on/off.
+The `on` and `off` fields are the enum values to be used when turning the switch on/off.
 
 Check out the documentation of `YncaSwitchEntityDescription` for more details.
 
-That is the code part done. With this info the `YncaSwitchEntity` implementation will take care of handling incoming commands to update the switch and call the`ynca` package with the correct data when the switch changes in Home Assistant.
+That is the code part done. With this info the `YncaSwitchEntity` implementation will take care of handling incoming commands to update the switch and call the `ynca` package with the correct data when the switch changes in Home Assistant.
 
 Now update the translations by adding a section matching the `key` under `entities/switch` similar to the others. This will make sure the switch gets a proper name.
 
