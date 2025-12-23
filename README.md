@@ -9,6 +9,7 @@ Minimum required Home Assistant version is: 2025.10.0
   * [Volume (dB) entity](#volume-db-entity)
   * [Presets](#presets)
   * [Remote entity](#remote-entity)
+* [Data Updates](#data-updates)
 * [Downloading](#downloading)
   * [Home Assistant Community Store (HACS)](#home-assistant-community-store-hacs)
   * [Manual download](#manual-download)
@@ -599,6 +600,10 @@ cards:
 ```
 
 </details>
+
+## Data updates
+
+The receiver pushes updates directly to Home Assistant so entity states will update instantly.
 
 ## Downloading
 
