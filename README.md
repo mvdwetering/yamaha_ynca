@@ -25,7 +25,7 @@ Minimum required Home Assistant version is: 2025.10.0
 
 Yamaha (YNCA) is a custom integration for Home Assistant to support [Yamaha AV receivers](https://uk.yamaha.com/en/audio/home-audio/products/av-receivers-amps/) using the YNCA protocol over serial or network connections.
 
-This integration can be used to control your receiver in automations. E.g. to turn on/off other equipment when the receiver turns on/off or to set specific sound modes depending on the content that is playing (content details needs to be provided by other integrations).
+This integration can be used to control your receiver in automations. E.g. to turn on/off other equipment when the receiver turns on/off or to set specific sound modes depending on the content that is playing (content details need to be provided by other integrations).
 
 For issues or feature requests please [submit an issue on GitHub](https://github.com/mvdwetering/yamaha_ynca/issues)
 
