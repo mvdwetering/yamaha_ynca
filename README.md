@@ -9,7 +9,7 @@ Minimum required Home Assistant version is: 2025.10.0
   * [Volume (dB) entity](#volume-db-entity)
   * [Presets](#presets)
 * [Data Updates](#data-updates)
-* [Known Limigations](#known-limitations)
+* [Known Limitations](#known-limitations)
 * [Downloading](#downloading)
   * [Home Assistant Community Store (HACS)](#home-assistant-community-store-hacs)
   * [Manual download](#manual-download)
