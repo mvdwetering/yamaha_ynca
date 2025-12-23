@@ -29,5 +29,5 @@ After discovering a Yamaha receiver a check would be needed to see if the receiv
 
 Challenges:
 
-* Avoiding duplicate / false discoveries. The YNCA protocol does not offer a unique identifier to identify duplicates. Maybe checks can be done on IP address, but there are users that use hostname to connect to the receiver, not sure how that should be handled.
+* Avoiding duplicate / false discoveries. The YNCA protocol does not offer a unique identifier to identify duplicates. Maybe checks can be done on IP address, but there are users who use hostname to connect to the receiver, not sure how that should be handled.
 * Only 1 YNCA connection can be made to a receiver at the time. The is-ynca-supported check during discovery could interfere with the normal integration setup if it gets discovered early.
