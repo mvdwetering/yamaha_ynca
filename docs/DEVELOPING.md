@@ -44,7 +44,7 @@ Other commands
 
 ## Add an entity
 
-Adding an entitiy is usually easy when it follows the common patterns.
+Adding an entity is usually easy when it follows the common patterns.
 
 As an example lets add the Extra Bass switch as done in [PR #480](https://github.com/mvdwetering/yamaha_ynca/pull/480).
 
