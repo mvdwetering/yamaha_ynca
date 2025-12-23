@@ -19,7 +19,6 @@ Minimum required Home Assistant version is: 2025.10.0
   * [Action yamaha_ynca.store_preset](#action-yamaha_yncastore_preset)
   * [Action yamaha_ynca.send_raw_ynca](#action-yamaha_yncasend_raw_ynca)
 * [Q & A](#q--a)
-* [Development notes](#development-notes)
 
 ## Description
 
@@ -766,22 +765,4 @@ target:
   entity_id: remote.rx_v475_main_remote
 data:
   command: scene_1
-```
-
-## Development notes
-
-Just a quick reminder on how to set up the development environment.
-
-```bash
-$ python3.13 -m venv venv
-. ./venv/bin/activate
-(venv) $ pip install -e .[dev]
-```
-
-Some useful commands
-
-```bash
-(venv) $ mypy --check-untyped-defs custom_components
-(venv) $ pytest
-(venv) $ ruff format
 ```
