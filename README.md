@@ -27,7 +27,7 @@ Yamaha (YNCA) is a custom integration for Home Assistant to support [Yamaha AV r
 
 This integration can be used to control your receiver in automations. E.g. to turn on/off other equipment when the receiver turns on/off or to set specific sound modes depending on the content that is playing (content details needs to be provided by other integrations).
 
-For issues or feature requests please [submit an issue on Github](https://github.com/mvdwetering/yamaha_ynca/issues)
+For issues or feature requests please [submit an issue on GitHub](https://github.com/mvdwetering/yamaha_ynca/issues)
 
 ## Working models
 
@@ -661,7 +661,7 @@ If the button does not work, or you don't want to use it, follow these steps to 
 
 ### Manual download
 
-* Go to the [releases section on Github](https://github.com/mvdwetering/yamaha_ynca/releases)
+* Go to the [releases section on GitHub](https://github.com/mvdwetering/yamaha_ynca/releases)
 * Download the zip file for the version you want to install
 * Extract the zip
 * Ensure the `config/custom_components/yamaha_ynca` directory exists (create it if needed)
@@ -775,7 +775,7 @@ data:
 * **Q: I get an error when setting up the integration**  
   There are a few things to check:
   * The receiver only allows 1 connection at the time. Maybe there is another piece of software connected already e.g. another home automation system.
-  * Double check the IP address and make sure it can be reached from Home Assistant. Especially if you have a complex network setup e.g. using VLANs.
+  * Double-check the IP address and make sure it can be reached from Home Assistant. Especially if you have a complex network setup e.g. using VLANs.
 
 * **Q: Why are entities unavailable when receiver is in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
@@ -785,7 +785,7 @@ data:
   
   It can also be that your receiver does not expose that feature.
   
-  You can open an issue on Github if you believe it is supposed to be supported on your receiver.
+  You can open an issue on GitHub if you believe it is supposed to be supported on your receiver.
 
 * **Q: How can I stream audio from a URL?**  
   You can't do that with this integration because the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
