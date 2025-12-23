@@ -52,8 +52,15 @@ rules:
     comment: |
       This integration cannot discover devices.
   docs-data-update: done
-  docs-examples: todo
+  docs-examples:
     status: todo
+    comment: |
+      Skipping for now, because I am not really a fan of the yaml examples in the documentation. 
+      They always require a lot of tuning for your own setup and always just look complicated.
+      Since the entities offered by this integration are rather straightforward,
+      I don't see much value in adding yaml automation examples, you can easily use the UI nowadays.
+      Having the use-cases section to inspire people is way more useful, I like that one.
+      (it seems even some Platinum integrations don't have this section?)
   docs-known-limitations: done
   docs-supported-devices: done
   docs-supported-functions: todo
