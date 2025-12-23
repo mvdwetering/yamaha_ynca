@@ -74,7 +74,7 @@ rules:
     status: done
     comment: |
       Troubleshooting is part of the Q & A section.
-  docs-use-cases: todo
+  docs-use-cases: done
   dynamic-devices:
     status: exempt
     comment: |
