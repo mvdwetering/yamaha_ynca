@@ -57,7 +57,10 @@ rules:
   docs-known-limitations: done
   docs-supported-devices: done
   docs-supported-functions: todo
-  docs-troubleshooting: todo
+  docs-troubleshooting:
+    status: done
+    comment: |
+      Troubleshooting is part of the Q & A section.
   docs-use-cases: todo
   dynamic-devices:
     status: exempt

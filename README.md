@@ -756,15 +756,20 @@ data:
 
 ## Q & A
 
+* **Q: I get an error when setting up the integration**  
+  There are a few things to check:
+  * The receiver only allows 1 connection at the time. Maybe there is another piece of software connected already e.g. another home automation system.
+  * Double check the IP address and make sure it can be reached from Home Assistant. Especially if you have a complex network setup e.g. using VLANs.
+
 * **Q: Why are entities unavailable when receiver is in standby?**  
   The receiver does not allow changing of settings when it is in standby, so the entities become Unavailable in Home Assistant to indicate this.
 
 * **Q: Why does the integration not show all features mentioned in the README even when my receiver supports them?**  
-  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported features for your receiver in the integration configuration.
+  The integration tries to autodetect as many features as possible, but it is not possible for all features on all receivers. You can adjust detected/supported features for your receiver [in the integration options](#options).
   
   It can also be that your receiver does not expose that feature.
   
-  You can open an issue if you believe it is supposed to be supported on your receiver.
+  You can open an issue on Github if you believe it is supposed to be supported on your receiver.
 
 * **Q: How can I stream audio from a URL?**  
   You can't do that with this integration because the protocol does not support that. You might be able to use the [DLNA Digital Media Renderer integration](https://www.home-assistant.io/integrations/dlna_dmr/) that comes with Home Assistant.
