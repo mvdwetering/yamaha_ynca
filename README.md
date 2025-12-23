@@ -156,7 +156,7 @@ data:
   command: receiver_power_toggle
 ```
 
-In case you want to have buttons on a dashboard to send the commands in a layout that mimics a remote control the code below can be used as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations.
+To create buttons on a dashboard that mimic remote control layout, use the code below as a starting point. It uses only standard built-in Home Assistant cards, so it should work on all configurations.
 
 ![image](https://github.com/mvdwetering/yamaha_ynca/assets/732514/321181e2-81c3-4a1d-8084-8efceb94f7ff)
 
