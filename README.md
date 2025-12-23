@@ -10,6 +10,7 @@ Minimum required Home Assistant version is: 2025.10.0
   * [Presets](#presets)
   * [Remote entity](#remote-entity)
 * [Data Updates](#data-updates)
+* [Known Limigations](#known-limitations)
 * [Downloading](#downloading)
   * [Home Assistant Community Store (HACS)](#home-assistant-community-store-hacs)
   * [Manual download](#manual-download)
@@ -607,6 +608,14 @@ cards:
 ## Data updates
 
 The receiver pushes updates directly to Home Assistant so entity states will update instantly.
+
+## Known limitations
+
+The receiver can only accept 1 connection for the YNCA protocol that this integration uses. This means that is not possible to connect to the same receiver from multiple Home Assistant instances at the same time.
+
+It is possible to have multiple Yamaha (YCNA) instances connecting to mulitiple different receivers in a single Home Assistant instance. The limitation is on the receiver side.
+
+It is also still possible to use other protocols to control the receiver. For example the Yamaha AV Control App will still work at same time as this integration is active.
 
 ## Downloading
 
