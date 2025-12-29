@@ -6,6 +6,13 @@
 
 set -e
 
+# Ensure we are on the dev branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "dev" ]; then
+  echo "Error: You must be on the dev branch to bump ynca. Current branch: $CURRENT_BRANCH" >&2
+  exit 1
+fi
+
 # Determine the directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -61,7 +68,7 @@ echo "Version bumped to $NEW_VERSION in pyproject.toml and manifest.json files."
 # Ask for confirmation to create a branch and commit
 read -p "Do you want to create a branch, commit the change and push? (y/n): " CONFIRM
 if [[ "$CONFIRM" == "y" ]]; then
-  BRANCH_NAME="bump_ynca_$NEW_VERSION"
+  BRANCH_NAME="bump_ynca_to_$NEW_VERSION"
   git checkout -b "$BRANCH_NAME"
   git add pyproject.toml custom_components/yamaha_ynca/manifest.json
   git commit -m "Bump version to $NEW_VERSION"
