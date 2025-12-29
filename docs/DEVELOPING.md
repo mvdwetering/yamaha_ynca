@@ -103,6 +103,8 @@ To make the input available in Home Assistant the mapping in `input_helpers.py` 
 
 If the new input is related to a subunit the subunit attribute of the ynca package should be listed. It will be used by the `media_player` entity to figure out where to look for things playback state and metadata. For other inputs like HDMI4 in the example the list stays empty.
 
-This should be all that is needed other than add/extend some tests.
+To wrap up:
 
-When making a release with a new input mention in the release notes that for existing installations users will need to enable the input manually.
+- Add/extend tests if needed.
+- Update README with the new inputs
+- In the release notes mention that users will need to enable the new inputs in the integration options.
