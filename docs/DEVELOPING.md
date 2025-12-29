@@ -6,6 +6,7 @@ This document describes some useful info when developing for the `yamaha_ynca` i
 
 - [Dev environment](#dev-environment)
 - [Release](#release)
+- [Update ynca package](#update-ynca-package)
 - [Add an entity](#add-an-entity)
 - [Add an input](#add-an-input)
 
@@ -42,6 +43,10 @@ Other commands
 - Tick the discussion thread box.
 - Tick the pre-release box if it is an alpha/beta. Also mention in the release notes that it is an alpha/beta for testing.
 - Publish the release.
+
+## Update ynca package
+
+To update to a new version of the ynca package simply run the `bump_ynca_version.sh` script and it will update the required references.
 
 ## Add an entity
 
