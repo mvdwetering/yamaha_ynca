@@ -95,7 +95,7 @@ The mediaplayer entity supports:
 * Source selection
   * Source names are taken from the receiver if possible (only on older models)
   * External inputs:
-    AUDIO, AUDIO1-AUDIO5, AV1-AV7, DOCK, HDMI1-HDMI7, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
+    AUDIO, AUDIO1-AUDIO5, AV1-AV7, CD, COAXIAL1-COAXIAL2, DOCK, HDMI1-HDMI7, LINE1-LINE3, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
   * Media sources:
     AirPlay, Bluetooth, Deezer, iPod, iPod (USB), MusicCast Link, Napster, NET RADIO, Pandora, PC, Rhapsody, SERVER, SIRIUS, SIRIUS InternetRadio, SiriusXM, Spotify, TIDAL, TUNER (AM/FM or DAB/FM), UAW, USB
   * Other:
@@ -106,13 +106,13 @@ The mediaplayer entity supports:
 
 #### Number
 
-* Headphone bass (default disabled)
-* Headphone treble (default disabled)
 * Initial volume
 * Max volume level
+* [Volume in dB](#volume-db-entity)
+* Headphone bass (default disabled)
+* Headphone treble (default disabled)
 * Speaker bass (default disabled)
 * Speaker treble (default disabled)
-* [Volume in dB](#volume-db-entity)
 
 #### Select
 
