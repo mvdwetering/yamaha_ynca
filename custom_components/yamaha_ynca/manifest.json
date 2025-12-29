@@ -13,7 +13,7 @@
     "ynca"
   ],
   "requirements": [
-    "ynca==5.27.0"
+    "ynca==5.28.0"
   ],
-  "version": "9.1.0"
+  "version": "9.2.0"
 }

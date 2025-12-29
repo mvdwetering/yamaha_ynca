@@ -49,6 +49,9 @@ input_mappings: list[Mapping] = [
     Mapping(ynca.Input.AV5, []),
     Mapping(ynca.Input.AV6, []),
     Mapping(ynca.Input.AV7, []),
+    Mapping(ynca.Input.CD, []),
+    Mapping(ynca.Input.COAXIAL1, []),
+    Mapping(ynca.Input.COAXIAL2, []),
     Mapping(ynca.Input.DOCK, []),
     Mapping(ynca.Input.HDMI1, []),
     Mapping(ynca.Input.HDMI2, []),
@@ -57,6 +60,9 @@ input_mappings: list[Mapping] = [
     Mapping(ynca.Input.HDMI5, []),
     Mapping(ynca.Input.HDMI6, []),
     Mapping(ynca.Input.HDMI7, []),
+    Mapping(ynca.Input.LINE1, []),
+    Mapping(ynca.Input.LINE2, []),
+    Mapping(ynca.Input.LINE3, []),
     Mapping(
         ynca.Input.MAIN_ZONE_SYNC, []
     ),  # Not an external input, but also not a subunit

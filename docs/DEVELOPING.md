@@ -6,6 +6,7 @@ This document describes some useful info when developing for the `yamaha_ynca` i
 
 - [Dev environment](#dev-environment)
 - [Release](#release)
+- [Update ynca package](#update-ynca-package)
 - [Add an entity](#add-an-entity)
 - [Add an input](#add-an-input)
 
@@ -35,12 +36,17 @@ Other commands
 
 ## Release
 
-- Run the `release.sh` script. Often no alpha/beta is needed, so just release it
-- After pushing the CI will create a draft release. Wait for it to be ready.
+- Run the `release.sh` script. Often no alpha/beta is needed, so just release it. Make sure to switch back to dev once done.
+- After pushing the CI will create [a draft release](https://github.com/mvdwetering/yamaha_ynca/releases). Wait for it to be ready.
 - Cleanup the release notes if needed.
+- Add breaking changes section if needed.
 - Tick the discussion thread box.
-- Tick the pre-release box if it is an alpha/beta.
-- Save the release.
+- Tick the pre-release box if it is an alpha/beta. Also mention in the release notes that it is an alpha/beta for testing.
+- Publish the release.
+
+## Update ynca package
+
+To update to a new version of the ynca package simply run the `bump_ynca_version.sh` script and it will update the required references.
 
 ## Add an entity
 
@@ -97,6 +103,8 @@ To make the input available in Home Assistant the mapping in `input_helpers.py` 
 
 If the new input is related to a subunit the subunit attribute of the ynca package should be listed. It will be used by the `media_player` entity to figure out where to look for things playback state and metadata. For other inputs like HDMI4 in the example the list stays empty.
 
-This should be all that is needed other than add/extend some tests.
+To wrap up:
 
-When making a release with a new input mention in the release notes that for existing installations users will need to enable the input manually.
+- Add/extend tests if needed.
+- Update README with the new inputs
+- In the release notes mention that users will need to enable the new inputs in the integration options.
