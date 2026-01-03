@@ -71,6 +71,6 @@ if [[ "$CONFIRM" == "y" ]]; then
   BRANCH_NAME="bump_ynca_to_$NEW_VERSION"
   git checkout -b "$BRANCH_NAME"
   git add pyproject.toml custom_components/yamaha_ynca/manifest.json
-  git commit -m "Bump version to $NEW_VERSION"
+  git commit -m "Bump ynca version to $NEW_VERSION"
   git push origin "$BRANCH_NAME"
 fi
