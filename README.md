@@ -33,6 +33,8 @@ For issues or feature requests please [submit an issue on GitHub](https://github
 
 Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses. The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
+It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol).
+
 Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
 
 If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
@@ -144,7 +146,7 @@ More remote control IR codes exist, but for now the commands included are the on
 
 Next to sending the predefined commands it is possible to send remote control IR codes directly in case you need to send something that is not in the commands list. The Yamaha remote control IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
 
-Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
+Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is _not_ supported because the protocol does not support it.
 
 Example:
 
@@ -637,7 +639,7 @@ It is also still possible to use other protocols to control the receiver. For ex
 
 ### Home Assistant Community Store (HACS)
 
-*Recommended because you get notified of updates.*
+_Recommended because you get notified of updates._
 
 > HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. See <https://hacs.xyz/> for more details.
 
