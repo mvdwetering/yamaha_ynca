@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.helpers.entity import EntityCategory
@@ -12,12 +12,11 @@ import ynca
 
 from .const import (
     CONF_SELECTED_SURROUND_DECODERS,
-    SURROUNDDECODEROPTIONS_PLIIX_MAPPING,
     TWOCHDECODER_STRINGS,
     ZONE_ATTRIBUTE_NAMES,
 )
 from .entity import YamahaYncaSettingEntity
-from .helpers import subunit_supports_entitydescription_key
+from .helpers import extract_protocol_version, subunit_supports_entitydescription_key
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable
@@ -30,6 +29,27 @@ if TYPE_CHECKING:  # pragma: no cover
     from ynca.subunits.zone import ZoneBase
 
     from . import YamahaYncaConfigEntry
+
+
+# For 2CHDECODER, there are multiple ProLogic II variants that map to same functionality on receivers
+# Older receivers have DolbyPl2xyyy variants which get mapped to DolbyPl2yyy if no presence speakers are available
+# Newer receivers have DolbyProLogicII_yyy variants instead of DolbyPl2yyy
+# We use this mapping to be able to show ProLogic II in the UI and selected the correct values to send.
+# (note that currently the DolbyPl2x varaints can not be set, lets fix that when requested)
+SURROUNDDECODEROPTIONS_PROLOGIC_II_MAPPING = {
+    ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,
+    ynca.TwoChDecoder.DolbyPl2xMovie: ynca.TwoChDecoder.DolbyPl2Movie,
+    ynca.TwoChDecoder.DolbyPl2xMusic: ynca.TwoChDecoder.DolbyPl2Music,
+    ynca.TwoChDecoder.DolbyProLogicII_Game: ynca.TwoChDecoder.DolbyPl2Game,
+    ynca.TwoChDecoder.DolbyProLogicII_Movie: ynca.TwoChDecoder.DolbyPl2Movie,
+    ynca.TwoChDecoder.DolbyProLogicII_Music: ynca.TwoChDecoder.DolbyPl2Music,
+}
+
+PROLOGIC_II_TO_NEW_PROTOCOL_MAPPING = {
+    ynca.TwoChDecoder.DolbyPl2Game: ynca.TwoChDecoder.DolbyProLogicII_Game,
+    ynca.TwoChDecoder.DolbyPl2Movie: ynca.TwoChDecoder.DolbyProLogicII_Movie,
+    ynca.TwoChDecoder.DolbyPl2Music: ynca.TwoChDecoder.DolbyProLogicII_Music,
+}
 
 
 class InitialVolumeMode(Enum):
@@ -100,6 +120,10 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
     ) -> None:
         super().__init__(receiver_unique_id, subunit, description, associated_zone)
 
+        self._protocol_version = extract_protocol_version(
+            config_entry.runtime_data.api.sys.version
+        )
+
         if description.options_fn is not None:
             self._attr_options = description.options_fn(config_entry)
         elif description.options is None:
@@ -112,21 +136,27 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
         """Return the selected entity option to represent the entity state."""
         return slugify(getattr(self._subunit, self.entity_description.key).value)
 
+    def _get_value_for_slug(self, option_slug: str) -> Any:
+        value = [
+            e.value
+            for e in self.entity_description.enum
+            if slugify(e.value) == option_slug
+        ]
+
+        if len(value) == 1:
+            return value[0]
+        return None
+
     def select_option(self, option: str) -> None:
         """Change the selected option."""
-        if self.entity_description.enum is not None:
-            value = [
-                e.value
-                for e in self.entity_description.enum
-                if slugify(e.value) == option
-            ]
-
-            if len(value) == 1:
-                setattr(
-                    self._subunit,
-                    self.entity_description.key,
-                    self.entity_description.enum(value[0]),
-                )
+        if self.entity_description.enum is not None and (
+            value := self._get_value_for_slug(option)
+        ):
+            setattr(
+                self._subunit,
+                self.entity_description.key,
+                self.entity_description.enum(value),
+            )
 
 
 class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
@@ -198,12 +228,25 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
             return None
 
         current_option = self._associated_zone.twochdecoder
-        # Map any PLLx options back as if it was the normal version
-        current_option = SURROUNDDECODEROPTIONS_PLIIX_MAPPING.get(
+        # Map any ProLogic II options to a standard version
+        current_option = SURROUNDDECODEROPTIONS_PROLOGIC_II_MAPPING.get(
             current_option, current_option
         )
 
         return slugify(current_option.value)
+
+    def select_option(self, option: str) -> None:
+        """Change the selected option."""
+        if value := self._get_value_for_slug(option):
+            # Newer receivers use different values for ProLogic II
+            if self._protocol_version >= (3, 0):
+                value = PROLOGIC_II_TO_NEW_PROTOCOL_MAPPING.get(value, value)
+
+            setattr(
+                self._subunit,
+                self.entity_description.key,
+                self.entity_description.enum(value),
+            )
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -39,17 +39,11 @@ MAX_NUMBER_OF_SCENES = 12
 
 NUM_PRESETS = 40
 
-SURROUNDDECODEROPTIONS_PLIIX_MAPPING = {
-    ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,
-    ynca.TwoChDecoder.DolbyPl2xMovie: ynca.TwoChDecoder.DolbyPl2Movie,
-    ynca.TwoChDecoder.DolbyPl2xMusic: ynca.TwoChDecoder.DolbyPl2Music,
-}
-
 TWOCHDECODER_STRINGS = {
     "dolby_pl": "Dolby Pro Logic",
-    "dolby_plii_game": "Dolby Pro Logic II(x) Game",
-    "dolby_plii_movie": "Dolby Pro Logic II(x) Movie",
-    "dolby_plii_music": "Dolby Pro Logic II(x) Music",
+    "dolby_plii_game": "Dolby Pro Logic II Game",
+    "dolby_plii_movie": "Dolby Pro Logic II Movie",
+    "dolby_plii_music": "Dolby Pro Logic II Music",
     "dts_neo_6_cinema": "DTS NEO:6 Cinema",
     "dts_neo_6_music": "DTS NEO:6 Music",
     "auto": "Auto",
