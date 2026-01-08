@@ -68,7 +68,6 @@ async def test_select_entity_fields(
     mock_zone: ZoneBase,
     mock_config_entry: MockConfigEntry,
 ) -> None:
-
     entity = YamahaYncaSelect(
         mock_config_entry, "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
