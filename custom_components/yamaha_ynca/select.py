@@ -138,9 +138,9 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
 
     def _get_value_for_slug(self, option_slug: str) -> Any:
         value = [
-            e.value
-            for e in self.entity_description.enum
-            if slugify(e.value) == option_slug
+            enum_.value
+            for enum_ in self.entity_description.enum
+            if slugify(enum_.value) == option_slug
         ]
 
         if len(value) == 1:
