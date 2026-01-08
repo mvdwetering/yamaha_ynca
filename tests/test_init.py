@@ -55,7 +55,7 @@ async def test_async_setup_entry(  # noqa: PLR0913
         assert device is not None
         assert device.manufacturer == "Yamaha"
         assert device.model == "ModelName"
-        assert device.sw_version == "Version"
+        assert device.sw_version == "1.0/2.3"
         assert device.name == f"ModelName {zone_id}"
         assert device.configuration_url is None
 
@@ -66,7 +66,7 @@ async def test_async_setup_entry(  # noqa: PLR0913
     assert device is not None
     assert device.manufacturer == "Yamaha"
     assert device.model == "ModelName"
-    assert device.sw_version == "Version"
+    assert device.sw_version == "1.0/2.3"
     assert device.name == "ModelName ZoneB"
     assert device.configuration_url is None
 

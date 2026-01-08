@@ -115,8 +115,8 @@ def mock_zone_zone4() -> Mock:
 
 
 @pytest.fixture
-def mock_config_entry() -> MockConfigEntry:
-    return create_mock_config_entry()
+def mock_config_entry(mock_ynca: Mock) -> MockConfigEntry:
+    return create_mock_config_entry(ynca=mock_ynca)
 
 
 def create_mock_zone(spec: type[ynca.subunits.zone.ZoneBase] | None = None) -> Mock:
@@ -189,7 +189,7 @@ def mock_ynca() -> Mock:
     mock_ynca.sys = Mock(spec=ynca.subunits.system.System)
     mock_ynca.sys.id = "SYS"
     mock_ynca.sys.modelname = MODELNAME
-    mock_ynca.sys.version = "Version"
+    mock_ynca.sys.version = "1.0/2.3"  # Firmware/Protocol version
     mock_ynca.sys.pwr = ynca.Pwr.ON
     mock_ynca.sys.hdmiout1 = None
     mock_ynca.sys.hdmiout2 = None
@@ -214,8 +214,9 @@ def create_mock_config_entry(
     modelname: str | None = None,
     zones: list[str] | None = None,
     serial_url: str | None = None,
+    ynca: Mock | None = None,
 ) -> MockConfigEntry:
-    return MockConfigEntry(
+    mock_config_entry = MockConfigEntry(
         version=7,
         minor_version=8,
         domain=yamaha_ynca.DOMAIN,
@@ -227,6 +228,11 @@ def create_mock_config_entry(
             yamaha_ynca.const.DATA_ZONES: zones or [],
         },
     )
+    if ynca:
+        mock_config_entry.runtime_data = Mock()
+        mock_config_entry.runtime_data.api = ynca
+
+    return mock_config_entry
 
 
 class Integration(NamedTuple):

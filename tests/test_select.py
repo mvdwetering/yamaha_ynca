@@ -183,6 +183,44 @@ async def test_select_initial_volume_mode_entity_current_option(
     assert entity.current_option == "configured_initial_volume"
 
 
+async def test_select_surrounddecoder_entity_select_option(
+    mock_zone: ZoneBase,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    entity = YamahaYncaSelectSurroundDecoder(
+        mock_config_entry,
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("twochdecoder"),
+    )
+
+    mock_zone.twochdecoder = None
+
+    # A normal value
+    entity.select_option("auto")
+    assert mock_zone.twochdecoder is ynca.TwoChDecoder.Auto
+
+    # Unmapped value, no change
+    entity.select_option("unmapped_value")
+    assert mock_zone.twochdecoder is ynca.TwoChDecoder.Auto
+
+    # Normal ProLogic II value
+    entity.select_option("dolby_plii_music")
+    assert mock_zone.twochdecoder is ynca.TwoChDecoder.DolbyPl2Music
+
+    # ProLogic II value on newer receiver
+    mock_config_entry.runtime_data.api.sys.version = "1.0/3.0"
+    entity = YamahaYncaSelectSurroundDecoder(
+        mock_config_entry,
+        "ReceiverUniqueId",
+        mock_zone,
+        get_entity_description_by_key("twochdecoder"),
+    )
+
+    entity.select_option("dolby_plii_music")
+    assert mock_zone.twochdecoder is ynca.TwoChDecoder.DolbyProLogicII_Music
+
+
 async def test_select_surrounddecoder_entity_current_option(
     mock_zone: ZoneBase,
     mock_config_entry: MockConfigEntry,
@@ -209,6 +247,10 @@ async def test_select_surrounddecoder_entity_current_option(
 
     # Current value, PLIIx value
     mock_zone.twochdecoder = ynca.TwoChDecoder.DolbyPl2xMovie
+    assert entity.current_option == "dolby_plii_movie"
+
+    # Current value, PLII_Movie value (the new enum value)
+    mock_zone.twochdecoder = ynca.TwoChDecoder.DolbyProLogicII_Movie
     assert entity.current_option == "dolby_plii_movie"
 
     # Current value, not supported (should not happen)

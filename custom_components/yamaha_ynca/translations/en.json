@@ -209,9 +209,9 @@
         "name": "Surround Decoder",
         "state": {
           "dolby_pl": "Dolby Pro Logic",
-          "dolby_plii_game": "Dolby Pro Logic II(x) Game",
-          "dolby_plii_movie": "Dolby Pro Logic II(x) Movie",
-          "dolby_plii_music": "Dolby Pro Logic II(x) Music",
+          "dolby_plii_game": "Dolby Pro Logic II Game",
+          "dolby_plii_movie": "Dolby Pro Logic II Movie",
+          "dolby_plii_music": "Dolby Pro Logic II Music",
           "dts_neo_6_cinema": "DTS NEO:6 Cinema",
           "dts_neo_6_music": "DTS NEO:6 Music",
           "auto": "Auto",
