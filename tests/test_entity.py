@@ -27,7 +27,9 @@ TEST_ENTITY_DESCRIPTION_WITH_FUNCTION_NAME = TestYncaEntityDescription(
 )
 
 
-async def test_yamaha_ynca_settings_entity_update(mock_zone: Mock, mock_zone_zone3: Mock) -> None:
+async def test_yamaha_ynca_settings_entity_update(
+    mock_zone: Mock, mock_zone_zone3: Mock
+) -> None:
     entity = YamahaYncaSettingEntity(
         "ReceiverUniqueId", mock_zone, TEST_ENTITY_DESCRIPTION
     )
