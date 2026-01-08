@@ -35,7 +35,7 @@ if TYPE_CHECKING:  # pragma: no cover
 # Older receivers have DolbyPl2xyyy variants which get mapped to DolbyPl2yyy if no presence speakers are available
 # Newer receivers have DolbyProLogicII_yyy variants instead of DolbyPl2yyy
 # We use this mapping to be able to show ProLogic II in the UI and selected the correct values to send.
-# (note that currently the DolbyPl2x varaints can not be set, lets fix that when requested)
+# (note that currently the DolbyPl2x variants can not be set, lets fix that when requested)
 SURROUNDDECODEROPTIONS_PROLOGIC_II_MAPPING = {
     ynca.TwoChDecoder.DolbyPl2xGame: ynca.TwoChDecoder.DolbyPl2Game,
     ynca.TwoChDecoder.DolbyPl2xMovie: ynca.TwoChDecoder.DolbyPl2Movie,
