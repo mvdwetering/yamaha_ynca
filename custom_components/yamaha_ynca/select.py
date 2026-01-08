@@ -237,11 +237,7 @@ class YamahaYncaSelectSurroundDecoder(YamahaYncaSelect):
             if self._protocol_version >= (3, 0):
                 value = PROLOGIC_II_TO_NEW_PROTOCOL_MAPPING.get(value, value)
 
-            setattr(
-                self._subunit,
-                self.entity_description.key,
-                self.entity_description.enum(value),
-            )
+            setattr(self._subunit, self.entity_description.key, value)
 
 
 @dataclass(frozen=True, kw_only=True)
