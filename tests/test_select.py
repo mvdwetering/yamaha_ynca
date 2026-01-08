@@ -195,7 +195,8 @@ async def test_select_surrounddecoder_entity_select_option(
         get_entity_description_by_key("twochdecoder"),
     )
 
-    # Setting value, receiver without initvolmode
+    # Setting value
+    mock_zone.twochdecoder = None
     mock_zone.twochdecoder = None
 
     # A normal value
