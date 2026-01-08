@@ -151,11 +151,7 @@ class YamahaYncaSelect(YamahaYncaSettingEntity, SelectEntity):
         if self.entity_description.enum is not None and (
             value := self._get_value_for_slug(option)
         ):
-            setattr(
-                self._subunit,
-                self.entity_description.key,
-                self.entity_description.enum(value),
-            )
+            setattr(self._subunit, self.entity_description.key, value)
 
 
 class YamahaYncaSelectInitialVolumeMode(YamahaYncaSelect):
