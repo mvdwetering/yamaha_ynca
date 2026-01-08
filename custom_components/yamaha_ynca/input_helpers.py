@@ -77,7 +77,6 @@ input_mappings: list[Mapping] = [
 
 
 class InputHelper:
-
     @staticmethod
     def get_internal_subunit_attribute_names() -> list[str]:
         """Return list of attributenames of internal subunits."""

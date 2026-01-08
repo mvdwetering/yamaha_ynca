@@ -674,7 +674,6 @@ async def test_mediaplayer_mediainfo(
 async def test_mediaplayer_mediainfo_internet_radio_inputs(
     mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
 ) -> None:
-
     # Netradio is a "channel" which name is exposed by the "station" attribute
     mock_zone.inp = ynca.Input.NETRADIO
     mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
@@ -705,7 +704,6 @@ async def test_mediaplayer_mediainfo_internet_radio_inputs(
 async def test_mediaplayer_mediainfo_terrestrial_radio_inputs(
     mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
 ) -> None:
-
     # Tuner (AM/FM analog radio) is a "channel"
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)

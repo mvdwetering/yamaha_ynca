@@ -223,3 +223,39 @@ async def test_dirmode(mock_zone_main: Mock) -> None:
     # Cleanup on exit
     await entity.async_will_remove_from_hass()
     mock_zone_main.unregister_update_callback.assert_called_once_with(callback)
+
+
+async def test_speaker_ab_switches_available_without_zone_b(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_zone_main.speakera = ynca.SpeakerA.OFF
+    mock_zone_main.speakerb = ynca.SpeakerB.ON
+    mock_zone_main.zonebavail = None
+    mock_ynca.main = mock_zone_main
+    await setup_integration(hass, mock_ynca)
+
+    speaker_a = hass.states.get("switch.modelname_main_zone_a_speakers")
+    assert speaker_a is not None
+    speaker_b = hass.states.get("switch.modelname_main_zone_b_speakers")
+    assert speaker_b is not None
+
+
+async def test_speaker_ab_switches_unavailable_when_zone_b_exists(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_zone_main.speakera = ynca.SpeakerA.OFF
+    mock_zone_main.speakerb = ynca.SpeakerB.ON
+    mock_zone_main.zonebavail = (
+        ynca.ZoneBAvail.NOT_READY
+    )  # Does not need to be READY, exists is enough
+    mock_ynca.main = mock_zone_main
+    await setup_integration(hass, mock_ynca)
+
+    speaker_a = hass.states.get("switch.modelname_main_zone_a_speakers")
+    assert speaker_a is None
+    speaker_b = hass.states.get("switch.modelname_main_zone_b_speakers")
+    assert speaker_b is None
