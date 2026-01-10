@@ -722,7 +722,7 @@ During configuration provide the following information depending on your connect
 ### PySerial URL handler (advanced)
 
 **URL Handler**
-: Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+: Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html). E.g. `rfc2217://` when using a remote serial terminal server.
 
 <br/>
 
