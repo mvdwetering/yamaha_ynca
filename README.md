@@ -123,6 +123,12 @@ The mediaplayer entity supports:
 * Surround Decoder selection
 * Speaker pattern selection
 
+#### Sensor
+
+* Source (default disabled)
+
+The normal way to automate on the source of the receiver is through the `source` attribute on the `media_player` entity. But the source on the Main zone can also be changed with the remote control even when the receiver is Off. This is useful when you sometimes use audio from the TV and from the receiver at other times. Home Assistant hides the `source` attribute on the `media_player` entity when the receiver Off, so it can't be used in automations. This sensor is added for the specific use-case of automating on source changes when the receiver is Off.
+
 #### Switch
 
 Following switch entities allow enable/disable of the related feature.

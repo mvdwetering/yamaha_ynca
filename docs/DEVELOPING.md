@@ -87,6 +87,13 @@ Now update the translations by adding a section matching the `key` under `entiti
 
 Only thing left to do now is add/extend tests. Since this command is very straight forward, just fix the test by updating the amount of switch entities that is created during setup.
 
+A few notes on tests:
+
+- If new attributes were added to a zone in the ynca package make sure to set them to `None` in `create_mock_zone`. It avoids entities being created when not intended.
+- If a new entity is disabled by default use the `entity_registry_enabled_by_default` fixture to enable them for the test
+
+If something new was added list it in the README
+
 And thats is all that is needed.
 (I would still recommend to do a quick manual test against a real receiver or the `debug_server`)
 

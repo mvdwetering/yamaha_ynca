@@ -269,15 +269,7 @@ class YamahaYncaZone(MediaPlayerEntity):
     @property
     def source_list(self) -> list[str]:
         """List of available sources."""
-        source_mapping = InputHelper.get_source_mapping(self._ynca)
-
-        filtered_sources = [
-            name
-            for input_, name in source_mapping.items()
-            if input_.value in self._selected_inputs
-        ]
-
-        return sorted(filtered_sources, key=str.lower)
+        return InputHelper.get_source_list(self._ynca, self._selected_inputs)
 
     @property
     def sound_mode(self) -> str | None:

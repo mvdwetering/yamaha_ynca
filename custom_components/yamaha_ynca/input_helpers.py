@@ -78,6 +78,19 @@ input_mappings: list[Mapping] = [
 
 class InputHelper:
     @staticmethod
+    def get_source_list(api: ynca.YncaApi, selected_inputs: list[str]) -> list[str]:
+        """Return list of source names for the provided selected inputs."""
+        source_mapping = InputHelper.get_source_mapping(api)
+
+        filtered_sources = [
+            name
+            for input_, name in source_mapping.items()
+            if input_.value in selected_inputs
+        ]
+
+        return sorted(filtered_sources, key=str.lower)
+
+    @staticmethod
     def get_internal_subunit_attribute_names() -> list[str]:
         """Return list of attributenames of internal subunits."""
         input_subunits = []

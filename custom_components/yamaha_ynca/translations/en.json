@@ -220,6 +220,11 @@
           "auro_3d": "AURO-3D"
         }
       }
+    },
+    "sensor": {
+      "inp": {
+        "name": "Source"
+      }
     }
   },
   "exceptions": {
