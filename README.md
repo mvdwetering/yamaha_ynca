@@ -144,7 +144,7 @@ Following switch entities allow enable/disable of the related feature.
 
 #### Remote
 
-The remote entity supports the following commands. Note that this command list does not take receiver  capabilities into account. It just means there is a known remote control IR code for that command.
+The remote entity supports the following commands. Note that this command list does not take receiver capabilities into account. It just means there is a known remote control IR code for that command.
 
 > on, standby, receiver_power_toggle, source_power_toggle,
 > scene_1, scene_2, scene_3, scene_4,
