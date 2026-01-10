@@ -33,6 +33,8 @@ For issues or feature requests please [submit an issue on GitHub](https://github
 
 Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses. The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
+It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol).
+
 Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
 
 If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
@@ -121,6 +123,12 @@ The mediaplayer entity supports:
 * Surround Decoder selection
 * Speaker pattern selection
 
+#### Sensor
+
+* Source (default disabled)
+
+The normal way to automate on the source of the receiver is through the `source` attribute on the `media_player` entity. But the source on the Main zone can also be changed with the remote control even when the receiver is Off. This is useful when you sometimes use audio from the TV and from the receiver at other times. Home Assistant hides the `source` attribute on the `media_player` entity when the receiver Off, so it can't be used in automations. This sensor is added for the specific use-case of automating on source changes when the receiver is Off.
+
 #### Switch
 
 Following switch entities allow enable/disable of the related feature.
@@ -136,15 +144,23 @@ Following switch entities allow enable/disable of the related feature.
 
 #### Remote
 
-The remote entity supports the following commands. Note that this command list does not take zone capabilities into account, just that there is a known remote control IR code for that command.
+The remote entity supports the following commands. Note that this command list does not take receiver capabilities into account. It just means there is a known remote control IR code for that command.
 
-> on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
+> on, standby, receiver_power_toggle, source_power_toggle,
+> scene_1, scene_2, scene_3, scene_4,
+> info, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu,
+> stop, pause, play, rewind, fast_forward, previous, next,
+> 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent,
+> hdmi1, hdmi2, hdmi3, hdmi4, hdmi5, hdmi6, hdmi7,
+> av1, av2, av3, av4, av5, av6, av7,
+> audio1, audio2, audio3, audio4, audio5,
+> phono
 
-More remote control IR codes exist, but for now the commands included are the ones that are not available on the other entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
+More remote control IR codes exist, but for now the commands included are the ones that are not available on the other entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. HDMI, AV and Audio commands can be used to switch inputs when the receiver is Off (which cannot be done with the `media_player` entity). More commands can be added later if more use cases are discovered.
 
-Next to sending the predefined commands it is possible to send remote control IR codes directly in case you need to send something that is not in the commands list. The Yamaha remote control IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
+Next to sending the predefined commands it is possible to send remote control IR codes directly in case you need to send something that is not in the commands list. The Yamaha remote control IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it applies to it is possible to send an IR code through any of the remote entities.
 
-Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is *not* supported because the protocol does not support it.
+Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is _not_ supported because the protocol does not support it.
 
 Example:
 
@@ -637,7 +653,7 @@ It is also still possible to use other protocols to control the receiver. For ex
 
 ### Home Assistant Community Store (HACS)
 
-*Recommended because you get notified of updates.*
+_Recommended because you get notified of updates._
 
 > HACS is a third-party downloader for Home Assistant to easily install and update custom integrations made by the community. See <https://hacs.xyz/> for more details.
 
@@ -706,7 +722,7 @@ During configuration provide the following information depending on your connect
 ### PySerial URL handler (advanced)
 
 **URL Handler**
-: Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html)
+: Any [URL handler supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html). E.g. `rfc2217://` when using a remote serial terminal server.
 
 <br/>
 

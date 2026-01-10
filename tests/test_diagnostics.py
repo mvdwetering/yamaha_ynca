@@ -21,7 +21,7 @@ async def test_diagnostics(hass: HomeAssistant, mock_ynca: Mock) -> None:
 
     assert "sys" in diagnostics
     assert diagnostics["sys"]["modelname"] == "ModelName"
-    assert diagnostics["sys"]["version"] == "Version"
+    assert diagnostics["sys"]["version"] == "1.0/2.3"
 
     assert "communication" in diagnostics
     assert "initialization" in diagnostics["communication"]
