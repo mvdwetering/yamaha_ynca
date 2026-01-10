@@ -83,6 +83,27 @@ next, 7F01-6D92, 7F01-8D72, 7F01-AD52,
 +10, 7F01-5BA4, 7F01-7B84, 7F01-9B64, 7F01-BB44
 ent,7F01-5CA3, 7F01-7C83, 7F01-9C63
 
+hdmi1, 7A-4738
+hdmi2, 7A-4A35
+hdmi3, 7A-4D32
+hdmi4, 7A-502F
+hdmi5, 7A-700F
+hdmi6, 7A-730C
+hdmi7, 7A-98E7
+audio1, 7A-651A
+audio2, 7A-6817
+audio3, 7A-7C03
+audio4, 7A-7F00
+audio5, 7A-ACD3
+av1, 7A-532C
+av2, 7A-5629
+av3, 7A-5926
+av4, 7A-5C23
+av5, 7A-5F20
+av6, 7A-621D
+av7, 7A-7609
+phono, 7A-14
+
 """
 
 
