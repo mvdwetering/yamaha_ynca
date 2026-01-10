@@ -144,13 +144,21 @@ Following switch entities allow enable/disable of the related feature.
 
 #### Remote
 
-The remote entity supports the following commands. Note that this command list does not take zone capabilities into account, just that there is a known remote control IR code for that command.
+The remote entity supports the following commands. Note that this command list does not take receiver  capabilities into account. It just means there is a known remote control IR code for that command.
 
-> on, standby, receiver_power_toggle, source_power_toggle, info, scene_1, scene_2, scene_3, scene_4, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu, stop, pause, play, rewind, fast_forward, previous, next, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
+> on, standby, receiver_power_toggle, source_power_toggle,
+> scene_1, scene_2, scene_3, scene_4,
+> info, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu,
+> stop, pause, play, rewind, fast_forward, previous, next,
+> 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
+> hdmi1, hdmi2, hdmi3, hdmi4, hdmi5, hdmi6, hdmi7
+> av1, av2, av3, av4, av5, av6, av7,
+> audio1, audio2, audio3, audio4, audio5,
+> phono
 
-More remote control IR codes exist, but for now the commands included are the ones that are not available on the other entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. More commands can be added later if more use cases are discovered.
+More remote control IR codes exist, but for now the commands included are the ones that are not available on the other entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. HDMI, AV and Audio commands can be used to switch inputs when the receiver is Off (which can not be done with the `media_player` entity). More commands can be added later if more use cases are discovered.
 
-Next to sending the predefined commands it is possible to send remote control IR codes directly in case you need to send something that is not in the commands list. The Yamaha remote control IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it is possible to send an IR code through any of the remote entities.
+Next to sending the predefined commands it is possible to send remote control IR codes directly in case you need to send something that is not in the commands list. The Yamaha remote control IR commands are NEC commands and consist of 4, 6 or 8 hexadecimal digits. For example the `on` command for the main zone has IR code `7E81-7E81`. The separator is optional. Because each IR code includes the zone it applies to it is possible to send an IR code through any of the remote entities.
 
 Sending the commands and IR codes is done through the `remote.send_command` action offered by Home Assistant. For manual experimentation, go to the Actions tab of the Developer Tools in Home Assistant. Select the device or entity, enter the command or IR code you want to send and perform the action. The hold option is _not_ supported because the protocol does not support it.
 
