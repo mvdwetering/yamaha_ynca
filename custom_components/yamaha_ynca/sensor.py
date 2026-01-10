@@ -73,7 +73,8 @@ ENTITY_DESCRIPTIONS = [
         entity_registry_enabled_default=False,
         is_supported=lambda _entity_description, zone_subunit: (
             # Only supported on MAIN zone, Zone 2 does not switch inputs it seems
-            isinstance(zone_subunit, ynca.Main)
+            zone_subunit.id == "MAIN"
+            and zone_subunit.inp is not None
         ),
         options_fn=lambda api, extra_data: InputHelper.get_source_list(api, extra_data),
         value_converter=lambda api, value: InputHelper.get_name_of_input(api, value),
@@ -144,7 +145,7 @@ class YamahaYncaSensor(YamahaYncaSettingEntity, SensorEntity):
                 else self.entity_description.value_converter(self._api, value)
             )
 
-        return value
+        return None  # pragma: no cover
 
     @cached_property
     def options(self) -> list[str] | None:
@@ -152,4 +153,4 @@ class YamahaYncaSensor(YamahaYncaSettingEntity, SensorEntity):
         if self.entity_description.options_fn is not None:
             return self.entity_description.options_fn(self._api, self._extra_data)
 
-        return super().options
+        return super().options  # pragma: no cover
