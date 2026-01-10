@@ -138,7 +138,8 @@ class YamahaYncaSensor(YamahaYncaSettingEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the state of the sensor."""
-        if value := getattr(self._subunit, self.entity_description.key, None):
+        value = getattr(self._subunit, self.entity_description.key, None)
+        if value is not None:
             return (
                 str(value)
                 if self.entity_description.value_converter is None

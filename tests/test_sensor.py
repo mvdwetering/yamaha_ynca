@@ -75,7 +75,7 @@ async def test_sensor_supported(
     assert source.state == "HDMI1"
 
     mock_ynca.main.inp = ynca.Input.AUDIO1
-    # Multple callbacks are registered, call them all to simulate an update
+    # Multiple callbacks are registered, call them all to simulate an update
     for c in range(mock_zone_main.register_update_callback.call_count):
         callback = mock_zone_main.register_update_callback.call_args_list[c].args[0]
         callback("INP", "AUDIO1")
