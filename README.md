@@ -150,8 +150,8 @@ The remote entity supports the following commands. Note that this command list d
 > scene_1, scene_2, scene_3, scene_4,
 > info, on_screen, option, up, down, left, right, enter, return, display, top_menu, popup_menu,
 > stop, pause, play, rewind, fast_forward, previous, next,
-> 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent
-> hdmi1, hdmi2, hdmi3, hdmi4, hdmi5, hdmi6, hdmi7
+> 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, +10, ent,
+> hdmi1, hdmi2, hdmi3, hdmi4, hdmi5, hdmi6, hdmi7,
 > av1, av2, av3, av4, av5, av6, av7,
 > audio1, audio2, audio3, audio4, audio5,
 > phono
