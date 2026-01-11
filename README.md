@@ -1,5 +1,10 @@
 # Yamaha YNCA
 
+> Announcement: I have replaced my receiver with a new one which is not a Yamaha.
+>
+> What does that mean for this integration?
+> In general there is not a lot of maintenance needed, so I intend to keep the integration working, do small fixes and answer questions, but won't do big reworks anymore. To make it easier for others to contribute and submit PRs I [documented some details about the development](docs).
+
 Minimum required Home Assistant version is: 2025.10.0
 
 * [About Yamaha (YNCA)](#description)
