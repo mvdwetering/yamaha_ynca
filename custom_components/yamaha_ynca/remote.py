@@ -104,6 +104,19 @@ av6, 7A-621D
 av7, 7A-7609
 phono, 7A-14
 
+program+, 7A85-58A7
+program-, 7A85-59A6
+straight, 7A85-56A9
+movie, 7A85-8877
+music, 7A85-8976
+classical, 7A85-8A75
+live_club, 7A85-8B74
+entertainment, 7A85-8C73
+surround_decode, 7A85-8D72
+stereo, 7A85-8F70
+pure_direct, 7A85-DD22
+enhancer, 7A85-946B
+
 """
 
 
