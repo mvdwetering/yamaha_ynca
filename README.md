@@ -159,7 +159,9 @@ The remote entity supports the following commands. Note that this command list d
 > hdmi1, hdmi2, hdmi3, hdmi4, hdmi5, hdmi6, hdmi7,
 > av1, av2, av3, av4, av5, av6, av7,
 > audio1, audio2, audio3, audio4, audio5,
-> phono
+> phono,
+> program+, program-, straight, movie, music, classical, live_club, entertainment,
+> surround_decode, stereo, pure_direct, enhancer
 
 More remote control IR codes exist, but for now the commands included are the ones that are not available on the other entities or that are potentially useful in other ways. E.g. sending `scene_1` can be used as a workaround for unsupported scene command on some receivers and commands like `play` are forwarded over HDMI-CEC so it allows you to control devices that do not have an API otherwise. HDMI, AV and Audio commands can be used to switch inputs when the receiver is Off (which cannot be done with the `media_player` entity). More commands can be added later if more use cases are discovered.
 
