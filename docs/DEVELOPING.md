@@ -48,6 +48,10 @@ Other commands
 
 To update to a new version of the ynca package simply run the `bump_ynca_version.sh` script and it will update the required references.
 
+## Using the debug server
+
+The `ynca` package has a debug server that can be used instead of a real receiver. It can be used to emulate basic request/response commands. See the documentation in the ynca repository for more info.
+
 ## Add an entity
 
 Adding an entity is usually easy when it follows the common patterns.

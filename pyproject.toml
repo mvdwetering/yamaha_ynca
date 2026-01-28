@@ -50,9 +50,11 @@ dev = [
   "pytest>=7.0.0",
   "pytest-cov",
   "pytest-mock",
-  "pytest-homeassistant-custom-component==0.13.285",
   "awesomeversion>=24.0.0",
-  "homeassistant-stubs==2025.10.0",
+  "homeassistant==2025.10.0",
+  # Don't pin versions below, they will follow HA's versions
+  "homeassistant-stubs",
+  "pytest-homeassistant-custom-component",
 
   # Pin pycares to avoid aiodns incompatibility with pycares 5.0.0
   # See: https://github.com/aio-libs/aiodns/issues/214
