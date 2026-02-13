@@ -64,7 +64,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | 2015 | AVENTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
 | | RX-V | RX-V679 |
 | | Other | CX-A5100, RX-S601D |
-| 2016 | AVENTAGE | RX-A660 |
+| 2016 | AVENTAGE | RX-A660, RX-A1060 |
 | | RX-V | RX-V481D, RX-V581, RX-V681 |
 | | TSR | TSR-7810 |
 | | Other | WXC-50 |
