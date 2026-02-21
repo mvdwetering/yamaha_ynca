@@ -30,6 +30,9 @@ from .options_flow import OptionsFlowHandler
 STEP_ID_SERIAL = "serial"
 STEP_ID_NETWORK = "network"
 STEP_ID_ADVANCED = "advanced"
+PYSERIAL_URL_HANDLERS_LINK = (
+    "https://pyserial.readthedocs.io/en/latest/url_handlers.html"
+)
 
 
 def get_serial_url_schema(user_input: dict[str, Any]) -> vol.Schema:
@@ -129,6 +132,11 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id=step_id,
             data_schema=data_schema,
             errors=errors,
+            description_placeholders=(
+                {"pyserial_url_handlers_link": PYSERIAL_URL_HANDLERS_LINK}
+                if step_id == STEP_ID_ADVANCED
+                else None
+            ),
         )
 
     async def async_step_serial(
@@ -194,6 +202,9 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
                     if self.source == SOURCE_RECONFIGURE
                     else {}
                 ),
+                description_placeholders={
+                    "pyserial_url_handlers_link": PYSERIAL_URL_HANDLERS_LINK
+                },
             )
 
         return await self.async_try_connect(
