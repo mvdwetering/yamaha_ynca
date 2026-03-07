@@ -251,7 +251,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         ):
             extra["preset"] = preset
 
-        return extra
+        return extra or None
 
     @property
     def volume_level(self) -> float | None:

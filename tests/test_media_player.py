@@ -764,6 +764,7 @@ async def test_mediaplayer_mediainfo_terrestrial_radio_inputs(
 async def test_mediaplayer_extra_attributes_preset(
     mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
 ) -> None:
+
     # Tuner (AM/FM analog radio)
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
@@ -772,15 +773,15 @@ async def test_mediaplayer_extra_attributes_preset(
 
     # Preset selected
     mock_ynca.tun.preset = 16
+    assert mp_entity.extra_state_attributes is not None
     assert mp_entity.extra_state_attributes["preset"] == 16
 
     # No preset selected
     mock_ynca.tun.preset = None
-    assert "preset" not in mp_entity.extra_state_attributes
+    assert mp_entity.extra_state_attributes is None
 
     # Tuner (DAB/FM radio)
-    mock_zone.inp = ynca.Input.TUNER
-    mock_ynca.tun = None  # Unit has either tun or dab, not both
+    mock_ynca.tun = None  # Remove tun, unit has on or the other, not both
     mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
     mock_ynca.dab.band = ynca.BandDab.FM
     mock_ynca.dab.fmfreq = 123.45
@@ -789,12 +790,20 @@ async def test_mediaplayer_extra_attributes_preset(
     # FM Preset selected
     mock_ynca.dab.fmpreset = 8
     mock_ynca.dab.dabpreset = ynca.DabPreset.NO_PRESET
+    assert mp_entity.extra_state_attributes is not None
     assert mp_entity.extra_state_attributes["preset"] == 8
 
     # DAB preset selected
+    mock_ynca.dab.band = ynca.BandDab.DAB
     mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
     mock_ynca.dab.dabpreset = 5
+    assert mp_entity.extra_state_attributes is not None
     assert mp_entity.extra_state_attributes["preset"] == 5
+
+    # No preset selected
+    mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
+    mock_ynca.dab.dabpreset = ynca.DabPreset.NO_PRESET
+    assert mp_entity.extra_state_attributes is None
 
 
 async def test_mediaplayer_media_position_duration(
