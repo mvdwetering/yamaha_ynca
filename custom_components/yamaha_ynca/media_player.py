@@ -238,18 +238,25 @@ class YamahaYncaZone(MediaPlayerEntity):
         extra = {}
 
         # Add preset attribute
-        if (input_subunit := self._get_input_subunit()) and (
-            (preset := getattr(input_subunit, "preset", None))
-            or (
-                (preset := getattr(input_subunit, "dabpreset", None))
-                and preset is not ynca.DabPreset.NO_PRESET
-            )
-            or (
-                (preset := getattr(input_subunit, "fmpreset", None))
-                and preset is not ynca.FmPreset.NO_PRESET
-            )
-        ):
-            extra["preset"] = preset
+        if input_subunit := self._get_input_subunit():
+            if isinstance(input_subunit, ynca.Tun):
+                if (
+                    input_subunit.searchmode is ynca.TunSearchMode.PRESET
+                    and input_subunit.preset is not ynca.Preset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.preset
+            elif isinstance(input_subunit, ynca.Dab):
+                if (
+                    input_subunit.band is ynca.BandDab.FM
+                    and input_subunit.fmsearchmode is ynca.DabFmSearchMode.PRESET
+                    and input_subunit.fmpreset is not ynca.FmPreset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.fmpreset
+                elif (
+                    input_subunit.band is ynca.BandDab.DAB
+                    and input_subunit.dabpreset is not ynca.DabPreset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.dabpreset
 
         return extra or None
 
