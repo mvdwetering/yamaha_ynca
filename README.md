@@ -39,7 +39,7 @@ For issues or feature requests please [submit an issue on GitHub](https://github
 The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
 Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
-It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol).
+It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol). [This repo](https://github.com/jebbgrenham/yamaha-YNC) has some templates/automations that might help with those older models.
 
 If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
 
