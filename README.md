@@ -109,6 +109,7 @@ The mediaplayer entity supports:
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist name, album name, song name (depends on source)
+* Exposes extra attribute with current preset when one is active
 
 #### Number
 
@@ -618,6 +619,8 @@ Presets can be activated and stored with the integration for sources that suppor
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
 Due to limitations on the protocol the integration can only show the preset number, no name or what is stored.
+
+For AM/FM/DAB tuner the current preset is available as an attribute on the `media_player` entity. The attribute will not be there if no preset is active, e.g. manual tuning.
 
 #### Manage presets
 
