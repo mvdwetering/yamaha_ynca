@@ -40,7 +40,7 @@ from .helpers import extract_protocol_version, scale
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:  # pragma: no cover
-    from collections.abc import Generator
+    from collections.abc import Generator, Mapping
 
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -231,6 +231,34 @@ class YamahaYncaZone(MediaPlayerEntity):
                 return MediaPlayerState.IDLE
 
         return MediaPlayerState.ON
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Return the extra attributes."""
+        extra = {}
+
+        # Add preset attribute
+        if input_subunit := self._get_input_subunit():
+            if isinstance(input_subunit, ynca.Tun):
+                if (
+                    input_subunit.searchmode is ynca.TunSearchMode.PRESET
+                    and input_subunit.preset is not ynca.Preset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.preset
+            elif isinstance(input_subunit, ynca.Dab):
+                if (
+                    input_subunit.band is ynca.BandDab.FM
+                    and input_subunit.fmsearchmode is ynca.DabFmSearchMode.PRESET
+                    and input_subunit.fmpreset is not ynca.FmPreset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.fmpreset
+                elif (
+                    input_subunit.band is ynca.BandDab.DAB
+                    and input_subunit.dabpreset is not ynca.DabPreset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.dabpreset
+
+        return extra or None
 
     @property
     def volume_level(self) -> float | None:
