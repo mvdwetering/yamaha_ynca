@@ -257,6 +257,12 @@ class YamahaYncaZone(MediaPlayerEntity):
                     and input_subunit.dabpreset is not ynca.DabPreset.NO_PRESET
                 ):
                     extra["preset"] = input_subunit.dabpreset
+            elif isinstance(input_subunit, ynca.Sirius):
+                if (
+                    input_subunit.searchmode is ynca.SiriusSearchMode.PRESET
+                    and input_subunit.preset is not ynca.Preset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.preset
 
         return extra or None
 
