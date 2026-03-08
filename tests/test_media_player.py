@@ -822,6 +822,33 @@ async def test_mediaplayer_extra_attributes_dab_preset(
     assert mp_entity.extra_state_attributes is None
 
 
+async def test_mediaplayer_extra_attributes_sirius_preset(
+    mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
+) -> None:
+
+    # SIRIUS satellite radio
+    mock_zone.inp = ynca.Input.SIRIUS
+    mock_ynca.sirius = create_autospec(ynca.subunits.sirius.Sirius)
+    mock_ynca.sirius.searchmode = ynca.SiriusSearchMode.PRESET
+
+    # Preset selected
+    mock_ynca.sirius.preset = 5
+    assert mp_entity.extra_state_attributes is not None
+    assert mp_entity.extra_state_attributes["preset"] == 5
+
+    # Not in preset search mode
+    mock_ynca.sirius.searchmode = ynca.SiriusSearchMode.ALL_CH
+    assert mp_entity.extra_state_attributes is None
+
+    mock_ynca.sirius.searchmode = ynca.SiriusSearchMode.CATEGORY
+    assert mp_entity.extra_state_attributes is None
+
+    # No preset available
+    mock_ynca.sirius.searchmode = ynca.SiriusSearchMode.PRESET
+    mock_ynca.sirius.preset = ynca.Preset.NO_PRESET
+    assert mp_entity.extra_state_attributes is None
+
+
 async def test_mediaplayer_media_position_duration(
     hass: HomeAssistant, mock_zone_main: Mock, mock_ynca: Mock
 ) -> None:
