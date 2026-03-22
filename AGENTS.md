@@ -174,7 +174,7 @@ Follow the [Home Assistant developer documentation](https://developers.home-assi
 
 ## Adding an Entity (Quick Reference)
 
-1. Ensure the `ynca` package supports the command and the version in `manifest.json` / `pyproject.toml` is updated (use `bump_ynca_version.sh`).
+1. Ensure the `ynca` package supports the command and the version in `manifest.json` / `pyproject.toml` is updated. Create a separate PR to bump the ynca version and use `bump_ynca_version.sh` for the bump.
 2. Add an `EntityDescription` entry to the appropriate `ZONE_ENTITY_DESCRIPTIONS` list in the relevant platform file (e.g., `switch.py`).
 3. Add a translation entry in `translations/en.json` under `entities/<platform>/<key>/name`.
 4. Add or update tests in `tests/test_<platform>.py`.
