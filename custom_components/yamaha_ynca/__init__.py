@@ -227,13 +227,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YamahaYncaConfigEntry) -
         LOGGER.info("%s disconnected", entry.title)
 
         # Reload the entry on disconnect.
-        # HA will take care of re-init and retries
-        # OperationNotAllowed => Can not reload during setup, which is fine, so just let it go
-        # UnknownEntry => Can happen when entry was removed while trying to connect and connection fails
-        with contextlib.suppress(OperationNotAllowed, UnknownEntry):  # pragma: no cover
-            asyncio.run_coroutine_threadsafe(
-                hass.config_entries.async_reload(entry.entry_id), hass.loop
-            ).result()
+        # HA will take care of re-init and retries with backoff
+        hass.add_job(hass.config_entries.async_schedule_reload, entry.entry_id)
 
     ynca_receiver = ynca.YncaApi(
         entry.data[CONF_SERIAL_URL],
