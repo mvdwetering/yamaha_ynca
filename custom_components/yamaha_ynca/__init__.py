@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-import asyncio
-import contextlib
 from functools import partial
 from importlib.metadata import version
 import re
 import threading
 from typing import TYPE_CHECKING
 
-from homeassistant.config_entries import ConfigEntry, OperationNotAllowed, UnknownEntry
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
