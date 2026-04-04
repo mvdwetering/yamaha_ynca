@@ -145,6 +145,7 @@ Following switch entities allow enable/disable of the related feature.
 * Extra Bass
 * HDMI Out
 * Party mode
+* Subwoofer (default disabled)
 * Surround:AI
 
 #### Remote
