@@ -51,7 +51,9 @@ class YamahaYncaSettingEntity:
         self._attr_device_info: DeviceInfo | None = DeviceInfo(
             identifiers={(DOMAIN, f"{receiver_unique_id}_{self._associated_zone.id}")}
         )
-        self._attr_translation_key: str | None = self.entity_description.key
+        self._attr_translation_key: str | None = (
+            self.entity_description.translation_key or self.entity_description.key
+        )
         self._attr_unique_id: str | None = (
             f"{self._receiver_unique_id_subunit_id}_{self.entity_description.key}"
         )

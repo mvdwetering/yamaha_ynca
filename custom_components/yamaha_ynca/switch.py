@@ -22,6 +22,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from ynca.subunit import SubunitBase
+    from ynca.subunits.system import System
     from ynca.subunits.zone import ZoneBase
 
     from . import YamahaYncaConfigEntry
@@ -170,6 +171,49 @@ SYS_ENTITY_DESCRIPTIONS = [
 ]
 
 
+def _get_subwoofer_descriptions(
+    sys_subunit: System,
+) -> list[YncaSwitchEntityDescription]:
+    has_two_patterns = sys_subunit.sppattern2swfr1cnfg is not None
+    has_two_subs = sys_subunit.sppattern1swfr2cnfg is not None
+
+    def _entity_description(
+        key: str, translation_key: str
+    ) -> YncaSwitchEntityDescription:
+        return YncaSwitchEntityDescription(
+            key=key,
+            translation_key=translation_key,
+            entity_category=EntityCategory.CONFIG,
+            entity_registry_enabled_default=False,
+            on=ynca.SpPatternSwfrCnfg.USE,
+            off=ynca.SpPatternSwfrCnfg.NONE,
+            associated_zone_attr="main",
+        )
+
+    if has_two_patterns and has_two_subs:
+        return [
+            _entity_description("sppattern1swfr1cnfg", "subwoofer_1_pattern_1"),
+            _entity_description("sppattern1swfr2cnfg", "subwoofer_2_pattern_1"),
+            _entity_description("sppattern2swfr1cnfg", "subwoofer_1_pattern_2"),
+            _entity_description("sppattern2swfr2cnfg", "subwoofer_2_pattern_2"),
+        ]
+    if has_two_patterns:
+        return [
+            _entity_description("sppattern1swfr1cnfg", "subwoofer_pattern_1"),
+            _entity_description("sppattern2swfr1cnfg", "subwoofer_pattern_2"),
+        ]
+    if has_two_subs:
+        return [
+            _entity_description("sppattern1swfr1cnfg", "subwoofer_1"),
+            _entity_description("sppattern1swfr2cnfg", "subwoofer_2"),
+        ]
+    if sys_subunit.sppattern1swfr1cnfg is not None:
+        return [
+            _entity_description("sppattern1swfr1cnfg", "subwoofer"),
+        ]
+    return []
+
+
 async def async_setup_entry(
     _hass: HomeAssistant,
     config_entry: YamahaYncaConfigEntry,
@@ -191,6 +235,9 @@ async def async_setup_entry(
             )
 
     # These are features on the SYS subunit, but they are tied to a zone
+    sys_descriptions = SYS_ENTITY_DESCRIPTIONS + _get_subwoofer_descriptions(
+        domain_entry_data.api.sys  # type: ignore[arg-type]
+    )
     entities.extend(
         [
             YamahaYncaSwitch(
@@ -199,7 +246,7 @@ async def async_setup_entry(
                 entity_description,
                 associated_zone=zone_subunit,
             )
-            for entity_description in SYS_ENTITY_DESCRIPTIONS
+            for entity_description in sys_descriptions
             if (
                 getattr(domain_entry_data.api.sys, entity_description.key, None)
                 is not None
