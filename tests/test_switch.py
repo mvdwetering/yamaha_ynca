@@ -11,7 +11,6 @@ from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.switch import (
     YamahaYncaSwitch,
     YncaSwitchEntityDescription,
-    _get_subwoofer_descriptions,
     async_setup_entry,
 )
 from tests.conftest import setup_integration
@@ -263,91 +262,22 @@ async def test_speaker_ab_switches_unavailable_when_zone_b_exists(
     assert speaker_b is None
 
 
-async def test_sppattern_swfr_not_supported(mock_ynca: Mock) -> None:
-    descriptions = _get_subwoofer_descriptions(mock_ynca.sys)
-    assert descriptions == []
-
-
-async def test_sppattern_swfr_entity_on_off(
-    mock_ynca: Mock, mock_zone_main: Mock
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_not_supported(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
 ) -> None:
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
 
-    descriptions = _get_subwoofer_descriptions(mock_ynca.sys)
-    assert len(descriptions) == 1
+    await setup_integration(hass, mock_ynca)
 
-    entity = YamahaYncaSwitch(
-        "ReceiverUniqueId", mock_ynca.sys, descriptions[0], mock_zone_main
-    )
-
-    assert entity.unique_id == "ReceiverUniqueId_SYS_sppattern1swfr1cnfg"
-
-    # Reading state
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
-    assert entity.is_on is True
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.NONE
-    assert entity.is_on is False
-
-    # Setting value
-    entity.turn_on()
-    assert mock_ynca.sys.sppattern1swfr1cnfg is ynca.SpPatternSwfrCnfg.USE
-    entity.turn_off()
-    assert mock_ynca.sys.sppattern1swfr1cnfg is ynca.SpPatternSwfrCnfg.NONE
-
-
-async def test_sppattern_swfr_single_pattern_single_sub(mock_ynca: Mock) -> None:
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
-
-    descriptions = _get_subwoofer_descriptions(mock_ynca.sys)
-    assert len(descriptions) == 1
-    assert descriptions[0].key == "sppattern1swfr1cnfg"
-    assert descriptions[0].translation_key == "subwoofer"
-
-
-async def test_sppattern_swfr_single_pattern_two_subs(mock_ynca: Mock) -> None:
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
-    mock_ynca.sys.sppattern1swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
-
-    descriptions = _get_subwoofer_descriptions(mock_ynca.sys)
-    assert len(descriptions) == 2
-    assert descriptions[0].key == "sppattern1swfr1cnfg"
-    assert descriptions[0].translation_key == "subwoofer_1"
-    assert descriptions[1].key == "sppattern1swfr2cnfg"
-    assert descriptions[1].translation_key == "subwoofer_2"
-
-
-async def test_sppattern_swfr_two_patterns_single_sub(mock_ynca: Mock) -> None:
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
-    mock_ynca.sys.sppattern2swfr1cnfg = ynca.SpPatternSwfrCnfg.NONE
-
-    descriptions = _get_subwoofer_descriptions(mock_ynca.sys)
-    assert len(descriptions) == 2
-    assert descriptions[0].key == "sppattern1swfr1cnfg"
-    assert descriptions[0].translation_key == "subwoofer_pattern_1"
-    assert descriptions[1].key == "sppattern2swfr1cnfg"
-    assert descriptions[1].translation_key == "subwoofer_pattern_2"
-
-
-async def test_sppattern_swfr_two_patterns_two_subs(mock_ynca: Mock) -> None:
-    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
-    mock_ynca.sys.sppattern1swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
-    mock_ynca.sys.sppattern2swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
-    mock_ynca.sys.sppattern2swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
-
-    descriptions = _get_subwoofer_descriptions(mock_ynca.sys)
-    assert len(descriptions) == 4
-    assert descriptions[0].key == "sppattern1swfr1cnfg"
-    assert descriptions[0].translation_key == "subwoofer_1_pattern_1"
-    assert descriptions[1].key == "sppattern1swfr2cnfg"
-    assert descriptions[1].translation_key == "subwoofer_2_pattern_1"
-    assert descriptions[2].key == "sppattern2swfr1cnfg"
-    assert descriptions[2].translation_key == "subwoofer_1_pattern_2"
-    assert descriptions[3].key == "sppattern2swfr2cnfg"
-    assert descriptions[3].translation_key == "subwoofer_2_pattern_2"
+    assert hass.states.get("switch.modelname_main_subwoofer") is None
 
 
 @pytest.mark.usefixtures("entity_registry_enabled_by_default")
-async def test_sppattern_swfr_integration(
+async def test_subwoofer_single_pattern_single_sub(
     hass: HomeAssistant,
     mock_ynca: Mock,
     mock_zone_main: Mock,
@@ -361,3 +291,74 @@ async def test_sppattern_swfr_integration(
     subwoofer = hass.states.get("switch.modelname_main_subwoofer")
     assert subwoofer is not None
     assert subwoofer.state == "on"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_single_pattern_two_subs(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern1swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer_1 = hass.states.get("switch.modelname_main_subwoofer_1")
+    assert subwoofer_1 is not None
+    assert subwoofer_1.state == "on"
+    subwoofer_2 = hass.states.get("switch.modelname_main_subwoofer_2")
+    assert subwoofer_2 is not None
+    assert subwoofer_2.state == "off"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_two_patterns_single_sub(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern2swfr1cnfg = ynca.SpPatternSwfrCnfg.NONE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer_p1 = hass.states.get("switch.modelname_main_subwoofer_pattern_1")
+    assert subwoofer_p1 is not None
+    assert subwoofer_p1.state == "on"
+    subwoofer_p2 = hass.states.get("switch.modelname_main_subwoofer_pattern_2")
+    assert subwoofer_p2 is not None
+    assert subwoofer_p2.state == "off"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_two_patterns_two_subs(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern1swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
+    mock_ynca.sys.sppattern2swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern2swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer_1_p1 = hass.states.get("switch.modelname_main_subwoofer_1_pattern_1")
+    assert subwoofer_1_p1 is not None
+    assert subwoofer_1_p1.state == "on"
+    subwoofer_2_p1 = hass.states.get("switch.modelname_main_subwoofer_2_pattern_1")
+    assert subwoofer_2_p1 is not None
+    assert subwoofer_2_p1.state == "off"
+    subwoofer_1_p2 = hass.states.get("switch.modelname_main_subwoofer_1_pattern_2")
+    assert subwoofer_1_p2 is not None
+    assert subwoofer_1_p2.state == "on"
+    subwoofer_2_p2 = hass.states.get("switch.modelname_main_subwoofer_2_pattern_2")
+    assert subwoofer_2_p2 is not None
+    assert subwoofer_2_p2.state == "off"
