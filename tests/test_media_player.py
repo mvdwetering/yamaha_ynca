@@ -659,6 +659,22 @@ async def test_mediaplayer_mediainfo(
     assert mp_entity.media_title == "Song title"
     assert mp_entity.media_content_type is MediaType.MUSIC
 
+    # Whitespace-only metadata is not exposed
+    mock_ynca.usb.album = "   "
+    mock_ynca.usb.artist = "   "
+    mock_ynca.usb.song = "   "
+    assert mp_entity.media_album_name is None
+    assert mp_entity.media_artist is None
+    assert mp_entity.media_title is None
+
+    # Metadata with leading/trailing whitespace is stripped
+    mock_ynca.usb.album = "  AlbumName  "
+    mock_ynca.usb.artist = "  ArtistName  "
+    mock_ynca.usb.song = "  Song title  "
+    assert mp_entity.media_album_name == "AlbumName"
+    assert mp_entity.media_artist == "ArtistName"
+    assert mp_entity.media_title == "Song title"
+
     # Spotify uses Track for song titles
     mock_zone.inp = ynca.Input.SPOTIFY
     mock_ynca.spotify = create_autospec(ynca.subunits.spotify.Spotify)
@@ -690,6 +706,14 @@ async def test_mediaplayer_mediainfo_internet_radio_inputs(
     assert mp_entity.media_channel == "StationName"
     assert mp_entity.media_album_name == "AlbumName"
     assert mp_entity.media_content_type is MediaType.CHANNEL
+
+    # Whitespace in channel/station metadata is stripped
+    mock_ynca.netradio.station = "  StationName  "
+    mock_ynca.netradio.song = "  SongName  "
+    mock_ynca.netradio.album = "  AlbumName  "
+    assert mp_entity.media_title == "SongName"
+    assert mp_entity.media_channel == "StationName"
+    assert mp_entity.media_album_name == "AlbumName"
 
     # Sirius subunits expose name by the "chname" attribute
     mock_zone.inp = ynca.Input.SIRIUS_IR
