@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 import contextlib
+from functools import wraps
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components import media_source
@@ -40,7 +42,7 @@ from .helpers import extract_protocol_version, scale
 from .input_helpers import InputHelper
 
 if TYPE_CHECKING:  # pragma: no cover
-    from collections.abc import Generator
+    from collections.abc import Generator, Mapping
 
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -51,6 +53,19 @@ if TYPE_CHECKING:  # pragma: no cover
 STRAIGHT = "Straight"
 
 SUPPORTED_MEDIA_ID_TYPES = ["dabpreset", "fmpreset", "preset"]
+
+
+def _trim_whitespace(
+    func: Callable[..., str | None],
+) -> Callable[..., str | None]:
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> str | None:
+        value = func(*args, **kwargs)
+        if value and (stripped := value.strip()):
+            return stripped
+        return None
+
+    return wrapper
 
 
 async def async_setup_entry(
@@ -231,6 +246,39 @@ class YamahaYncaZone(MediaPlayerEntity):
                 return MediaPlayerState.IDLE
 
         return MediaPlayerState.ON
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Return the extra attributes."""
+        extra = {}
+
+        # Add preset attribute
+        if input_subunit := self._get_input_subunit():
+            if isinstance(input_subunit, ynca.Tun):
+                if (
+                    input_subunit.searchmode is ynca.TunSearchMode.PRESET
+                    and input_subunit.preset is not ynca.Preset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.preset
+            elif isinstance(input_subunit, ynca.Dab):
+                if (
+                    input_subunit.band is ynca.BandDab.FM
+                    and input_subunit.fmsearchmode is ynca.DabFmSearchMode.PRESET
+                    and input_subunit.fmpreset is not ynca.FmPreset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.fmpreset
+                elif (
+                    input_subunit.band is ynca.BandDab.DAB
+                    and input_subunit.dabpreset is not ynca.DabPreset.NO_PRESET
+                ):
+                    extra["preset"] = input_subunit.dabpreset
+            elif isinstance(input_subunit, ynca.Sirius) and (
+                input_subunit.searchmode is ynca.SiriusSearchMode.PRESET
+                and input_subunit.preset is not ynca.Preset.NO_PRESET
+            ):
+                extra["preset"] = input_subunit.preset
+
+        return extra or None
 
     @property
     def volume_level(self) -> float | None:
@@ -507,6 +555,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
+    @_trim_whitespace
     def media_title(self) -> str | None:
         """Title of current playing media."""
         if subunit := self._get_input_subunit():
@@ -522,6 +571,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
+    @_trim_whitespace
     def media_artist(self) -> str | None:
         """Artist of current playing media, music track only."""
         if (subunit := self._get_input_subunit()) and (
@@ -531,6 +581,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
+    @_trim_whitespace
     def media_album_name(self) -> str | None:
         """Album name of current playing media, music track only."""
         if (subunit := self._get_input_subunit()) and (
@@ -540,6 +591,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
+    @_trim_whitespace
     def media_channel(self) -> str | None:  # noqa: PLR0911
         """Channel currently playing."""
         subunit = self._get_input_subunit()

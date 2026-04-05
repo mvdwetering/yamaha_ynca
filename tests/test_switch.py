@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 from homeassistant.helpers.entity import EntityCategory
+import pytest
 
 from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.switch import (
@@ -259,3 +260,105 @@ async def test_speaker_ab_switches_unavailable_when_zone_b_exists(
     assert speaker_a is None
     speaker_b = hass.states.get("switch.modelname_main_zone_b_speakers")
     assert speaker_b is None
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_not_supported(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+
+    await setup_integration(hass, mock_ynca)
+
+    assert hass.states.get("switch.modelname_main_subwoofer") is None
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_single_pattern_single_sub(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer = hass.states.get("switch.modelname_main_subwoofer")
+    assert subwoofer is not None
+    assert subwoofer.state == "on"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_single_pattern_two_subs(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern1swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer_1 = hass.states.get("switch.modelname_main_subwoofer_1")
+    assert subwoofer_1 is not None
+    assert subwoofer_1.state == "on"
+    subwoofer_2 = hass.states.get("switch.modelname_main_subwoofer_2")
+    assert subwoofer_2 is not None
+    assert subwoofer_2.state == "off"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_two_patterns_single_sub(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern2swfr1cnfg = ynca.SpPatternSwfrCnfg.NONE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer_p1 = hass.states.get("switch.modelname_main_subwoofer_pattern_1")
+    assert subwoofer_p1 is not None
+    assert subwoofer_p1.state == "on"
+    subwoofer_p2 = hass.states.get("switch.modelname_main_subwoofer_pattern_2")
+    assert subwoofer_p2 is not None
+    assert subwoofer_p2.state == "off"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
+async def test_subwoofer_two_patterns_two_subs(
+    hass: HomeAssistant,
+    mock_ynca: Mock,
+    mock_zone_main: Mock,
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.ON
+    mock_ynca.sys.sppattern1swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern1swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
+    mock_ynca.sys.sppattern2swfr1cnfg = ynca.SpPatternSwfrCnfg.USE
+    mock_ynca.sys.sppattern2swfr2cnfg = ynca.SpPatternSwfrCnfg.NONE
+
+    await setup_integration(hass, mock_ynca)
+
+    subwoofer_1_p1 = hass.states.get("switch.modelname_main_subwoofer_1_pattern_1")
+    assert subwoofer_1_p1 is not None
+    assert subwoofer_1_p1.state == "on"
+    subwoofer_2_p1 = hass.states.get("switch.modelname_main_subwoofer_2_pattern_1")
+    assert subwoofer_2_p1 is not None
+    assert subwoofer_2_p1.state == "off"
+    subwoofer_1_p2 = hass.states.get("switch.modelname_main_subwoofer_1_pattern_2")
+    assert subwoofer_1_p2 is not None
+    assert subwoofer_1_p2.state == "on"
+    subwoofer_2_p2 = hass.states.get("switch.modelname_main_subwoofer_2_pattern_2")
+    assert subwoofer_2_p2 is not None
+    assert subwoofer_2_p2.state == "off"

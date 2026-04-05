@@ -279,6 +279,7 @@ async def test_reload_on_disconnect(
     await hass.async_block_till_done()
 
     assert len(async_reload_mock.mock_calls) == 1
+    assert async_reload_mock.call_args.args[0] == integration.entry.entry_id
 
 
 async def test_update_configentry(

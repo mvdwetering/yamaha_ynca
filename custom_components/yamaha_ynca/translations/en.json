@@ -25,7 +25,7 @@
       },
       "advanced": {
         "title": "PySerial URL handler (advanced)",
-        "description": "Provide any [URL handler as supported by PySerial](https://pyserial.readthedocs.io/en/latest/url_handlers.html).\n\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `rfc2217://hostname_or_ip` to connect through an rfc2217 compatible server.",
+        "description": "Provide any [URL handler as supported by PySerial]({pyserial_url_handlers_link}).\n\nThis can come in handy when addressing USB adapters by serial with `hwgrep://` or use `rfc2217://hostname_or_ip` to connect through an rfc2217 compatible server.",
         "data": {
           "serial_url": "URL handler"
         }
@@ -162,6 +162,33 @@
       },
       "speakerb": {
         "name": "Zone B speakers"
+      },
+      "subwoofer": {
+        "name": "Subwoofer"
+      },
+      "subwoofer_1": {
+        "name": "Subwoofer 1"
+      },
+      "subwoofer_1_pattern_1": {
+        "name": "Subwoofer 1 (pattern 1)"
+      },
+      "subwoofer_1_pattern_2": {
+        "name": "Subwoofer 1 (pattern 2)"
+      },
+      "subwoofer_2": {
+        "name": "Subwoofer 2"
+      },
+      "subwoofer_2_pattern_1": {
+        "name": "Subwoofer 2 (pattern 1)"
+      },
+      "subwoofer_2_pattern_2": {
+        "name": "Subwoofer 2 (pattern 2)"
+      },
+      "subwoofer_pattern_1": {
+        "name": "Subwoofer (pattern 1)"
+      },
+      "subwoofer_pattern_2": {
+        "name": "Subwoofer (pattern 2)"
       },
       "surroundai": {
         "name": "Surround:AI"

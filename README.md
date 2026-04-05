@@ -36,11 +36,10 @@ For issues or feature requests please [submit an issue on GitHub](https://github
 
 ## Working models
 
-Yamaha does not mention in the manuals if a model supports the YNCA protocol that this integration uses. The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
-
-It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol).
+The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
 Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
+It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol). [This repo](https://github.com/jebbgrenham/yamaha-YNC) has some templates/automations that might help with those older models.
 
 If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
 
@@ -64,7 +63,7 @@ If your receiver works but is not in the list, please post a message in the [dis
 | 2015 | AVENTAGE | RX-AS710D, RX-A750, RX-A850, RX-A2050, RX-A3050 |
 | | RX-V | RX-V679 |
 | | Other | CX-A5100, RX-S601D |
-| 2016 | AVENTAGE | RX-A660 |
+| 2016 | AVENTAGE | RX-A660, RX-A1060 |
 | | RX-V | RX-V481D, RX-V581, RX-V681 |
 | | TSR | TSR-7810 |
 | | Other | WXC-50 |
@@ -110,6 +109,7 @@ The mediaplayer entity supports:
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist name, album name, song name (depends on source)
+* Exposes extra attribute with current preset when one is active
 
 #### Number
 
@@ -145,6 +145,7 @@ Following switch entities allow enable/disable of the related feature.
 * Extra Bass
 * HDMI Out
 * Party mode
+* Subwoofer (default disabled)
 * Surround:AI
 
 #### Remote
@@ -619,6 +620,8 @@ Presets can be activated and stored with the integration for sources that suppor
 Presets can be selected in the mediabrowser of the mediaplayer or in automations with the `media_player.play_media` action. When selecting a preset, the receiver will turn on and switch input if needed.
 
 Due to limitations on the protocol the integration can only show the preset number, no name or what is stored.
+
+For AM/FM/DAB tuner the current preset is available as an attribute on the `media_player` entity. The attribute will not be there if no preset is active, e.g. manual tuning.
 
 #### Manage presets
 
