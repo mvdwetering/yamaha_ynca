@@ -239,33 +239,32 @@ async def async_setup_entry(
                 ]
             )
 
-    # These are features on the SYS subunit, but they are tied to a zone
-    sys_descriptions = SYS_ENTITY_DESCRIPTIONS + _get_subwoofer_descriptions(
-        domain_entry_data.api.sys  # type: ignore[arg-type]
-    )
-    entities.extend(
-        [
-            YamahaYncaSwitch(
-                config_entry.entry_id,
-                domain_entry_data.api.sys,  # type: ignore[arg-type]
-                entity_description,
-                associated_zone=zone_subunit,
-            )
-            for entity_description in sys_descriptions
-            if (
-                getattr(domain_entry_data.api.sys, entity_description.key, None)
-                is not None
-            )
-            and entity_description.associated_zone_attr
-            and (
-                zone_subunit := getattr(
-                    domain_entry_data.api,
-                    entity_description.associated_zone_attr,
-                    None,
+    if sys_subunit := domain_entry_data.api.sys:
+        # These are features on the SYS subunit, but they are tied to a zone
+        # and therefore need some special handling
+        sys_descriptions = SYS_ENTITY_DESCRIPTIONS + _get_subwoofer_descriptions(
+            sys_subunit
+        )
+        entities.extend(
+            [
+                YamahaYncaSwitch(
+                    config_entry.entry_id,
+                    sys_subunit,
+                    entity_description,
+                    associated_zone=zone_subunit,
                 )
-            )
-        ]
-    )
+                for entity_description in sys_descriptions
+                if (getattr(sys_subunit, entity_description.key, None) is not None)
+                and entity_description.associated_zone_attr
+                and (
+                    zone_subunit := getattr(
+                        domain_entry_data.api,
+                        entity_description.associated_zone_attr,
+                        None,
+                    )
+                )
+            ]
+        )
 
     async_add_entities(entities)
 
