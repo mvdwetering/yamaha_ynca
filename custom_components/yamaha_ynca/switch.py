@@ -174,6 +174,11 @@ SYS_ENTITY_DESCRIPTIONS = [
 def _get_subwoofer_descriptions(
     sys_subunit: System,
 ) -> list[YncaSwitchEntityDescription]:
+    """Return subwoofer pattern switch descriptions based on the capabilities of the device.
+
+    To keep the translations simple, so no "Subwoofer 1 (pattern 1)" if your receiver has only 1, this function
+    builds entitiy descriptions for each of the specific cases.
+    """
     has_two_patterns = sys_subunit.sppattern2swfr1cnfg is not None
     has_two_subs = sys_subunit.sppattern1swfr2cnfg is not None
 
