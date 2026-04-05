@@ -109,7 +109,7 @@ The mediaplayer entity supports:
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist name, album name, song name (depends on source)
-* Exposes extra attribute with current preset when one is active
+* Exposes extra attribute "preset" when one is active
 
 #### Number
 
