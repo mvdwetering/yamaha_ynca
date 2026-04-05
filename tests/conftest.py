@@ -198,6 +198,10 @@ def mock_ynca() -> Mock:
     mock_ynca.sys.hdmiout3 = None
     mock_ynca.sys.party = None
     mock_ynca.sys.sppattern = None
+    mock_ynca.sys.sppattern1swfr1cnfg = None
+    mock_ynca.sys.sppattern1swfr2cnfg = None
+    mock_ynca.sys.sppattern2swfr1cnfg = None
+    mock_ynca.sys.sppattern2swfr2cnfg = None
 
     for attribute in dir(mock_ynca.sys):
         if attribute.startswith("inpname"):
