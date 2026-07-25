@@ -41,7 +41,7 @@ TEST_ENTITY_DESCRIPTION_SYS_PWR = YncaSwitchEntityDescription(
     on=ynca.Pwr.ON,
     off=ynca.Pwr.STANDBY,
     associated_zone_attr="main",
-    availability_check=lambda _subunit, _associated_zone: True,
+    availability_check=lambda: True,
 )
 
 TEST_ENTITY_DESCRIPTION_DIRMODE = YncaSwitchEntityDescription(
