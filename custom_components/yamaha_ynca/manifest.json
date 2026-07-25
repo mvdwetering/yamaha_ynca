@@ -7,6 +7,7 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/mvdwetering/yamaha_ynca",
+  "integration_type": "device",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/mvdwetering/yamaha_ynca/issues",
   "loggers": [
@@ -15,5 +16,5 @@
   "requirements": [
     "ynca==6.2.0"
   ],
-  "version": "9.5.0"
+  "version": "9.6.0"
 }

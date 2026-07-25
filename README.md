@@ -32,14 +32,14 @@ Yamaha (YNCA) is a custom integration for Home Assistant to support [Yamaha AV r
 
 This integration can be used to control your receiver in automations. E.g. to turn on/off other equipment when the receiver turns on/off or to set specific sound modes depending on the content that is playing (content details need to be provided by other integrations).
 
-For issues or feature requests please [submit an issue on GitHub](https://github.com/mvdwetering/yamaha_ynca/issues)
+To report bugs or request features please [submit an issue on GitHub](https://github.com/mvdwetering/yamaha_ynca/issues)
 
 ## Working models
 
 The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
 Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
-It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration (it uses a different protocol). [This repo](https://github.com/jebbgrenham/yamaha-YNC) has some templates/automations that might help with those older models.
+It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration as it uses a different protocol. [This repo](https://github.com/jebbgrenham/yamaha-YNC) has some templates/automations that might help with those older models.
 
 If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
 
@@ -99,7 +99,7 @@ The mediaplayer entity supports:
 * Mute/Unmute
 * Volume control (there is a separate [number entity with Volume in dB](#volume-db-entity) if you prefer the dB unit)
 * Source selection
-  * Source names are taken from the receiver if possible (only on older models)
+  * Source names are taken from the receiver if possible (works only on older models)
   * External inputs:
     AUDIO, AUDIO1-AUDIO5, AV1-AV7, CD, COAXIAL1-COAXIAL2, DOCK, HDMI1-HDMI7, LINE1-LINE3, MULTI CH, OPTICAL1-OPTICAL2, PHONO, TV, USB, V-AUX
   * Media sources:
@@ -109,7 +109,7 @@ The mediaplayer entity supports:
 * Soundmode selection
 * Control playback state (depends on source)
 * Provide metadata like artist name, album name, song name (depends on source)
-* Exposes extra attribute with current preset when one is active
+* Exposes extra attribute "preset" when one is active
 
 #### Number
 
@@ -132,13 +132,14 @@ The mediaplayer entity supports:
 
 * Source (default disabled)
 
-The normal way to automate on the source of the receiver is through the `source` attribute on the `media_player` entity. But the source on the Main zone can also be changed with the remote control even when the receiver is Off. This is useful when you sometimes use audio from the TV and from the receiver at other times. Home Assistant hides the `source` attribute on the `media_player` entity when the receiver Off, so it can't be used in automations. This sensor is added for the specific use-case of automating on source changes when the receiver is Off.
+The standard way to automate on the source of the receiver is through the `source` attribute on the `media_player` entity. But the source on the Main zone can also be changed with the remote control even when the receiver is Off. This is useful when you sometimes use audio from the TV and from the receiver at other times. Home Assistant hides the `source` attribute on the `media_player` entity when the receiver Off, so it can't be used in automations. This sensor is added for the specific use-case of automating on source changes when the receiver is Off.
 
 #### Switch
 
 Following switch entities allow enable/disable of the related feature.
 
 * Adaptive DRC
+* All zones power
 * CINEMA DSP 3D mode
 * Compressed Music Enhancer
 * Direct / Pure Direct
@@ -603,14 +604,14 @@ cards:
 
 ### Volume (dB) entity
 
-The "Volume (dB)" entity was added to simplify volume control in Home Assistant. It is a number entity that controls the volume of a zone, like the volume in the media_player, but using the familiar dB unit instead of the percent numbers.
+The "Volume (dB)" entity was added to simplify volume control in Home Assistant. It is a number entity that controls the volume of a zone, like the volume in the media_player, but using the familiar dB unit as shown on the receiver instead of the percent numbers.
 
 <details>
 <summary>
 Background
 </summary>
 
-The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the full volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
+The volume of a `media_player` entity in Home Assistant has to be in the range 0-to-1 (shown as 0-100% in the dashboard). The range of a Yamaha receiver is typically -80.5dB to 16.5dB and is shown in the dB unit on the display/overlay. To provide the  volume range to Home Assistant this integration maps the full dB range onto the 0-to-1 range in Home Assistant. However, this makes controlling volume in Home Assistant difficult because the Home Assistant numbers are not easily convertible to the dB numbers as shown by the receiver.
 </details>
 
 ### Presets
@@ -621,7 +622,7 @@ Presets can be selected in the mediabrowser of the mediaplayer or in automations
 
 Due to limitations on the protocol the integration can only show the preset number, no name or what is stored.
 
-For AM/FM/DAB tuner the current preset is available as an attribute on the `media_player` entity. The attribute will not be there if no preset is active, e.g. manual tuning.
+For AM/FM/DAB tuner the current preset is available as an attribute on the `media_player` entity. The attribute will not be there if no preset is active, e.g. after manual tuning.
 
 #### Manage presets
 
@@ -655,7 +656,7 @@ The receiver pushes updates directly to Home Assistant so entity states will upd
 
 The receiver can only accept 1 connection for the YNCA protocol that this integration uses. This means that is not possible to connect to the same receiver from multiple Home Assistant instances at the same time.
 
-It is possible to have multiple Yamaha (YCNA) instances connecting to multiple different receivers in a single Home Assistant instance. The limitation is on the receiver side.
+It is possible to have multiple Yamaha (YNCA) integration instances connecting to multiple different receivers in a single Home Assistant instance. The limitation is on the receiver side.
 
 It is also still possible to use other protocols to control the receiver. For example the Yamaha AV Control App will still work at same time as this integration is active.
 

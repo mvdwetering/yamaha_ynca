@@ -151,6 +151,9 @@
       "hdmiout2": {
         "name": "HDMI Out 2"
       },
+      "all_zones_power": {
+        "name": "All zones power"
+      },
       "party": {
         "name": "Party mode"
       },
