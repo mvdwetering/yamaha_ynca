@@ -38,7 +38,7 @@ To report bugs or request features please [submit an issue on GitHub](https://gi
 
 The table of working models below is based on reports from users and info found on the internet. Model years were taken from the [Yamaha AVR model history page](https://kane.site44.com/Yamaha/Yamaha_AVR_model_history.html).
 
-Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed. Just give it a try.
+Based on this information, receivers in the mentioned series from 2010 onwards are likely to work. So even if your model is not listed, just give it a try.
 It has been confirmed that older receivers like the RX-V3900 from 2009 do _not_ work with this integration as it uses a different protocol. [This repo](https://github.com/jebbgrenham/yamaha-YNC) has some templates/automations that might help with those older models.
 
 If your receiver works but is not in the list, please post a message in the [discussions](https://github.com/mvdwetering/yamaha_ynca/discussions) so it can be added.
@@ -656,7 +656,7 @@ The receiver pushes updates directly to Home Assistant so entity states will upd
 
 The receiver can only accept 1 connection for the YNCA protocol that this integration uses. This means that is not possible to connect to the same receiver from multiple Home Assistant instances at the same time.
 
-It is possible to have multiple Yamaha (YCNA) integration instances connecting to multiple different receivers in a single Home Assistant instance. The limitation is on the receiver side.
+It is possible to have multiple Yamaha (YNCA) integration instances connecting to multiple different receivers in a single Home Assistant instance. The limitation is on the receiver side.
 
 It is also still possible to use other protocols to control the receiver. For example the Yamaha AV Control App will still work at same time as this integration is active.
 
