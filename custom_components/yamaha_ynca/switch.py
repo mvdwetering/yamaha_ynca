@@ -49,6 +49,8 @@ class YncaSwitchEntityDescription(SwitchEntityDescription):
     Callable to check support for this entity on the zone, default checks if attribute `key` is not None.
     This _only_ works for Zone entities, not SYS.
     """
+    availability_check: Callable[[], bool] | None = None
+    """Optional availability override."""
 
     def is_supported(self, zone_subunit: ZoneBase) -> bool:
         return self.supported_check(self, zone_subunit)
@@ -167,6 +169,15 @@ SYS_ENTITY_DESCRIPTIONS = [
         on=ynca.Party.ON,
         off=ynca.Party.OFF,
         associated_zone_attr="main",
+    ),
+    YncaSwitchEntityDescription(
+        key="pwr",
+        translation_key="all_zones_power",
+        icon="mdi:power",
+        on=ynca.Pwr.ON,
+        off=ynca.Pwr.STANDBY,
+        associated_zone_attr="main",
+        availability_check=lambda: True,
     ),
 ]
 
@@ -291,6 +302,12 @@ class YamahaYncaSwitch(YamahaYncaSettingEntity, SwitchEntity):  # type: ignore[m
             getattr(self._subunit, self.entity_description.key, None)
             == self.entity_description.on
         )
+
+    @property
+    def available(self) -> bool:
+        if self.entity_description.availability_check:
+            return self.entity_description.availability_check()
+        return super().available
 
     def turn_on(self, **_kwargs: Any) -> None:
         """Turn the entity on."""

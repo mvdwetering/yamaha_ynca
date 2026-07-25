@@ -35,6 +35,15 @@ TEST_ENTITY_DESCRIPTION_ASSOCIATED_ZONE = YncaSwitchEntityDescription(
     associated_zone_attr="main",
 )
 
+TEST_ENTITY_DESCRIPTION_SYS_PWR = YncaSwitchEntityDescription(
+    key="pwr",
+    name="Name",
+    on=ynca.Pwr.ON,
+    off=ynca.Pwr.STANDBY,
+    associated_zone_attr="main",
+    availability_check=lambda _subunit, _associated_zone: True,
+)
+
 TEST_ENTITY_DESCRIPTION_DIRMODE = YncaSwitchEntityDescription(
     key="dirmode",
     entity_category=EntityCategory.CONFIG,
@@ -85,7 +94,7 @@ async def test_async_setup_entry(
 
     add_entities_mock.assert_called_once()
     entities = add_entities_mock.call_args.args[0]
-    assert len(entities) == 13
+    assert len(entities) == 14
 
 
 async def test_switch_entity_fields(mock_zone: Mock) -> None:
@@ -135,6 +144,48 @@ async def test_switch_associated_zone_handling(
     assert entity.is_on is True
     mock_sys.hdmiout1 = ynca.HdmiOutOnOff.OFF
     assert entity.is_on is False
+
+    # Default availability behavior depends on associated zone power
+    mock_main.pwr = ynca.Pwr.ON
+    assert entity.available is True
+    mock_main.pwr = ynca.Pwr.STANDBY
+    assert entity.available is False
+
+
+async def test_sys_power_switch_stays_available_when_main_standby(
+    mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
+    mock_sys = mock_ynca.sys
+    mock_main = mock_zone_main
+    mock_main.pwr = ynca.Pwr.STANDBY
+    mock_sys.pwr = ynca.Pwr.STANDBY
+
+    entity = YamahaYncaSwitch(
+        "ReceiverUniqueId", mock_sys, TEST_ENTITY_DESCRIPTION_SYS_PWR, mock_main
+    )
+
+    assert entity.available is True
+    assert entity.is_on is False
+
+    entity.turn_on()
+    assert mock_sys.pwr is ynca.Pwr.ON
+
+    entity.turn_off()
+    assert mock_sys.pwr is ynca.Pwr.STANDBY
+
+
+async def test_sys_power_switch_state_not_unavailable_when_main_standby(
+    hass: HomeAssistant, mock_ynca: Mock, mock_zone_main: Mock
+) -> None:
+    mock_ynca.main = mock_zone_main
+    mock_ynca.main.pwr = ynca.Pwr.STANDBY
+    mock_ynca.sys.pwr = ynca.Pwr.STANDBY
+
+    await setup_integration(hass, mock_ynca)
+
+    all_zones_power = hass.states.get("switch.modelname_main_all_zones_power")
+    assert all_zones_power is not None
+    assert all_zones_power.state == "off"
 
 
 async def test_hdmiout_not_supported_at_all(

@@ -139,6 +139,7 @@ The normal way to automate on the source of the receiver is through the `source`
 Following switch entities allow enable/disable of the related feature.
 
 * Adaptive DRC
+* All zones power
 * CINEMA DSP 3D mode
 * Compressed Music Enhancer
 * Direct / Pure Direct
