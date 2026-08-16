@@ -55,7 +55,7 @@ STRAIGHT = "Straight"
 SUPPORTED_MEDIA_ID_TYPES = ["dabpreset", "fmpreset", "preset"]
 
 
-def _trim_whitespace(
+def trim_whitespace(
     func: Callable[..., str | None],
 ) -> Callable[..., str | None]:
     @wraps(func)
@@ -560,7 +560,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
-    @_trim_whitespace
+    @trim_whitespace
     def media_title(self) -> str | None:
         """Title of current playing media."""
         if subunit := self._get_input_subunit():
@@ -584,7 +584,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
-    @_trim_whitespace
+    @trim_whitespace
     def media_artist(self) -> str | None:
         """Artist of current playing media, music track only."""
         if (subunit := self._get_input_subunit()) and (
@@ -594,7 +594,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
-    @_trim_whitespace
+    @trim_whitespace
     def media_album_name(self) -> str | None:
         """Album name of current playing media, music track only."""
         if (subunit := self._get_input_subunit()) and (
@@ -604,7 +604,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         return None
 
     @property
-    @_trim_whitespace
+    @trim_whitespace
     def media_channel(self) -> str | None:  # noqa: PLR0911
         """Channel currently playing."""
         subunit = self._get_input_subunit()
