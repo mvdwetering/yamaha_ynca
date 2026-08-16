@@ -725,61 +725,97 @@ async def test_mediaplayer_mediainfo_internet_radio_inputs(
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
 
-async def test_mediaplayer_mediainfo_terrestrial_radio_inputs(
+async def test_mediaplayer_mediainfo_terrestrial_radio_inputs_am(
+    mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
+) -> None:
+    mock_zone.inp = ynca.Input.TUNER
+    mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
+    mock_ynca.tun.preset = None
+    mock_ynca.tun.band = ynca.BandTun.AM
+    mock_ynca.tun.amfreq = 1234
+
+    # AM has no station name, it is built from band and frequency
+    assert mp_entity.media_title is None
+    assert mp_entity.media_channel == "AM 1234 kHz"
+    # Tuner (AM/FM analog radio) is a "channel"
+    assert mp_entity.media_content_type is MediaType.CHANNEL
+
+
+async def test_mediaplayer_mediainfo_terrestrial_radio_inputs_fm(
     mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
 ) -> None:
     # Tuner (AM/FM analog radio) is a "channel"
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.tun = create_autospec(ynca.subunits.tun.Tun)
-
-    # AM has no station name, so name is built from band and frequency
-    mock_ynca.tun.preset = None
-    mock_ynca.tun.band = ynca.BandTun.AM
-    mock_ynca.tun.amfreq = 1234
-    assert mp_entity.media_title is None
-    assert mp_entity.media_channel == "AM 1234 kHz"
-    assert mp_entity.media_content_type is MediaType.CHANNEL
-
-    # FM can have name from RDS info or falls back to band and frequency
     mock_ynca.tun.preset = None
     mock_ynca.tun.band = ynca.BandTun.FM
     mock_ynca.tun.fmfreq = 123.45
     mock_ynca.tun.rdsprgservice = None
-    assert mp_entity.media_title is None
+    mock_ynca.tun.rdstxta = None
+    mock_ynca.tun.rdstxtb = None
+
+    # Channel name uses band and frequency when no RDS program name
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
+    # Channel name taken from RDS program name when available
     mock_ynca.tun.rdsprgservice = "RDS PRG SERVICE"
-    assert mp_entity.media_title is None
     assert mp_entity.media_channel == "RDS PRG SERVICE"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
+    # No RDS text, no title
+    assert mp_entity.media_title is None
+
+    # Empty RDS text, no title
+    mock_ynca.tun.rdstxta = ""
+    mock_ynca.tun.rdstxtb = ""
+
+    # Title taken from RDS text when available
+    mock_ynca.tun.rdstxta = "RDS TXT A"
+    mock_ynca.tun.rdstxtb = "RDS TXT B"
+    assert mp_entity.media_title == "RDS TXT A"
+
+    # Title taken from last updated RDS text (now B)
+    mock_ynca.tun.rdstxtb = "RDS TXT B Updated"
+    mp_entity.schedule_update_ha_state = Mock()
+    mp_entity.update_subunit_callback(mock_ynca.tun, "RDSTXTB", "RDS TXT B Updated")
+    assert mp_entity.media_title == "RDS TXT B Updated"
+
+    # Title taken from last updated RDS text (now A)
+    mock_ynca.tun.rdstxta = "RDS TXT A Updated"
+    mp_entity.update_subunit_callback(mock_ynca.tun, "RDSTXTA", "RDS TXT A Updated")
+    assert mp_entity.media_title == "RDS TXT A Updated"
+
+
+async def test_mediaplayer_mediainfo_terrestrial_radio_inputs_dab(
+    mp_entity: YamahaYncaZone, mock_zone: Mock, mock_ynca: Mock
+) -> None:
     # Tuner (DAB/FM radio) is a "channel"
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.dab = create_autospec(ynca.subunits.dab.Dab)
-    mock_ynca.tun = None  # Unit has either tun or dab, not both
-
-    # DAB FM can have name from RDS info or falls back to band and frequency
     mock_ynca.dab.band = ynca.BandDab.FM
     mock_ynca.dab.fmfreq = 123.45
     mock_ynca.dab.fmrdsprgservice = None
     mock_ynca.dab.fmpreset = None
+    mock_ynca.dab.fmrdstxt = None
+
+    # DAB FM uses band and frequency when no RDS program name
     assert mp_entity.media_title is None
     assert mp_entity.media_channel == "FM 123.45 MHz"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
-    mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
-    assert mp_entity.media_channel == "FM 123.45 MHz"
-
+    # DAB FM uses RDS program name when available for channel
+    # RDS Text when available for title
+    mock_ynca.dab.fmrdstxt = "FM RDS TXT"
     mock_ynca.dab.fmrdsprgservice = "FM RDS PRG SERVICE"
-    assert mp_entity.media_title is None
+    assert mp_entity.media_title == "FM RDS TXT"
     assert mp_entity.media_channel == "FM RDS PRG SERVICE"
     assert mp_entity.media_content_type is MediaType.CHANNEL
 
-    # DAB (digital) gets name from servicelabel
+    # DAB (digital) gets title and name from servicelabels
     mock_ynca.dab.band = ynca.BandDab.DAB
-    mock_ynca.dab.dabservicelabel = "DAB SERVICE LABEL"
     mock_ynca.dab.dabdlslabel = "DAB DLS LABEL"
+    mock_ynca.dab.dabservicelabel = "DAB SERVICE LABEL"
     assert mp_entity.media_title == "DAB DLS LABEL"
     assert mp_entity.media_channel == "DAB SERVICE LABEL"
     assert mp_entity.media_content_type is MediaType.CHANNEL
@@ -1045,7 +1081,7 @@ async def test_mediaplayer_entity_play_media_unsupported_media(
             "media_type", f"tun:preset:{MAX_PRESET_ID + 1}"
         )
 
-    # Invalid input not handles and does not change state
+    # Invalid input not handled and does not change state
     mock_zone.pwr = ynca.Pwr.STANDBY
     mock_zone.inp = ynca.Input.USB
     with pytest.raises(HomeAssistantError):
