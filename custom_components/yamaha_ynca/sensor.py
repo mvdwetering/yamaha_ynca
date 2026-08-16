@@ -54,12 +54,8 @@ def source_value_converter(
     api: ynca.YncaApi, options: list[str], value: ynca.Input
 ) -> str | None:
     """Convert the raw value to a string for the sensor state."""
-    if value is not None:
-        input_name = InputHelper.get_name_of_input(api, value)
-        if input_name in options:
-            return input_name
-
-    return None
+    input_name = InputHelper.get_name_of_input(api, value)
+    return input_name if input_name in options else None
 
 
 def get_selected_inputs(
