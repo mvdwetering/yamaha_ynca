@@ -221,6 +221,7 @@ def create_mock_config_entry(
     zones: list[str] | None = None,
     serial_url: str | None = None,
     ynca: Mock | None = None,
+    options: dict[str, Any] | None = None,
 ) -> MockConfigEntry:
     mock_config_entry = MockConfigEntry(
         version=7,
@@ -233,7 +234,9 @@ def create_mock_config_entry(
             yamaha_ynca.const.DATA_MODELNAME: modelname or "ModelName",
             yamaha_ynca.const.DATA_ZONES: zones or [],
         },
+        options=options,
     )
+
     if ynca:
         mock_config_entry.runtime_data = Mock()
         mock_config_entry.runtime_data.api = ynca
@@ -258,6 +261,7 @@ async def setup_integration(
     mock_ynca: ynca.YncaApi,
     skip_setup: bool = False,  # noqa: FBT001, FBT002
     serial_url: str = "SerialUrl",
+    options: dict[str, Any] | None = None,
 ) -> Integration:
     zones = []
     if mock_ynca.main:
@@ -270,7 +274,10 @@ async def setup_integration(
         zones.append("ZONE4")
 
     entry = create_mock_config_entry(
-        modelname=mock_ynca.sys.modelname, zones=zones, serial_url=serial_url
+        modelname=mock_ynca.sys.modelname,
+        zones=zones,
+        serial_url=serial_url,
+        options=options,
     )
     entry.runtime_data = DomainEntryData(
         api=mock_ynca,
