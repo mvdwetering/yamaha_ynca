@@ -15,7 +15,7 @@ from tests.conftest import setup_integration
 import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
-    from homeassistant.core import HomeAssistant, State
+    from homeassistant.core import HomeAssistant
 
     from ynca.subunits.zone import ZoneBase
 
@@ -74,7 +74,7 @@ async def test_source_sensor(
     await setup_integration(hass, mock_ynca, options=options)
 
     # Check if supported
-    entity_state: State = hass.states.get("sensor.modelname_main_source")
+    entity_state = hass.states.get("sensor.modelname_main_source")
     assert entity_state is not None
     assert entity_state.state == "HDMI1"
 
