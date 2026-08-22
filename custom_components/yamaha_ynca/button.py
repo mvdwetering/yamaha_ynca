@@ -57,7 +57,7 @@ class YamahaYncaSceneButton(ButtonEntity):
     _attr_has_entity_name = True
 
     def __init__(
-        self, receiver_unique_id: str, zone: ynca.subunits.zone.ZoneBase, scene_id: int
+        self, receiver_unique_id: str, zone: ynca.ZoneBase, scene_id: int
     ) -> None:
         self._zone = zone
         self._scene_id = scene_id

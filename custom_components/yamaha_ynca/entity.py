@@ -10,8 +10,7 @@ from custom_components.yamaha_ynca.const import DOMAIN
 import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ynca.subunit import SubunitBase
-    from ynca.subunits.zone import ZoneBase
+    from ynca import SubunitBase, ZoneBase
 
 
 class YamahaYncaSettingEntity:

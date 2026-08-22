@@ -612,7 +612,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         if subunit is None:
             return None
 
-        if isinstance(subunit, ynca.subunits.tun.Tun):
+        if isinstance(subunit, ynca.Tun):
             # AM/FM Tuner
             if subunit.band is ynca.BandTun.AM:
                 return f"AM {subunit.amfreq} kHz"
@@ -623,7 +623,7 @@ class YamahaYncaZone(MediaPlayerEntity):
                     else f"FM {subunit.fmfreq:.2f} MHz"
                 )
 
-        if isinstance(subunit, ynca.subunits.dab.Dab):
+        if isinstance(subunit, ynca.Dab):
             # DAB/FM Tuner
             if subunit.band is ynca.BandDab.FM:
                 return (
