@@ -481,7 +481,7 @@ async def test_mediaplayer_entity_sound_mode_list(
 
 @patch(
     "ynca.YncaModelInfo.get",
-    return_value=ynca.modelinfo.ModelInfo(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
+    return_value=Mock(soundprg=[ynca.SoundPrg.ALL_CH_STEREO]),
 )
 async def test_mediaplayer_entity_sound_mode_list_from_modelinfo(
     mock_ynca: Mock, mock_zone: Mock
@@ -1095,7 +1095,7 @@ async def test_mediaplayer_entity_play_media(
 ) -> None:
     mock_zone.inp = ynca.Input.USB
     mock_ynca.tun = create_autospec(ynca.Tun)
-    mock_ynca.tun.id = ynca.subunit.Subunit.TUN
+    mock_ynca.tun.id = ynca.Tun.id
 
     # Different from after state
     mock_zone.pwr = ynca.Pwr.STANDBY
@@ -1110,7 +1110,7 @@ async def test_mediaplayer_entity_play_media(
     # DAB and TUN have the same input, so delete the TUN subunit
     mock_ynca.tun = None
     mock_ynca.dab = create_autospec(ynca.Dab)
-    mock_ynca.dab.id = ynca.subunit.Subunit.DAB
+    mock_ynca.dab.id = ynca.Dab.id
     mock_ynca.dab.dabpreset = ynca.DabPreset.NO_PRESET
     mock_ynca.dab.fmpreset = ynca.FmPreset.NO_PRESET
 
@@ -1132,7 +1132,7 @@ async def test_mediaplayer_entity_zoneb_play_media(
 
     mock_zone.inp = ynca.Input.TUNER
     mock_ynca.usb = create_autospec(ynca.Usb)
-    mock_ynca.usb.id = ynca.subunit.Subunit.USB
+    mock_ynca.usb.id = ynca.Usb.id
 
     # Different from after state
     mock_zone.pwrb = ynca.PwrB.STANDBY
@@ -1159,7 +1159,7 @@ async def test_mediaplayer_entity_browse_media(
     mp_entity: YamahaYncaZone, mock_ynca: Mock
 ) -> None:
     mock_ynca.tun = create_autospec(ynca.Tun)
-    mock_ynca.tun.id = ynca.subunit.Subunit.TUN
+    mock_ynca.tun.id = ynca.Tun.id
 
     # Root
     media = await mp_entity.async_browse_media(None, None)
@@ -1196,7 +1196,7 @@ async def test_mediaplayer_entity_browse_media_dab(
     mp_entity: YamahaYncaZone, mock_ynca: Mock
 ) -> None:
     mock_ynca.dab = create_autospec(ynca.Dab)
-    mock_ynca.dab.id = ynca.subunit.Subunit.DAB
+    mock_ynca.dab.id = ynca.Dab.id
 
     # Root
     media = await mp_entity.async_browse_media(None, None)
