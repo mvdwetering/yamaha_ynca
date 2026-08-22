@@ -120,7 +120,7 @@ async def test_async_setup_entry_preset_removed(
 ) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
-    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.netradio = create_autospec(ynca.NetRadio)
     mock_ynca.netradio.id = ynca.constants.Subunit.NETRADIO
 
     connection_mock = YncaConnectionMock()
@@ -153,7 +153,7 @@ async def test_async_setup_entry_preset_not_removed(
 ) -> None:
     """Test a successful setup entry."""
     mock_ynca.main = mock_zone_main
-    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.netradio = create_autospec(ynca.NetRadio)
     mock_ynca.netradio.id = ynca.constants.Subunit.NETRADIO
     mock_ynca.get_attr = Mock(
         side_effect=lambda name, default=None: (

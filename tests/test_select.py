@@ -24,7 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
         MockConfigEntry,
     )
 
-    from ynca.subunits.zone import ZoneBase
+    from ynca import ZoneBase
 
 
 TEST_ENTITY_DESCRIPTION = YncaSelectEntityDescription(

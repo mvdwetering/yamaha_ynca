@@ -17,7 +17,7 @@ import ynca
 if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.core import HomeAssistant
 
-    from ynca.subunits.zone import ZoneBase
+    from ynca import ZoneBase
 
 
 TEST_ENTITY_DESCRIPTION = YncaSensorEntityDescription(

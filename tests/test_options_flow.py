@@ -262,7 +262,7 @@ async def test_options_flow_zone_inputs(
 ) -> None:
     mock_ynca.main = mock_zone_main
     mock_ynca.sys.inpnamehdmi4 = "_INPNAMEHDMI4_"
-    mock_ynca.netradio = create_autospec(ynca.subunits.netradio.NetRadio)
+    mock_ynca.netradio = create_autospec(ynca.NetRadio)
 
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
