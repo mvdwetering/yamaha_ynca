@@ -771,7 +771,7 @@ async def test_mediaplayer_mediainfo_terrestrial_radio_inputs_fm(
     mock_ynca.tun.rdstxtb = ""
 
     # Title taken from RDS text when available
-    mock_ynca.tun.rdstxta = "RDS TXT A"
+    mock_ynca.tun.rdstxta = "RDS TXT A___    ____"
     mock_ynca.tun.rdstxtb = "RDS TXT B"
     assert mp_entity.media_title == "RDS TXT A"
 

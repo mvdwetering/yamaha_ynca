@@ -580,7 +580,8 @@ class YamahaYncaZone(MediaPlayerEntity):
                     else subunit.rdstxtb
                 )
                 # For some reason radiotext reported by the receiver often has trailing underscores, so strip them off
-                return radiotext.rstrip("_") if radiotext else None
+                # And sometimes it is mixed with spaces, so strip those off too
+                return radiotext.rstrip("_ ") if radiotext else None
         return None
 
     @property
