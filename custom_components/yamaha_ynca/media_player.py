@@ -148,7 +148,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         self._last_updated_radiotext_a: bool = True
 
-        self._subunit_callbacks: dict[ynca.subunit.SubunitBase, Any] = {}
+        self._subunit_callbacks: dict[ynca.SubunitBase, Any] = {}
 
     def _get_zone_id(self) -> str:
         return str(self._zone.id)
@@ -174,7 +174,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
     def update_subunit_callback(
         self,
-        subunit: ynca.subunit.SubunitBase,
+        subunit: ynca.SubunitBase,
         function: str | None,
         _value: Any,
     ) -> None:
@@ -189,12 +189,12 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         self.schedule_update_ha_state()
 
-    def _get_input_subunits(self) -> Generator[ynca.subunit.SubunitBase]:
+    def _get_input_subunits(self) -> Generator[ynca.SubunitBase]:
         for attribute in sorted(dir(self._ynca)):
             if attribute in ["sys", "main", "zone2", "zone3", "zone4"]:
                 continue
             if (attribute_instance := getattr(self._ynca, attribute)) and isinstance(
-                attribute_instance, ynca.subunit.SubunitBase
+                attribute_instance, ynca.SubunitBase
             ):
                 yield attribute_instance
 
@@ -210,7 +210,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             def callback(
                 function: str | None,
                 value: Any,
-                _subunit: ynca.subunit.SubunitBase = subunit,
+                _subunit: ynca.SubunitBase = subunit,
             ) -> None:
                 self.update_subunit_callback(_subunit, function, value)
 
@@ -227,7 +227,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             subunit.unregister_update_callback(callback)
         self._subunit_callbacks.clear()
 
-    def _get_input_subunit(self) -> ynca.subunit.SubunitBase | None:
+    def _get_input_subunit(self) -> ynca.SubunitBase | None:
         if self._zone.inp is not None:
             return InputHelper.get_subunit_for_input(self._ynca, self._zone.inp)
         return None
@@ -344,7 +344,7 @@ class YamahaYncaZone(MediaPlayerEntity):
 
         return sound_modes if sound_modes else None
 
-    def _has_limited_playback_controls(self, subunit: ynca.subunit.SubunitBase) -> bool:
+    def _has_limited_playback_controls(self, subunit: ynca.SubunitBase) -> bool:
         """Indicate if subunit has limited playback control (aka only Play and Stop)."""
         return (
             subunit is self._ynca.netradio
@@ -535,7 +535,7 @@ class YamahaYncaZone(MediaPlayerEntity):
             # in an event being sent from the receiver, so do manual update
             self._ynca.get_raw_connection().get(subunit.id, "REPEAT")
 
-    def _is_radio_subunit(self, subunit: ynca.subunit.SubunitBase) -> bool:
+    def _is_radio_subunit(self, subunit: ynca.SubunitBase) -> bool:
         return (
             subunit is self._ynca.dab
             or subunit is self._ynca.netradio
