@@ -994,7 +994,7 @@ async def test_mediaplayer_entity_repeat(
 
     # Subunit not supporting repeat
     mock_zone.inp = ynca.Input.NETRADIO
-    mock_ynca.NETRADIO = create_autospec(ynca.NetRadio)
+    mock_ynca.netradio = create_autospec(ynca.NetRadio)
     assert mp_entity.repeat is None
 
 
