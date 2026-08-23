@@ -21,9 +21,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from ynca.subunit import SubunitBase
-    from ynca.subunits.system import System
-    from ynca.subunits.zone import ZoneBase
+    from ynca import SubunitBase, System, ZoneBase
 
     from . import YamahaYncaConfigEntry
 

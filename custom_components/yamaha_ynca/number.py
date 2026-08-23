@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from . import YamahaYncaConfigEntry
 
 
-def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> float:
+def volume_native_max_value_fn(associated_zone: ynca.ZoneBase) -> float:
     return float(
         associated_zone.maxvol
         if associated_zone.maxvol is not None
@@ -37,7 +37,7 @@ def volume_native_max_value_fn(associated_zone: ynca.subunits.zone.ZoneBase) -> 
 class YncaNumberEntityDescription(NumberEntityDescription):
     function_names: list[str] | None = None
     """Function names which indicate updates for this entity. Only needed when it does not match `key.upper()`"""
-    native_max_value_fn: Callable[[ynca.subunits.zone.ZoneBase], float] | None = None
+    native_max_value_fn: Callable[[ynca.ZoneBase], float] | None = None
     """Function that returns max value. Use when a fixed number is not enough"""
 
 

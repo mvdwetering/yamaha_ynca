@@ -199,7 +199,7 @@ def test_get_subunit_for_input(mock_ynca: Mock) -> None:
 
 
 def test_get_input_for_subunit_no_input() -> None:
-    t = create_autospec(ynca.subunits.tun.Tun)
+    t = create_autospec(ynca.Tun)
     t.id = Mock()
     t.id.value = "test_subunit"
 

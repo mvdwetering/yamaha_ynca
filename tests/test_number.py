@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
 
-def native_max_value_fn(_associated_zone: ynca.subunits.zone.ZoneBase) -> float:
+def native_max_value_fn(_associated_zone: ynca.ZoneBase) -> float:
     return 5.5
 
 

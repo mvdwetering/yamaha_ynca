@@ -103,7 +103,7 @@ class InputHelper:
     @staticmethod
     def get_subunit_for_input(
         api: ynca.YncaApi, input_: ynca.Input | None
-    ) -> ynca.subunit.SubunitBase | None:
+    ) -> ynca.SubunitBase | None:
         """Return Subunit of the current provided input if possible, otherwise None."""
         for mapping in input_mappings:
             if mapping.ynca_input is input_:
@@ -114,7 +114,7 @@ class InputHelper:
         return None
 
     @staticmethod
-    def get_input_for_subunit(subunit: ynca.subunit.SubunitBase) -> ynca.Input:
+    def get_input_for_subunit(subunit: ynca.SubunitBase) -> ynca.Input:
         """Return input of the provided subunit, raises ValueError if not found."""
         for mapping in input_mappings:
             if subunit.id.value.lower() in mapping.subunit_attribute_names:

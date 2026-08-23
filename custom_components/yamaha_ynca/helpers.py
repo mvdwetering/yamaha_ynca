@@ -9,7 +9,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.helpers.entity import EntityDescription
 
     import ynca
-    from ynca.subunit import SubunitBase
+    from ynca import SubunitBase
 
 
 @dataclass

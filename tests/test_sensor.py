@@ -6,10 +6,8 @@ from unittest.mock import Mock
 from homeassistant.helpers.entity import EntityCategory
 import pytest
 
-from custom_components import yamaha_ynca
 from custom_components.yamaha_ynca.sensor import (
     ENTITY_DESCRIPTIONS,
-    YamahaYncaSensor,
     YncaSensorEntityDescription,
     async_setup_entry,
 )
@@ -18,11 +16,8 @@ import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.core import HomeAssistant
-    from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
-        MockConfigEntry,
-    )
 
-    from ynca.subunits.zone import ZoneBase
+    from ynca import ZoneBase
 
 
 TEST_ENTITY_DESCRIPTION = YncaSensorEntityDescription(
@@ -60,7 +55,7 @@ async def test_async_setup_entry(
 
 
 @pytest.mark.usefixtures("entity_registry_enabled_by_default")
-async def test_sensor_supported(
+async def test_source_sensor(
     hass: HomeAssistant,
     mock_ynca: Mock,
     mock_zone_main: Mock,
@@ -68,17 +63,38 @@ async def test_sensor_supported(
     mock_ynca.main = mock_zone_main
     mock_ynca.main.inp = ynca.Input.HDMI1
 
-    await setup_integration(hass, mock_ynca)
+    options = {
+        "MAIN": {
+            "selected_inputs": [
+                "HDMI1",
+                "AUDIO1",
+            ]
+        }
+    }
+    await setup_integration(hass, mock_ynca, options=options)
 
-    source = hass.states.get("sensor.modelname_main_source")
-    assert source is not None
-    assert source.state == "HDMI1"
+    # Check if supported
+    entity_state = hass.states.get("sensor.modelname_main_source")
+    assert entity_state is not None
+    assert entity_state.state == "HDMI1"
 
+    # Options match inputs selected in config entry
+    assert set(entity_state.attributes["options"]) == {"HDMI1", "AUDIO1"}
+
+    # Change input to known value
     mock_ynca.main.inp = ynca.Input.AUDIO1
-    # Multiple callbacks are registered, call them all to simulate an update
-    for c in range(mock_zone_main.register_update_callback.call_count):
-        callback = mock_zone_main.register_update_callback.call_args_list[c].args[0]
-        callback("INP", "AUDIO1")
+    for callback in mock_zone_main.register_update_callback.call_args_list:
+        callback.args[0]("INP", "AUDIO1")
     await hass.async_block_till_done()
-    source = hass.states.get("sensor.modelname_main_source")
-    assert source.state == "AUDIO1"
+
+    entity_state = hass.states.get("sensor.modelname_main_source")
+    assert entity_state.state == "AUDIO1"
+
+    # Change input to one not in options list, should be unknown
+    mock_ynca.main.inp = ynca.Input.AUDIO2
+    for callback in mock_zone_main.register_update_callback.call_args_list:
+        callback.args[0]("INP", "AUDIO2")
+    await hass.async_block_till_done()
+
+    entity_state = hass.states.get("sensor.modelname_main_source")
+    assert entity_state.state == "unknown"
