@@ -372,10 +372,10 @@ async def test_mediaplayer_entity_source_rename(
     state = hass.states.get(entity_id)
     assert state.attributes["source"] == "HDMI3"
 
-    # Change the name an trigger update callback
+    # Change the name and trigger all registered update callbacks.
     mock_ynca.sys.inpnamehdmi3 = "NEWNAME"
-    sys_callback = mock_ynca.sys.register_update_callback.call_args.args[0]
-    sys_callback("INPNAMEHDMI3", "NEWNAME")  # Value does not really matter
+    for call in mock_ynca.sys.register_update_callback.call_args_list:
+        call.args[0]("INPNAMEHDMI3", "NEWNAME")
     await hass.async_block_till_done()
 
     state = hass.states.get(entity_id)
