@@ -330,11 +330,13 @@ def migrate_v6_to_v7(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     # to the device for MAIN zone to keep device automations working
     # Device automations for Zone2, Zone3 or Zone4 parts will break unfortunately
 
-    old_identifiers = {(DOMAIN, f"{config_entry.entry_id}")}
+    old_identifier = (DOMAIN, f"{config_entry.entry_id}")
     new_identifiers = {(DOMAIN, f"{config_entry.entry_id}_MAIN")}
 
     registry = dr.async_get(hass)
-    if device_entry := registry.async_get_device(identifiers=old_identifiers):
+    if device_entry := registry.async_get_device_by_identifier(
+        old_identifier, config_entry.entry_id
+    ):
         registry.async_update_device(device_entry.id, new_identifiers=new_identifiers)
 
     hass.config_entries.async_update_entry(

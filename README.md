@@ -5,7 +5,7 @@
 > What does that mean for this integration?
 > In practice probably not a lot. There is usually not a lot of maintenance needed, so I intend to keep the integration working, do small fixes and answer questions, but won't do big reworks anymore. To make it easier for others to contribute and submit PRs I [documented some details about the development](docs).
 
-Minimum required Home Assistant version is: 2025.10.0
+Minimum required Home Assistant version is: 2026.9.0
 
 * [About Yamaha (YNCA)](#description)
 * [Working models](#working-models)

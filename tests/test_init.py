@@ -44,13 +44,12 @@ async def test_async_setup_entry(  # noqa: PLR0913
     assert len(mock_ynca.initialize.mock_calls) == 1
     assert mock_ynca is integration.entry.runtime_data.api
 
-    assert len(device_reg.devices.keys()) == 5
+    assert len(device_reg.devices) == 5
 
     for zone_id in ["MAIN", "ZONE2", "ZONE3", "ZONE4"]:
-        device = device_reg.async_get_device(
-            identifiers={
-                (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_{zone_id}")
-            }
+        device = device_reg.async_get_device_by_identifier(
+            (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_{zone_id}"),
+            integration.entry.entry_id,
         )
         assert device is not None
         assert device.manufacturer == "Yamaha"
@@ -59,8 +58,9 @@ async def test_async_setup_entry(  # noqa: PLR0913
         assert device.name == f"ModelName {zone_id}"
         assert device.configuration_url is None
 
-    device = device_reg.async_get_device(
-        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")}
+    device = device_reg.async_get_device_by_identifier(
+        (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB"),
+        integration.entry.entry_id,
     )
 
     assert device is not None
@@ -84,8 +84,9 @@ async def test_async_setup_entry_socket_has_configuration_url(
         hass, mock_ynca, serial_url="socket://1.2.3.4:4321"
     )
 
-    device = device_reg.async_get_device(
-        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_MAIN")}
+    device = device_reg.async_get_device_by_identifier(
+        (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_MAIN"),
+        integration.entry.entry_id,
     )
     assert device is not None
     assert device.configuration_url == "http://1.2.3.4"
