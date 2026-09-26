@@ -141,6 +141,7 @@ class YamahaYncaZone(MediaPlayerEntity):
         self._selected_inputs = selected_inputs
         self._selected_sound_modes = selected_sound_modes
 
+        self._receiver_unique_id = receiver_unique_id
         self._device_id = f"{receiver_unique_id}_{self._get_zone_id()}"
 
         self._attr_unique_id = self._device_id
@@ -165,12 +166,11 @@ class YamahaYncaZone(MediaPlayerEntity):
             # Note that the mediaplayer does not have a name since it uses the devicename
             # So update the device name when the zonename changes to keep names as expected
             registry = dr.async_get(self.hass)
-            devices = registry.async_get_devices(
-                identifiers={(DOMAIN, self._device_id)}
-            )
-            if devices:
+            if device := registry.async_get_device_by_identifier(
+                (DOMAIN, self._device_id), self._receiver_unique_id
+            ):
                 devicename = self._build_device_name()
-                registry.async_update_device(devices[0].id, name=devicename)
+                registry.async_update_device(device.id, name=devicename)
         if function is not None:
             self.schedule_update_ha_state()
 

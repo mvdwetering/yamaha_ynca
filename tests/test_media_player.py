@@ -120,13 +120,15 @@ async def test_mediaplayer_entity_update_callback_zonename(
 
     device_reg.async_get_or_create(
         config_entry_id=integration.entry.entry_id,
-        identifiers={(yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")},
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZoneId")},
         name="Old Zonename",
     )
 
-    zone_entity = YamahaYncaZone("ReceiverUniqueId", mock_ynca, mock_zone, [], [])
+    zone_entity = YamahaYncaZone(
+        integration.entry.entry_id, mock_ynca, mock_zone, [], []
+    )
     assert zone_entity.device_info["identifiers"] == {
-        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")
+        (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZoneId")
     }
 
     zone_entity.hass = hass  # In a real system this is done by HA
@@ -143,7 +145,7 @@ async def test_mediaplayer_entity_update_callback_zonename(
     # Check for name change
     device_entry = device_reg.async_get_or_create(
         config_entry_id=integration.entry.entry_id,
-        identifiers={(yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZoneId")},
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZoneId")},
     )
     assert device_entry.name == "New Zonename"
 
@@ -160,13 +162,13 @@ async def test_mediaplayer_entity_update_callback_zonebname(
 
     device_reg.async_get_or_create(
         config_entry_id=integration.entry.entry_id,
-        identifiers={(yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")},
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")},
         name="Old ZoneBname",
     )
 
-    zoneb_entity = YamahaYncaZoneB("ReceiverUniqueId", mock_ynca, [])
+    zoneb_entity = YamahaYncaZoneB(integration.entry.entry_id, mock_ynca, [])
     assert zoneb_entity.device_info["identifiers"] == {
-        (yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")
+        (yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")
     }
 
     zoneb_entity.hass = hass  # In a real system this is done by HA
@@ -183,7 +185,7 @@ async def test_mediaplayer_entity_update_callback_zonebname(
     # Check for name change
     device_entry = device_reg.async_get_or_create(
         config_entry_id=integration.entry.entry_id,
-        identifiers={(yamaha_ynca.DOMAIN, "ReceiverUniqueId_ZONEB")},
+        identifiers={(yamaha_ynca.DOMAIN, f"{integration.entry.entry_id}_ZONEB")},
     )
     assert device_entry.name == "New ZoneBname"
 
