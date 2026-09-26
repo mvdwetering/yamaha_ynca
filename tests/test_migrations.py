@@ -320,7 +320,9 @@ async def test_async_migration_entry_version_v6_to_v7(
         await hass.async_block_till_done()
 
     assert len(device_reg.devices) == 1  # Still only 1 device
-    device_entry_after = device_reg.async_get_device({(DOMAIN, "entry_id_MAIN")})
+    device_entry_after = device_reg.async_get_device_by_identifier(
+        (DOMAIN, "entry_id_MAIN"), config_entry.entry_id
+    )
     assert device_entry_after is not None
     assert device_entry_after.config_entries == device_entry_before.config_entries
 
