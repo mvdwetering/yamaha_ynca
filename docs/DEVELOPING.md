@@ -18,7 +18,7 @@ These are the commands to setup a dev environment and run the tests after the re
 
 ```bash
 # Create a virtual env
-$ python3.13 -m venv venv
+$ python3.14 -m venv venv
 # Activate the virtual env
 $ source ./venv/bin/activate
 # Install dev dependencies

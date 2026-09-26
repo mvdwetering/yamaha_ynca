@@ -6,7 +6,7 @@ Guidelines for AI agents working on this repository.
 
 **Yamaha YNCA** is a custom Home Assistant integration for Yamaha AV receivers using the YNCA protocol over serial or network connections. It supports Yamaha RX-A, RX-V, AVENTAGE, TSR, and HTR receivers from 2010 onwards.
 
-- **Language**: Python 3.13+
+- **Language**: Python 3.14+
 - **Framework**: Home Assistant Custom Component
 - **Core dependency**: [`ynca`](https://github.com/mvdwetering/ynca) — the YNCA protocol library
 
@@ -44,10 +44,10 @@ bump_ynca_version.sh             # Update ynca package version everywhere
 
 ## Dev Environment Setup
 
-Requires **Python 3.13**.
+Requires **Python 3.14**.
 
 ```bash
-python3.13 -m venv venv
+python3.14 -m venv venv
 source ./venv/bin/activate
 pip install -e .[dev]
 ```
