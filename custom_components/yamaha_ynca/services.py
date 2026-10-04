@@ -25,16 +25,14 @@ SERVICE_STORE_PRESET = "store_preset"
 
 
 async def async_handle_send_raw_ynca(hass: HomeAssistant, call: ServiceCall) -> None:
-    config_entry = hass.config_entries.async_get_entry(
-        call.data.get(ATTR_CONFIG_ENTRY_ID)
-    )
+    config_entry = hass.config_entries.async_get_entry(call.data[ATTR_CONFIG_ENTRY_ID])
 
     if config_entry is None or config_entry.state is not ConfigEntryState.LOADED:
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="config_entry_not_found",
             translation_placeholders={
-                "config_entry_id": call.data.get(ATTR_CONFIG_ENTRY_ID)
+                "config_entry_id": call.data[ATTR_CONFIG_ENTRY_ID]
             },
         )
 
