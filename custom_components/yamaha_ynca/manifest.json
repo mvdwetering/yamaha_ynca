@@ -1,6 +1,9 @@
 {
   "domain": "yamaha_ynca",
   "name": "Yamaha (YNCA)",
+  "categories": [
+    "media_entertainment.speakers_audio"
+  ],
   "codeowners": [
     "@mvdwetering"
   ],
