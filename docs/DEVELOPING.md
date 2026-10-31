@@ -17,8 +17,8 @@ The integration has no specific build/package tool requirements other than a sta
 These are the commands to setup a dev environment and run the tests after the repo has been cloned.
 
 ```bash
-# Create a virtual env
-$ python3.13 -m venv venv
+# Create a virtual env (requires Python 3.14.2 or newer)
+$ python3.14 -m venv venv
 # Activate the virtual env
 $ source ./venv/bin/activate
 # Install dev dependencies

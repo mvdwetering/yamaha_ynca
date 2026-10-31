@@ -63,7 +63,9 @@ async def test_async_setup_entry_configured_number_of_scenes(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["ZONE2"] = {yamaha_ynca.const.CONF_NUMBER_OF_SCENES: 11}
-    hass.config_entries.async_update_entry(integration.entry, options=options)
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        hass.config_entries.async_update_entry(integration.entry, options=options)
+        await hass.async_block_till_done()
 
     add_entities_mock = Mock()
     await async_setup_entry(hass, integration.entry, add_entities_mock)

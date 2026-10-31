@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.helpers.entity import DeviceInfo, EntityDescription
+from homeassistant.helpers.device_registry import ChildDeviceInfo, DeviceInfo
 
 from custom_components.yamaha_ynca.const import DOMAIN
 import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
+    from homeassistant.helpers.entity import EntityDescription
+
     from ynca import SubunitBase, ZoneBase
 
 
@@ -47,7 +49,7 @@ class YamahaYncaSettingEntity:
 
         # Need to provide type annotations since in MRO for subclasses this class is before the
         # HA entity that actually defines the _attr_* methods
-        self._attr_device_info: DeviceInfo | None = DeviceInfo(
+        self._attr_device_info: DeviceInfo | ChildDeviceInfo | None = DeviceInfo(
             identifiers={(DOMAIN, f"{receiver_unique_id}_{self._associated_zone.id}")}
         )
         self._attr_translation_key: str | None = (

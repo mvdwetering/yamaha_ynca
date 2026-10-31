@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import Mock, create_autospec
+from unittest.mock import Mock, create_autospec, patch
 
 from homeassistant.data_entry_flow import FlowResultType
 
@@ -180,7 +180,9 @@ async def test_options_flow_soundmodes(hass: HomeAssistant, mock_ynca: Mock) -> 
     options[yamaha_ynca.const.CONF_SELECTED_SOUND_MODES] = [
         "Obsolete",  # Obsolete values should not break the schema
     ]
-    hass.config_entries.async_update_entry(integration.entry, options=options)
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        hass.config_entries.async_update_entry(integration.entry, options=options)
+        await hass.async_block_till_done()
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -215,7 +217,9 @@ async def test_options_flow_surrounddecoders(
 
     options = dict(integration.entry.options)
     # Do _not_ set options[yamaha_ynca.const.CONF_SELECTED_SURROUND_DECODERS] to test handling of absent options
-    hass.config_entries.async_update_entry(integration.entry, options=options)
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        hass.config_entries.async_update_entry(integration.entry, options=options)
+        await hass.async_block_till_done()
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
 
@@ -267,7 +271,9 @@ async def test_options_flow_zone_inputs(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"selected_inputs": ["AV5", "DOES_NOT_EXIST"]}
-    hass.config_entries.async_update_entry(integration.entry, options=options)
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        hass.config_entries.async_update_entry(integration.entry, options=options)
+        await hass.async_block_till_done()
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"
@@ -307,7 +313,9 @@ async def test_options_flow_configure_nof_scenes(
     integration = await setup_integration(hass, mock_ynca)
     options = dict(integration.entry.options)
     options["MAIN"] = {"number_of_scenes": 5}
-    hass.config_entries.async_update_entry(integration.entry, options=options)
+    with patch("ynca.YncaApi", return_value=mock_ynca):
+        hass.config_entries.async_update_entry(integration.entry, options=options)
+        await hass.async_block_till_done()
 
     result = await hass.config_entries.options.async_init(integration.entry.entry_id)
     assert result["step_id"] == "general"
