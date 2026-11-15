@@ -34,6 +34,9 @@ Other commands
 (venv) $ ruff format
 ```
 
+Use `./bump_min_ha_version.sh <version>` to update the minimum Home Assistant
+version and the matching `pytest-homeassistant` version together.
+
 ## Release
 
 - Run the `release.sh` script. Often no alpha/beta is needed, so just release it. Make sure to switch back to dev once done.
