@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
+from pytest_homeassistant.common import (
     MockConfigEntry,
     mock_device_registry,
 )
@@ -17,7 +17,7 @@ from custom_components.yamaha_ynca.helpers import DomainEntryData
 import ynca
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable
 
     from homeassistant.const import Platform
     from homeassistant.core import HomeAssistant
@@ -48,24 +48,6 @@ INPUT_SUBUNITS = [
     "uaw",
     "usb",
 ]
-
-
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(
-    enable_custom_integrations: pytest.Fixture,  # noqa: ARG001
-) -> None:
-    return
-
-
-# Copied from HA tests/components/conftest.py
-@pytest.fixture
-def entity_registry_enabled_by_default() -> Generator[None]:
-    """Test fixture that ensures all entities are enabled in the registry."""
-    with patch(
-        "homeassistant.helpers.entity.Entity.entity_registry_enabled_default",
-        return_value=True,
-    ):
-        yield
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from homeassistant.const import Platform
 import pytest
-from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
+from pytest_homeassistant.common import (
     MockConfigEntry,
     mock_device_registry,
     mock_registry,
@@ -324,7 +324,7 @@ async def test_async_migration_entry_version_v6_to_v7(
         (DOMAIN, "entry_id_MAIN"), config_entry.entry_id
     )
     assert device_entry_after is not None
-    assert device_entry_after.config_entries == device_entry_before.config_entries
+    assert device_entry_after.config_entry_id == device_entry_before.config_entry_id
 
     new_entry = hass.config_entries.async_get_entry(config_entry.entry_id)
     assert new_entry is not None

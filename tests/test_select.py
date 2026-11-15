@@ -20,9 +20,7 @@ import ynca
 
 if TYPE_CHECKING:  # pragma: no cover
     from homeassistant.core import HomeAssistant
-    from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
-        MockConfigEntry,
-    )
+    from pytest_homeassistant.common import MockConfigEntry
 
     from ynca import ZoneBase
 
