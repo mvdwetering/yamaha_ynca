@@ -116,7 +116,6 @@ select = ["ALL"]
 "homeassistant.helpers.device_registry" = "dr"
 "homeassistant.helpers.entity_registry" = "er"
 "homeassistant.helpers.issue_registry" = "ir"
-voluptuous = "vol"
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

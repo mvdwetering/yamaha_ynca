@@ -12,7 +12,7 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
 )
 from homeassistant.core import HomeAssistant, callback
-import voluptuous as vol
+import probatio
 
 import ynca
 
@@ -35,23 +35,24 @@ PYSERIAL_URL_HANDLERS_LINK = (
 )
 
 
-def get_serial_url_schema(user_input: dict[str, Any]) -> vol.Schema:
-    return vol.Schema(
+def get_serial_url_schema(user_input: dict[str, Any]) -> probatio.Schema:
+    return probatio.Schema(
         {
-            vol.Required(
-                CONF_SERIAL_URL, default=user_input.get(CONF_SERIAL_URL, vol.UNDEFINED)
+            probatio.Required(
+                CONF_SERIAL_URL,
+                default=user_input.get(CONF_SERIAL_URL, probatio.UNDEFINED),
             ): str
         }
     )
 
 
-def get_network_schema(user_input: dict[str, Any]) -> vol.Schema:
-    return vol.Schema(
+def get_network_schema(user_input: dict[str, Any]) -> probatio.Schema:
+    return probatio.Schema(
         {
-            vol.Required(
-                CONF_HOST, default=user_input.get(CONF_HOST, vol.UNDEFINED)
+            probatio.Required(
+                CONF_HOST, default=user_input.get(CONF_HOST, probatio.UNDEFINED)
             ): str,
-            vol.Required(CONF_PORT, default=user_input.get(CONF_PORT, 50000)): int,
+            probatio.Required(CONF_PORT, default=user_input.get(CONF_PORT, 50000)): int,
         }
     )
 
@@ -94,7 +95,7 @@ class YamahaYncaConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_try_connect(
         self,
         step_id: str,
-        data_schema: vol.Schema,
+        data_schema: probatio.Schema,
         user_input: dict[str, Any],
     ) -> ConfigFlowResult:
         self._async_abort_entries_match({CONF_SERIAL_URL: user_input[CONF_SERIAL_URL]})

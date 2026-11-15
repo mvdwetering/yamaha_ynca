@@ -95,7 +95,6 @@ Always run `./coverage.sh` (or at minimum `pytest tests`) before considering a c
   import homeassistant.helpers.device_registry as dr
   import homeassistant.helpers.entity_registry as er
   import homeassistant.helpers.issue_registry as ir
-  import voluptuous as vol
   ```
 
 ### Type Hints

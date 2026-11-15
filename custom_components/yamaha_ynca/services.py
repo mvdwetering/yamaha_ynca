@@ -10,7 +10,7 @@ from homeassistant.const import ATTR_CONFIG_ENTRY_ID
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv, service
-import voluptuous as vol
+import probatio
 
 from .const import DOMAIN
 
@@ -54,10 +54,10 @@ def async_setup_services(hass: HomeAssistant) -> None:
         DOMAIN,
         SERVICE_SEND_RAW_YNCA,
         async_handle_send_raw_ynca_local,
-        schema=vol.Schema(
+        schema=probatio.Schema(
             {
-                vol.Required(ATTR_CONFIG_ENTRY_ID): cv.string,
-                vol.Required(ATTR_RAW_DATA): cv.string,
+                probatio.Required(ATTR_CONFIG_ENTRY_ID): cv.string,
+                probatio.Required(ATTR_RAW_DATA): cv.string,
             }
         ),
     )
@@ -68,6 +68,6 @@ def async_setup_services(hass: HomeAssistant) -> None:
         DOMAIN,
         SERVICE_STORE_PRESET,
         entity_domain=MEDIA_PLAYER_DOMAIN,
-        schema={vol.Required(ATTR_PRESET_ID): cv.positive_int},
+        schema={probatio.Required(ATTR_PRESET_ID): cv.positive_int},
         func="store_preset",
     )

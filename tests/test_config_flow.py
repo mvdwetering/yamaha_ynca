@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.data_entry_flow import FlowResultType, InvalidData
+import pytest
 
 from custom_components import yamaha_ynca
 from tests.conftest import setup_integration
@@ -59,6 +60,21 @@ async def test_network_connect(hass: HomeAssistant) -> None:
     }
     assert len(mock_setup.mock_calls) == 1
     assert len(mock_setup_entry.mock_calls) == 1
+
+
+async def test_network_rejects_invalid_input(hass: HomeAssistant) -> None:
+    result = await hass.config_entries.flow.async_init(
+        yamaha_ynca.DOMAIN, context={"source": "network"}
+    )
+
+    with pytest.raises(InvalidData):
+        await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                yamaha_ynca.const.CONF_HOST: "hostname",
+                yamaha_ynca.const.CONF_PORT: "not a port",
+            },
+        )
 
 
 async def test_advanced_connect(hass: HomeAssistant) -> None:

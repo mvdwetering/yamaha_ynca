@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import call
 
 from homeassistant.exceptions import ServiceValidationError
+import probatio
 import pytest
 
 from custom_components import yamaha_ynca
@@ -57,3 +58,17 @@ async def test_service_raw_ynca_invalid_config_entry_id(
         )
 
     await hass.async_block_till_done()
+
+
+async def test_service_raw_ynca_requires_raw_data(
+    hass: HomeAssistant, mock_ynca: YncaApi
+) -> None:
+    integration = await setup_integration(hass, mock_ynca)
+
+    with pytest.raises(probatio.Invalid):
+        await hass.services.async_call(
+            yamaha_ynca.DOMAIN,
+            SERVICE_SEND_RAW_YNCA,
+            {"config_entry_id": integration.entry.entry_id},
+            blocking=True,
+        )
