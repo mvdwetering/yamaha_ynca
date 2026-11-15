@@ -50,11 +50,10 @@ dev = [
   "pytest>=7.0.0",
   "pytest-cov",
   "pytest-mock",
+  "pytest-unordered",
   "awesomeversion>=24.0.0",
-  "homeassistant==2026.9.0",
-  # Don't pin versions below, they will follow HA's versions
-  "homeassistant-stubs",
-  "pytest-homeassistant-custom-component",
+  "homeassistant==2026.11.0",
+  "pytest-homeassistant==2026.11.0",
 ]
 
 [tool.coverage.report]
@@ -64,9 +63,10 @@ exclude_also = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=custom_components/yamaha_ynca --cov-report=term-missing --cov-report=html"
+addopts = "-p no:respx --cov=custom_components/yamaha_ynca --cov-report=term-missing --cov-report=html"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.ruff]
@@ -116,7 +116,6 @@ select = ["ALL"]
 "homeassistant.helpers.device_registry" = "dr"
 "homeassistant.helpers.entity_registry" = "er"
 "homeassistant.helpers.issue_registry" = "ir"
-voluptuous = "vol"
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

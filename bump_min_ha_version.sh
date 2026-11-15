@@ -23,8 +23,8 @@ NEW_VERSION="$1"
 # Update homeassistant version in hacs.json
 sed -i "s/\"homeassistant\": \"[0-9.]*\"/\"homeassistant\": \"$NEW_VERSION\"/" "$SCRIPT_DIR/hacs.json"
 
-# Update homeassistant version in pyproject.toml
-sed -i "s/homeassistant==[0-9.]*/homeassistant==$NEW_VERSION/" "$SCRIPT_DIR/pyproject.toml"
+# Update Home Assistant and its test plugin in pyproject.toml
+sed -i "s/\"homeassistant==[0-9.]*\"/\"homeassistant==$NEW_VERSION\"/; s/\"pytest-homeassistant==[0-9.]*\"/\"pytest-homeassistant==$NEW_VERSION\"/" "$SCRIPT_DIR/pyproject.toml"
 
 # Update minimum HA version in README.md
 sed -i "s/Minimum required Home Assistant version is: [0-9.]*/Minimum required Home Assistant version is: $NEW_VERSION/" "$SCRIPT_DIR/README.md"

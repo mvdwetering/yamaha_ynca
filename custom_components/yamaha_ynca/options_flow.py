@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
+import probatio
 
 import ynca
 
@@ -132,7 +132,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = {}
         schema[
-            vol.Required(
+            probatio.Required(
                 CONF_SELECTED_SOUND_MODES,
                 default=self.options.get(CONF_SELECTED_SOUND_MODES, all_sound_modes),
             )
@@ -158,7 +158,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # but the multiselect UI it creates is a hassle to use and since there are no translations yet
             # lets keep using cv.multiselect with hardcoded English translation
             schema[
-                vol.Required(
+                probatio.Required(
                     CONF_SELECTED_SURROUND_DECODERS,
                     default=stored_selected_surround_decoders_ids,
                 )
@@ -166,7 +166,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id=STEP_ID_GENERAL,
-            data_schema=vol.Schema(schema),
+            data_schema=probatio.Schema(schema),
             last_step=get_next_step_id(self, STEP_ID_GENERAL) == STEP_ID_DONE,
         )
 
@@ -247,7 +247,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ]
 
         schema[
-            vol.Required(
+            probatio.Required(
                 CONF_SELECTED_INPUTS,
                 default=applicable_selected_input_ids,
             )
@@ -260,17 +260,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             number_of_scenes_list[scene_id] = str(scene_id)
 
         schema[
-            vol.Required(
+            probatio.Required(
                 CONF_NUMBER_OF_SCENES,
                 default=self.options.get(zone_id, {}).get(
                     CONF_NUMBER_OF_SCENES, NUMBER_OF_SCENES_AUTODETECT
                 ),
             )
-        ] = vol.In(number_of_scenes_list)
+        ] = probatio.In(number_of_scenes_list)
 
         return self.async_show_form(
             step_id=step_id,
-            data_schema=vol.Schema(schema),
+            data_schema=probatio.Schema(schema),
             last_step=get_next_step_id(self, step_id) == STEP_ID_DONE,
         )
 

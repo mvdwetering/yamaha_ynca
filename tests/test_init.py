@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import Mock, create_autospec, patch
 
 from homeassistant.config_entries import ConfigEntryState
-from pytest_homeassistant_custom_component.common import (  # type: ignore[import]
-    MockConfigEntry,
-)
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components import yamaha_ynca
 from tests.mock_yncaconnection import YncaConnectionMock

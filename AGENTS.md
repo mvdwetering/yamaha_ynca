@@ -95,7 +95,6 @@ Always run `./coverage.sh` (or at minimum `pytest tests`) before considering a c
   import homeassistant.helpers.device_registry as dr
   import homeassistant.helpers.entity_registry as er
   import homeassistant.helpers.issue_registry as ir
-  import voluptuous as vol
   ```
 
 ### Type Hints
@@ -198,7 +197,7 @@ See `docs/DEVELOPING.md` for a detailed walkthrough with a real example (PR #480
 - When adding attributes to a zone mock, set them to `None` in `create_mock_zone` to keep existing tests unaffected.
 - For entities disabled by default, use the `entity_registry_enabled_by_default` pytest fixture.
 - Asserts (`S101`) and magic values (`PLR2004`) are allowed in test files.
-- The integration uses `pytest-homeassistant-custom-component` — use `MockConfigEntry` and the provided async fixtures.
+- The integration uses `pytest-homeassistant` — use `MockConfigEntry` and the provided async fixtures.
 
 ---
 
